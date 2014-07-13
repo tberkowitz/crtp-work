@@ -11,6 +11,9 @@
 # User can request to ignore all warnings
 ## End goals ##
 
+### SOURCE "DATA" ###
+source(paste(getwd(), "FakeData.R", sep = "/"))
+
 ### FUNCTION DEFINITIONS ###
 # Define the MFV() function
 MFV <- function(x, outputValue, na.rm = getOption("na.rm", default = FALSE), silent = FALSE){
@@ -646,6 +649,29 @@ getResults.continuous <- function(x, requestedStats, na.rm = getOption("na.rm", 
 }
 
 
+
+x <- DFFH
+dataObjectName <- "DFFH"
+stats <- "default"
+requestedStats <- checkStats(stats)
+columns <- "all"
+digits <- 2L
+na.rm <- TRUE
+silent <- FALSE
+quantile.probs <- 0:4/4
+quantile.type <- 7L
+keepColumnNames <- TRUE
+categorical.emptyCellSymbol <- ""
+categorical.maxLevels <- 10L
+categorical.na.exclude <- na.rm
+output.showStats <- "all"
+# byFactors <- NULL
+byFactors <- c("sex", "doc")
+# ignore <- NULL
+ignore <- "key"
+output.statsAreRows <- TRUE
+
+
 # Define the descriptiveStatsDF() function
 descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2L, na.rm = TRUE, silent = FALSE, quantile.probs = 0:4/4, quantile.type = 7L, keepColumnNames = TRUE, categorical.emptyCellSymbol = "", categorical.maxLevels = 10L, categorical.na.exclude = na.rm, output.showStats = "all", byFactors = NULL, ignore = NULL, output.statsAreRows = TRUE) {
     if(silent) {
@@ -655,12 +681,12 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
     }
     
     dataObjectName <- deparse(substitute(x))
-    if(grepl(pattern = "\\[", x = dataObjectName)) {
-        if(grepl(pattern = "-", x = dataObjectName)) {
+    if(grepl(pattern = "\\[|\\$", x = dataObjectName)) {
+        if(grepl(pattern = "-|!", x = dataObjectName)) {
             stop(paste(strwrap(gettextf("Please use the %s argument to specify columns you do not want to include in the results.", sQuote("ignore")), width = 0.95 * getOption("width")), collapse = "\n    "))
         }
         unbracket <- function(x) {
-            y <- unlist(strsplit(x = x, split = "\\[|\\]"))
+            y <- unlist(strsplit(x = x, split = "\\[|\\]|\\$"))
             object <- y[1L]
             y <- y[-1L]
             y <- unlist(strsplit(x = y, split = ",| |c|\\(|\\)"))
@@ -672,10 +698,11 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
         x <- data.frame(x, check.names = FALSE, stringsAsFactors = FALSE)
         bracketfree <- unbracket(x = dataObjectName)
         dataObjectName <- bracketfree[["name"]]
+        columns <- bracketfree[["indices"]]
         if(is.integer(bracketfree[["indices"]])) {
-            colnames(x) <- bracketfree[["indices"]]
+            colnames(x) <- columns
             oldColumnNames <- paste("Column ", columns, sep = "")
-            on.exit(warning(paste(strwrap(gettext("NOTE: The data set provided to this function was a subset of a larger data set and the columns (i.e., the variables) were specified by numeric index. Because of this, the column names in the resulting output may not accurately correspond to those in the original data set. This can be fixed by using the 'columns' argument."), width = 0.95 * getOption("width")), collapse = "\n    "), call. = FALSE), add = TRUE)
+            on.exit(warning(paste(strwrap(gettext("NOTE: The data set provided to this function was a subset of a larger data set and the columns (i.e., the variables) were specified by numeric index. Because of this, the column names in the resulting output may not accurately correspond to those in the original data set. This can be fixed by using the 'columns' argument and/or named columns (if possible)."), width = 0.95 * getOption("width")), collapse = "\n    "), call. = FALSE), add = TRUE)
         } else {
             oldColumnNames <- colnames(x) <- columns
         }
@@ -724,13 +751,16 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
     columns <- unique(c(columns, byFactors))
     
     checkedColumns <- checkColumns(x = x, columns = columns, dataObjectName = dataObjectName, keepColumnNames = keepColumnNames, ignore = ignore)
+    byFactors <- intersect(checkedColumns[["validColumns"]], byFactors)
+    
     x <- x[, checkedColumns[["validColumns"]], drop = FALSE]
+    
     
     if(keepColumnNames) {
         colnames(x) <- checkedColumns[["validColumnNames"]]
     } else {
-        if(length(by) > 0L) {
-            byFactors <- paste("Column ", which(colnames(x) %in% by), sep = "")
+        if(length(byFactors) > 0L) {
+            byFactors <- paste("Column ", which(colnames(x) %in% byFactors), sep = "")
         }
         if(all(checkedColumns[["validColumns"]] %in% oldColumnNames)) {
             colnames(x) <- paste("Column ", match(checkedColumns[["validColumns"]], oldColumnNames), sep = "")
