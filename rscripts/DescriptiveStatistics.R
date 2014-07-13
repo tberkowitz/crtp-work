@@ -1,3 +1,17 @@
+## Goals for the end result ##
+# Input data set can be vector, matrix, list, data frame
+# Input data can be numeric, character, factor, logical, integer, Date, complex?
+# Input data can be named/have named dimensions
+# User can request specific statistics or all statistics or nothing (to get a default set of statistics)
+# User can request statistics for some or all variables
+# *** User can request statistics BY FACTOR LEVELS ***
+# *** User can specify 'key' variable to ignore for analyses ***
+# User can request decimal places for floating-point results (default = 2)
+# ??? User can request categorical or continuous output only ???
+# User can request to ignore all warnings
+## End goals ##
+
+### FUNCTION DEFINITIONS ###
 # Define the MFV() function
 MFV <- function(x, outputValue, na.rm = getOption("na.rm", default = FALSE), silent = FALSE){
     if(silent){
@@ -162,29 +176,7 @@ variableType <- function(x, NAIsError = FALSE){
         "continuous"
     }
 }
-# Examples for variableType()
-{
-#     variableType(TRUE)                    # "binary"
-#     variableType(rep(FALSE, 20))          # "binary"
-#     variableType(rbinom(100, 1, 0.5))     # "binary"
-#     variableType(letters)                 # "key"
-#     variableType(gl(5, 6))                # "categorical"
-#     variableType(rnorm(100, 0, 1))        # "continuous"
-#     variableType(rnorm(5, 0, 1))          # "continuous"
-#     variableType(1:5)                     # "key"
-#     variableType(sample(1:5, 1000, TRUE)) # "categorical"
-#     variableType(sample(1:5, 40, TRUE))   # "categorical"
-#     variableType(sample(1:5, 10, TRUE))   # "categorical"
-#     variableType(sample(1:20, 100, TRUE)) # "continuous"
-#     variableType(sample(1:8, 100, TRUE))  # "categorical"
-#     variableType(letters[sample(1:26, 100, TRUE)]) # "categorical"
-#     variableType(as.Date(-1000:100, origin = "2000-01-01")) # "date"
-#     variableType(Sys.Date())              # "date"
-#     variableType(FALSE)                   # "binary"
-#     variableType(NA)                      # Warning + "NA"
-#     variableType(NA, NAIsError = FALSE)   # Warning + "NA"
-#     variableType(NA, NAIsError = TRUE)    # ERROR
-}
+
 
 # Define the quantile.datesOK() function
 quantile.datesOK <- function(x, probs = seq(from = 0, to = 1, by = 0.25), type = 7L, dateFormat = "%Y-%m-%d", ...){
@@ -260,7 +252,6 @@ checkColumns <- function(x, columns = "all", dataObjectName = NULL, keepColumnNa
     
     # Store the column names (if they exist) to make subsequent
     # code more legible
-#     oldColumnNames <- dimnames(x)[[2L]]
     if(is.integer(type.convert(dimnames(x)[[2L]], as.is = TRUE))) {
         oldColumnNames <- NULL
     } else {
@@ -360,85 +351,9 @@ checkColumns <- function(x, columns = "all", dataObjectName = NULL, keepColumnNa
     }
     return(list("validColumns" = columns, "validColumnNames" = columnNames))
 }
-{
-# cn <- c(colnames(iris), colnames(mtcars))
-# checkColumns(x = iris, columns = cn[1:6])
-# checkColumns(x = iris, columns = cn[1:7])
-# checkColumns(x = iris, columns = cn)
-# checkColumns(x = iris, columns = c(cn,letters))
-# checkColumns(x = mtcars, columns = cn)
-# checkColumns(x = mtcars, columns = letters)
-# 
-# ci <- seq_len(ncol(iris)+ncol(mtcars))
-# checkColumns(x = iris, columns = ci[1:6])
-# checkColumns(x = iris, columns = ci[1:6], keepColumnNames = FALSE)
-# checkColumns(x = iris, columns = ci[1:7])
-# checkColumns(x = iris, columns = ci[1:7], keepColumnNames = FALSE)
-# checkColumns(x = iris, columns = ci)
-# checkColumns(x = mtcars, columns = ci)
-# checkColumns(x = mtcars, columns = ci, keepColumnNames = FALSE)
-# 
-# # # Define 'zmat' and 'znmat' first, then start testing
-# # testcn <- c("Col1", "Col5", "Column10")
-# # checkColumns(x = zmat, columns = testcn)
-# # checkColumns(x = znmat, columns = testcn)
-# # 
-# # testci <- c(1, 6, 70, 3, 19)
-# # checkColumns(x = zmat, columns = testci)
-# # checkColumns(x = zmat, columns = testci, keepColumnNames = FALSE)
-# # checkColumns(x = znmat, columns = testci)
-# # 
-# # checkColumns(x = data.frame(z), columns = "all")
-}
-
-
-# Input data set can be vector, matrix, list, data frame
-# Input data can be numeric, character, factor, logical, integer, Date, complex?
-# Input data can be named/have named dimensions
-# User can request specific statistics or all statistics or nothing (to get a default set of statistics)
-# User can request statistics for some or all variables
-# *** User can request statistics BY FACTOR LEVELS ***
-# *** User can specify 'key' variable to ignore for analyses ***
-# User can request decimal places for floating-point results (default = 2)
-# ??? User can request categorical or continuous output only ???
-# User can request to ignore all warnings
-
-
-nRows <- 500
-set.seed(1234)
-DFFH <- data.frame(key = seq_len(nRows),
-                   sex = factor(c("F", "M")[rbinom(n = nRows, size = 1, prob = 0.5) + 1L]),
-                   age = sample(x = 18:80, size = nRows, replace = TRUE),
-                   state = sample(x = state.name, size = nRows, replace = TRUE),
-                   doa = as.Date(-1*sample(x = 1:1000, size = nRows, replace = TRUE), origin = "2014-06-01"),
-                   htcm = sample(x = 150:200, size = nRows, replace = TRUE),
-                   wtkg = sample(x = 400:1300/10, size = nRows, replace = TRUE),
-                   doc = factor(c("Smith", "Brown", "Johnson", "Anderson", "Williams")[sample(x = 1:5, size = nRows, replace = TRUE)]),
-                   boo = as.logical(rbinom(n = nRows, size = 1, p = 0.5)),
-                   stringsAsFactors = FALSE)
-rm(nRows)
-
-# by(data = DFFH[, "age"], INDICES = DFFH[, "doc"], FUN = mean)
-# by(data = DFFH[, "wtkg"], INDICES = DFFH[, c("doc", "sex")], FUN = median)
-# by(data = DFFH[, "htcm"], INDICES = DFFH[, "state"], FUN = summary)
-# by(data = DFFH[, "age"], INDICES = DFFH[, c("doc", "sex", "state", "boo")], FUN = sd)
-# with(DFFH, by(DFFH, doc, summary))
-# by(data = DFFH, INDICES = DFFH[, "doc"], FUN = summary)
-# tapply(X = DFFH$htcm, INDEX = DFFH$sex, FUN = mean)
-# tapply(X = DFFH$htcm, INDEX = list(DFFH$sex, DFFH$doc), FUN = mean)
-# tapply(X = DFFH$htcm, INDEX = list(DFFH$sex, DFFH$doc, DFFH$state), FUN = mean)
-# aggregate(x = DFFH, by = list(Doctor = DFFH$doc), FUN = mean)
-# aggregate(x = DFFH[, sapply(DFFH, is.numeric)], by = list(Doctor = DFFH$doc), FUN = mean)
-# aggregate(x = DFFH[, sapply(DFFH, is.numeric)], by = list(Doctor = DFFH$doc, Gender = DFFH$sex), FUN = IQR)
 
 
 # # Used the following to debug the getResults.categorical() function
-# set.seed(0709)
-# factorsdf <- data.frame("f1" = factor(letters[sample(1:3, 20, TRUE)]),
-#                         "f2" = factor(sample(c("alpha", "bravo", "charlie", "delta", "echo"), 20, TRUE)),
-#                         "f3" = factor(sample(state.name, 20, TRUE)),
-#                         "f4" = factor(sample(c("x", "y", NA_character_), 20, TRUE)),
-#                         "f5" = factor(sample(state.name[1:7], 20, TRUE)))
 # x <- factorsdf
 # na.rm <- TRUE
 # silent <- FALSE
@@ -447,9 +362,9 @@ rm(nRows)
 # maxLevels <- 10L
 # na.exclude <- FALSE
 # statsAreRows <- TRUE
+# # End debugging values for getResults.categorical() function
 
 # Define the getResults.categorical() function
-# getResults.categorical <- function(x, na.rm = FALSE, emptyCellSymbol = "", maxLevels = 10L, na.exclude = na.rm){
 getResults.categorical <- function(x, na.rm = FALSE, emptyCellSymbol = "", maxLevels = 10L, na.exclude = na.rm, statsAreRows = TRUE){
     # Initialize an empty list object named "results"
     results <- list()
@@ -551,8 +466,7 @@ getResults.categorical <- function(x, na.rm = FALSE, emptyCellSymbol = "", maxLe
 }
 
 
-# Define the getResults.continuous() function
-# # Debugging values
+# # Debugging values for the getResults.continuous() function
 # x <- DFFH[, c("key", "age", "htcm", "wtkg")]
 # requestedStats <- checkStats("default")
 # na.rm <- TRUE
@@ -562,8 +476,9 @@ getResults.categorical <- function(x, na.rm = FALSE, emptyCellSymbol = "", maxLe
 # quantile.type <- 7L
 # MFV.outputValue <- "minimum"
 # statsAreRows <- TRUE
+# # End debugging values for getResults.continuous() function
 
-# getResults.continuous <- function(x, requestedStats, na.rm = getOption("na.rm", default = FALSE), silent = FALSE, digits = 2L, quantile.probs = 0:4/4, quantile.type = 7L, MFV.outputValue = "minimum"){
+# Define the getResults.continuous() function
 getResults.continuous <- function(x, requestedStats, na.rm = getOption("na.rm", default = FALSE), silent = FALSE, digits = 2L, quantile.probs = 0:4/4, quantile.type = 7L, MFV.outputValue = "minimum", statsAreRows = TRUE) {
     # Initialize an empty list object named "results"
     results <- list()
@@ -698,7 +613,6 @@ getResults.continuous <- function(x, requestedStats, na.rm = getOption("na.rm", 
     if(requestedStats["quantiles"]){
         results[["Quantiles"]] <- rep("", times = ncol(x))
         results.quantiles <- sapply(X = x, FUN = quantile.datesOK, probs = quantile.probs, na.rm = na.rm, type = quantile.type)
-#         results.quantiles <- sapply(X = x, FUN = quantile, probs = quantile.probs, na.rm = na.rm, type = quantile.type)
         results.quantiles.dn <- dimnames(results.quantiles)
         results.quantiles <- split(results.quantiles, seq_len(nrow(results.quantiles)))
         names(results.quantiles) <- results.quantiles.dn[[1L]]
@@ -732,7 +646,7 @@ getResults.continuous <- function(x, requestedStats, na.rm = getOption("na.rm", 
 }
 
 
-# descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2L, na.rm = TRUE, silent = FALSE, quantile.probs = 0:4/4, quantile.type = 7L, keepColumnNames = TRUE, categorical.emptyCellSymbol = "", categorical.maxLevels = 10L, categorical.na.exclude = na.rm, stats.output = "all", byFactors = NULL, ignore = NULL) {
+# Define the descriptiveStatsDF() function
 descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2L, na.rm = TRUE, silent = FALSE, quantile.probs = 0:4/4, quantile.type = 7L, keepColumnNames = TRUE, categorical.emptyCellSymbol = "", categorical.maxLevels = 10L, categorical.na.exclude = na.rm, output.showStats = "all", byFactors = NULL, ignore = NULL, output.statsAreRows = TRUE) {
     if(silent) {
         oldWarn <- getOption("warn")
@@ -741,7 +655,6 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
     }
     
     dataObjectName <- deparse(substitute(x))
-#     if(grepl(pattern = "\\[", x = dataObjectName) && NCOL(x) == 1L) {
     if(grepl(pattern = "\\[", x = dataObjectName)) {
         if(grepl(pattern = "-", x = dataObjectName)) {
             stop(paste(strwrap(gettextf("Please use the %s argument to specify columns you do not want to include in the results.", sQuote("ignore")), width = 0.95 * getOption("width")), collapse = "\n    "))
@@ -757,21 +670,12 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
                         "indices" = type.convert(y[nzchar(y)], as.is = TRUE)))
         }
         x <- data.frame(x, check.names = FALSE, stringsAsFactors = FALSE)
-#         if(NCOL(x) == 1L) {
-#             dataObjectName <- unlist(strsplit(x = dataObjectName, split = "\\["))[[1L]]
-#             columns <- type.convert(x = )
-#         }
         bracketfree <- unbracket(x = dataObjectName)
         dataObjectName <- bracketfree[["name"]]
-#         columns <- bracketfree[["indices"]]
-#         if(is.integer(columns)) {
-#             colnames(x) <- columns
         if(is.integer(bracketfree[["indices"]])) {
             colnames(x) <- bracketfree[["indices"]]
             oldColumnNames <- paste("Column ", columns, sep = "")
-#             warning(paste(strwrap(gettext("The data set provided to this function was a subset of a larger data set and the columns (i.e., the variables) were specified by numeric index. Because of this, the column names in the resulting output may not be accurate."), width = 0.95 * getOption("width")), collapse = "\n    "))
             on.exit(warning(paste(strwrap(gettext("NOTE: The data set provided to this function was a subset of a larger data set and the columns (i.e., the variables) were specified by numeric index. Because of this, the column names in the resulting output may not accurately correspond to those in the original data set. This can be fixed by using the 'columns' argument."), width = 0.95 * getOption("width")), collapse = "\n    "), call. = FALSE), add = TRUE)
-#             on.exit(warning(paste(strwrap(gettext("NOTE: The data set provided to this function was a subset of a larger data set and the columns (i.e., the variables) were specified by numeric index. Because of this, the column names in the resulting output may not accurately correspond to those in the original data set. This can be fixed by providing the entire data set and using the 'columns' argument instead of providing a subset of the data."), width = 0.95 * getOption("width")), collapse = "\n    "), call. = FALSE), add = TRUE)
         } else {
             oldColumnNames <- colnames(x) <- columns
         }
@@ -781,8 +685,6 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
     
     requestedStats <- checkStats(stats = as.character(stats), dataObjectName = dataObjectName)
     
-#     stats.output <- unique(match.arg(arg = stats.output, choices = c("all", "categorical", "continuous", "byFactors", "none"), several.ok = TRUE))
-#     output.showStats <- unique(match.arg(arg = tolower(output.showStats), choices = c("all", "categorical", "continuous", "byFactors", "none"), several.ok = TRUE))
     output.showStats <- unique(match.arg(arg = tolower(output.showStats), choices = c("all", "categorical", "continuous", "byfactors", "bylevels", "none"), several.ok = TRUE))
     
     if(is.data.frame(x)) {
@@ -824,10 +726,6 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
     checkedColumns <- checkColumns(x = x, columns = columns, dataObjectName = dataObjectName, keepColumnNames = keepColumnNames, ignore = ignore)
     x <- x[, checkedColumns[["validColumns"]], drop = FALSE]
     
-#     if(length(byFactors) > 0L) {
-#         byFactors <- byFactors[which(byFactors %in% checkedColumns[["validColumns"]])]
-#     }
-    
     if(keepColumnNames) {
         colnames(x) <- checkedColumns[["validColumnNames"]]
     } else {
@@ -857,7 +755,6 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
 #         if(all("categorical", "continuous", "binary", "date") %in% ignore) {
 #             stop("If you want me to ignore everything, then what should I report?")
 #         }
-# #         shouldKeep <- colnames(x)
 #         shouldKeep <- varTypes != ""
 #         if("categorical" %in% ignore) {
 # #             x <- x[, varTypes != "categorical", drop = FALSE]
@@ -881,7 +778,6 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
     
     x.categorical <- x[, (varTypes %in% c("categorical", "binary")), drop = FALSE]
     x.continuous  <- x[, (varTypes %in% c("continuous", "date")),  drop = FALSE]
-#     x.continuous  <- x[, (varTypes %in% c("continuous")), drop = FALSE]
     
     # Initialize the 'results' list
     results <- list()
@@ -889,10 +785,7 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
     # Get categorical results:
     # - Don't need 'columns' argument (already subset from 'x')
     # - Don't need 'stats' argument (always the same for categorical)
-#     if(all(dim(x.categorical) > 0L) && any(stats.output %in% c("all", "categorical"))) {
-#     if(all(dim(x.categorical) > 0L) && any(output.showStats %in% c("all", "categorical"))) {
     if(all(dim(x.categorical) > 0L) && any(output.showStats %in% c("all", "categorical")) && !("categorical" %in% ignore)) {
-#         results[["Categorical"]] <- getResults.categorical(x = x.categorical, na.rm = na.rm, emptyCellSymbol = categorical.emptyCellSymbol, maxLevels = categorical.maxLevels, na.exclude = categorical.na.exclude)
         results[["Categorical"]] <- getResults.categorical(x = x.categorical, na.rm = na.rm, emptyCellSymbol = categorical.emptyCellSymbol, maxLevels = categorical.maxLevels, na.exclude = categorical.na.exclude, statsAreRows = output.statsAreRows)
     }
     
@@ -900,22 +793,16 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
     # - Don't need 'columns' argument (already subset from 'x')
     # - Do need 'stats' argument
     #    * Also need 'quantile.probs' and 'quantile.type' arguments
-#     if(all(dim(x.continuous) > 0L) && any(stats.output %in% c("all", "continuous"))) {
-#     if(all(dim(x.continuous) > 0L) && any(output.showStats %in% c("all", "continuous"))) {
     if(all(dim(x.continuous) > 0L) && any(output.showStats %in% c("all", "continuous")) && !("continuous" %in% ignore)) {
-#         results[["Continuous"]] <- getResults.continuous(x = x.continuous, requestedStats = requestedStats, na.rm = na.rm, silent = silent, digits = digits, quantile.probs = quantile.probs, quantile.type = quantile.type)
         results[["Continuous"]] <- getResults.continuous(x = x.continuous, requestedStats = requestedStats, na.rm = na.rm, silent = silent, digits = digits, quantile.probs = quantile.probs, quantile.type = quantile.type, statsAreRows = output.statsAreRows)
     }
     
     # Get subset results
-#     if(length(byFactors) > 0L && any(stats.output %in% c("all", "byFactors"))) {
-#     if(length(byFactors) > 0L && any(output.showStats %in% c("all", "byFactors"))) {
     if(length(byFactors) > 0L && any(output.showStats %in% c("all", "byfactors", "bylevels"))) {
         results[["By Levels"]] <- by(data = x, INDICES = x[, byFactors, drop = FALSE], FUN = summary)
     }
     
     # Return the list 'results'
-#     if("none" %in% stats.output) {
     if("none" %in% output.showStats) {
         return(invisible())
     } else {
@@ -926,178 +813,26 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
 
 
 
-## Examples of output for descriptiveStatsDF() ##
-# Generate fake data
-set.seed(1234)
-testsample <- sample(1:20, size = 1000, replace = TRUE)
-x <- tabulate(testsample)
-testsample2 <- c(testsample, 19, 19, 7)
-y <- tabulate(testsample2)
-xx <- x; xx[3L] <- NA_integer_
-
-xdf <- data.frame(x)
-xyxxdf <- cbind(xdf, y, xx)
-
-set.seed(0528)
-z <- zn <- rnorm(n = 100)
-zn[sample(x = 1:length(zn), size = 5, replace = FALSE)] <- NA_real_
-
-zmat <- matrix(z, nrow = 10, ncol = 10)
-colnames(zmat) <- paste("Col", 1:10, sep = "")
-znmat <- matrix(zn, nrow = 5, ncol = 20)
-zlist <- as.list(as.data.frame(zmat))
-
-set.seed(0607)
-factordf <- cbind(xyxxdf, factor1=sample(x = letters[1:4], size = 20, replace = TRUE))
-
-# Use the 'iris' data set for testing data frames as well
-
-nRows <- 500
-set.seed(1234)
-DFFH <- data.frame(key = seq_len(nRows),
-                   sex = factor(c("F", "M")[rbinom(n = nRows, size = 1, prob = 0.5) + 1L]),
-                   age = sample(x = 18:80, size = nRows, replace = TRUE),
-                   state = sample(x = state.name, size = nRows, replace = TRUE),
-                   doa = as.Date(-1*sample(x = 1:1000, size = nRows, replace = TRUE), origin = "2014-06-01"),
-                   htcm = sample(x = 150:200, size = nRows, replace = TRUE),
-                   wtkg = sample(x = 400:1300/10, size = nRows, replace = TRUE),
-                   doc = factor(c("Smith", "Brown", "Johnson", "Anderson", "Williams")[sample(x = 1:5, size = nRows, replace = TRUE)]),
-                   boo = as.logical(rbinom(n = nRows, size = 1, p = 0.5)),
-                   stringsAsFactors = FALSE)
-rm(nRows)
-
-nRows <- 500
-set.seed(0709)
-factorsdf <- data.frame("f1" = factor(letters[sample(1:3, nRows, TRUE)]),
-                        "f2" = factor(sample(c("alpha", "bravo", "charlie", "delta", "echo"), nRows, TRUE)),
-                        "f3" = factor(sample(state.name, nRows, TRUE)),
-                        "f4" = factor(sample(c("x", "y", NA_character_), nRows, TRUE)),
-                        "f5" = factor(sample(state.name[1:7], nRows, TRUE)))
-rm(nRows)
-
-# Testing functionality (vectors)
-descriptiveStatsDF(x = z, stats = c("mean", "sd"), na.rm = FALSE)
-descriptiveStatsDF(x = zn, stats = c("mean", "sd"), na.rm = TRUE)
-descriptiveStatsDF(x = zn, stats = c("VARI", "IQR", "fivenum"), na.rm = TRUE)
-descriptiveStatsDF(x = zn, stats = "mode", na.rm = TRUE)
-descriptiveStatsDF(x = zn, stats = "mode", na.rm = TRUE, silent = TRUE)
-descriptiveStatsDF(x = z, stats = "mode", na.rm = TRUE)
-descriptiveStatsDF(x = z, stats = c("min", "max", "range"), na.rm = TRUE)
-descriptiveStatsDF(x = z, stats = c("min", "max", "range"), na.rm = TRUE, digits = 4)
-descriptiveStatsDF(x = z, stats = c("min", "max", "range"), na.rm = TRUE, digits = 10)
-descriptiveStatsDF(x = z, stats = "mode", na.rm = TRUE, digits = 10)
-descriptiveStatsDF(x = x, stats = c("n", "mean", "q3"), na.rm = TRUE)
-descriptiveStatsDF(x = y, stats = c("range", "default"), na.rm = TRUE)
-
-# Testing functionality (matrices)
-descriptiveStatsDF(x = zmat, columns = 1, stats = c("mean", "sd", "range", "mode"), na.rm = FALSE)
-descriptiveStatsDF(x = zmat, columns = c(1, 2, 5), stats = c("mean", "sd", "IQR"), na.rm = FALSE)
-descriptiveStatsDF(x = zmat, columns = c("Col1", "Col2", "Col5"), stats = c("mean", "sd", "IQR"), na.rm = FALSE)
-descriptiveStatsDF(x = zmat, columns = c("Col1", "Col2", "Col5"), stats = c("mean", "sd", "IQR"), na.rm = FALSE, digits = 3)
-descriptiveStatsDF(x = znmat, columns = c(2, 4, 6), stats = c("VAR", "MEDIAN", "FIVENUM"), na.rm = FALSE)
-descriptiveStatsDF(x = znmat, columns = c(2, 4, 6), stats = c("VAR", "MEDIAN", "FIVENUM"), na.rm = TRUE)
-descriptiveStatsDF(x = znmat, columns = c(2, 4, 6), stats = c("VAR", "MEDIAN", "FIVENUM"), na.rm = TRUE, digits = 4)
-descriptiveStatsDF(x = zmat, stats = "all")
-descriptiveStatsDF(x = zmat, stats = "all", silent = TRUE)
-descriptiveStatsDF(x = zmat, stats = "all", digits = 5, silent = TRUE)
-descriptiveStatsDF(x = znmat, columns = c(1, 5, 19))
-descriptiveStatsDF(x = znmat, columns = c(1, 5, 19), na.rm = TRUE)
-
-# Testing functionality (data frame)
-descriptiveStatsDF(x = iris, columns = c(1, 3), stats = c("mean", "sd"), na.rm = TRUE, digits = 4)
-descriptiveStatsDF(x = iris, columns = c("Sepal.Length", "Petal.Length", "Missing"), stats = c("mean", "sd", "pvalue"), na.rm = TRUE)
-descriptiveStatsDF(x = iris, columns = c("Sepal.Length", "Petal.Length", "Missing"), stats = c("mean", "sd", "pvalue"), na.rm = TRUE, silent = TRUE)
-descriptiveStatsDF(x = xyxxdf, na.rm = TRUE)
-descriptiveStatsDF(x = xyxxdf, na.rm = TRUE, digits = 3)
-descriptiveStatsDF(x = iris, columns = c("Sepal.Length", "Petal.Length", "Missing"), stats = c("mean", "sd", "pvalue"), na.rm = TRUE)
-descriptiveStatsDF(x = iris, columns = c("Sepal.Length", "Petal.Length", "Missing"), stats = c("mean", "sd", "pvalue"), na.rm = TRUE, silent = TRUE)
-descriptiveStatsDF(x = iris, columns = c("Sepal.Length", "Petal.Length", "Missing"), stats = c("mean", "sd", "pvalue"), na.rm = TRUE, silent = TRUE, digits = 3)
-descriptiveStatsDF(x = xdf, silent = TRUE)
-
-descriptiveStatsDF(x = iris)
-descriptiveStatsDF(x = iris, stats = "all")
-descriptiveStatsDF(x = DFFH)
-descriptiveStatsDF(x = DFFH, stats = "all")
-descriptiveStatsDF(x = DFFH, stats = "default", columns = 1:4)
-descriptiveStatsDF(x = DFFH, stats = "default", columns = 1:4, keepColumnNames = TRUE)
-descriptiveStatsDF(x = DFFH, stats = "default", columns = 1:4, keepColumnNames = FALSE)
-descriptiveStatsDF(x = DFFH, stats = "default", columns = c("key", "sex", "age", "state"), keepColumnNames = FALSE)
-
-descriptiveStatsDF(x = DFFH, stats = c("quantiles", "summary"))
-descriptiveStatsDF(x = DFFH, stats = c("quantiles", "summary"), quantile.probs = c(0.05, 0.10, 0.50, 0.90, 0.95), silent = TRUE)
-
-# Testing functionality (lists, factors)
-descriptiveStatsDF(x = zmat, columns = c(6, 2), stats = c("mean", "var", "n"))
-descriptiveStatsDF(x = zlist, columns = c(6, 2), stats = c("mean", "var", "n"))
-descriptiveStatsDF(x = factordf, silent = TRUE)
-## End examples for descriptiveStatsDF() ##
-
-
-# Generate some more fake data/values to use to test functions
-{
-set.seed(123)
-exVector <- rnorm(n = 100, mean = 0, sd = 1)
-exMatrix <- matrix(exVector, nrow = 10)
-exDF <- data.frame(exMatrix)
-exList <- as.list(exDF)
-exArray <- array(data = exVector, dim = c(5, 5, 4))
-
-NAIndices <- sort(sample(x = 1:100, size = 10, replace = FALSE))
-exVectorNA <- exVector; exVectorNA[NAIndices] <- NA_integer_
-exMatrixNA <- matrix(exVectorNA, nrow = 10)
-exDFNA <- data.frame(exMatrixNA)
-exListNA <- as.list(exDFNA)
-exArrayNA <- array(data = exVectorNA, dim = c(5, 5, 4))
-
-
-set.seed(321)
-exNumeric <- rnorm(n = 100, mean = 0, sd = 1)
-exInteger <- sample(x = 1:26, size = 100, replace = TRUE)
-exCharacter <- LETTERS[exInteger]
-exFactor <- as.factor(exCharacter)
-exDate <- as.Date(x = exInteger*100, origin = "2000-01-01", format = "%Y-%m-%d")
-exLogical <- exNumeric > 0L
-# exFormula <- formula(exVector ~ exFactor)
-# exExpression <- expression(x + 1)
-# exName <- as.name(exCharacter)
-# exSymbol <- as.symbol(exCharacter)
-}
-
-## Some more examples of output for descriptiveStatsDF() ##
-descriptiveStatsDF(x = exVector, stats = c("n", "mean", "sd"), na.rm = TRUE)
-descriptiveStatsDF(x = exCharacter, stats = c("n", "mean", "sd"), na.rm = TRUE)
-descriptiveStatsDF(x = exLogical, stats = c("n", "mean", "sd"), na.rm = TRUE)
-descriptiveStatsDF(x = exInteger, stats = c("n", "mean", "sd"), na.rm = TRUE)
-descriptiveStatsDF(x = exFactor, stats = c("n", "mean", "sd"), na.rm = TRUE)
-descriptiveStatsDF(x = exVector, stats = c("all"), na.rm = TRUE)
-descriptiveStatsDF(x = exVector, stats = c("default"), na.rm = TRUE)
-descriptiveStatsDF(x = exVector, na.rm = TRUE)
-descriptiveStatsDF(x = exVector, stats = c("var", "min", "quartiles"), na.rm = TRUE)
-descriptiveStatsDF(x = exVector, stats = c("var", "min", "quartiles"), na.rm = TRUE, digits = 2L)
-descriptiveStatsDF(x = exDate, na.rm = TRUE)
-descriptiveStatsDF(x = DFFH$htcm, stats = "mean", na.rm = TRUE)
-## End some more examples for descriptiveStatsDF() ##
 
 
 
 
 
-
-
+### SANDBOX ###
 # # Testing some stuff
-funs <- c("mean", "sd", "median", "quantile.datesOK")
-set.seed(0711)
-dataset <- as.data.frame(matrix(rnorm(4000), nrow = 1000))
-dataset <- DFFH[, c("key", "age", "doa", "htcm", "wtkg")]
-
-sapply(X = dataset, FUN = get(funs))
-sapply(X = funs, FUN = get)
-
-results <- list()
-for(i in seq_along(funs)) {
-    results[[i]] <- sapply(X = dataset, FUN = sapply(X = funs, FUN = get)[[i]])
-}
-names(results) <- funs
+# funs <- c("mean", "sd", "median", "quantile.datesOK")
+# set.seed(0711)
+# dataset <- as.data.frame(matrix(rnorm(4000), nrow = 1000))
+# dataset <- DFFH[, c("key", "age", "doa", "htcm", "wtkg")]
+# 
+# sapply(X = dataset, FUN = get(funs))
+# sapply(X = funs, FUN = get)
+# 
+# results <- list()
+# for(i in seq_along(funs)) {
+#     results[[i]] <- sapply(X = dataset, FUN = sapply(X = funs, FUN = get)[[i]])
+# }
+# names(results) <- funs
 # 
 # temp <- DFFH[, c("key", "age", "doa", "htcm", "wtkg")]
 # funs <- c("mean", "sd", "median")
@@ -1115,7 +850,6 @@ names(results) <- funs
 #           sep = ",",
 #           row.names = FALSE,
 #           col.names = TRUE)
-
 
 # # unquote <- function(x) {
 # #     temp <- unlist(strsplit(x = x, split = "\\'"))
