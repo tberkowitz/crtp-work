@@ -859,70 +859,11 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
 
 
 
-
-
-
-
-
 ### SANDBOX ###
-# # Testing some stuff
-# funs <- c("mean", "sd", "median", "quantile.datesOK")
-# set.seed(0711)
-# dataset <- as.data.frame(matrix(rnorm(4000), nrow = 1000))
-# dataset <- DFFH[, c("key", "age", "doa", "htcm", "wtkg")]
-# 
-# sapply(X = dataset, FUN = get(funs))
-# sapply(X = funs, FUN = get)
-# 
-# results <- list()
-# for(i in seq_along(funs)) {
-#     results[[i]] <- sapply(X = dataset, FUN = sapply(X = funs, FUN = get)[[i]])
-# }
-# names(results) <- funs
-# 
-# temp <- DFFH[, c("key", "age", "doa", "htcm", "wtkg")]
-# funs <- c("mean", "sd", "median")
-# results <- list()
-# for(i in seq_along(funs)) {
-# #     results[[i]] <- as.data.frame(sapply(X = temp, FUN = sapply(X = funs, FUN = get)[[i]]))
-#     results[[i]] <- data.frame(lapply(X = temp, FUN = sapply(X = funs, FUN = get)[[i]]))
-# #     results[[i]] <- lapply(X = temp, FUN = sapply(X = funs, FUN = get)[[i]])
-# }
-# results
-
-# temp <- descriptiveStatsDF(x = DFFH, by = c("sex", "doc"))
-# write.table(x = DFFH,
-#           file = "C:/Users/Ted/Desktop/Summer2014/CRTP/RWork/Module02-Merge/DFFH.csv",
-#           sep = ",",
-#           row.names = FALSE,
-#           col.names = TRUE)
-
-# # unquote <- function(x) {
-# #     temp <- unlist(strsplit(x = x, split = "\\'"))
-# #     temp <- unlist(strsplit(x = temp, split = '\\"'))
-# #     temp[nzchar(temp)]
-# # }
-# # 
-# # unindex <- function(x) {
-# #     temp <- unlist(strsplit(x = x, split = "\\[|\\]"))
-# #     object <- temp[1L]
-# #     temp <- temp[-1L]
-# #     temp <- unlist(strsplit(x = temp, split = ",| |c|\\(|\\)"))
-# #     temp <- unquote(temp)
-# #     return(list("name" = object, "indices" = temp))
-# # }
-# unbracket <- function(x) {
-#     y <- unlist(strsplit(x = x, split = "\\[|\\]|\\$"))
-#     object <- y[1L]
-#     y <- y[-1L]
-#     y <- unlist(strsplit(x = y, split = ",| |c|\\(|\\)"))
-#     y <- unlist(strsplit(x = y, split = "\\'"))
-#     y <- unlist(strsplit(x = y, split = '\\"'))
-# #     return(list("name" = object, "indices" = y[nzchar(y)]))
-#     return(list("name" = object,
-#                 "indices" = type.convert(y[nzchar(y)], as.is = TRUE)))
-# }
-
+# Experimenting with output options, including:
+# -- pander
+# -- xtable
+# ?? Hmisc
 
 
 
