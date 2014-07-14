@@ -95,7 +95,6 @@ checkStats <- function(stats = "default", dataObjectName = NULL){
         warning(paste(strwrap(gettextf("At least one specified statistic was invalid. Only recognized statistics were used for the results. I did not recognize: %s.", paste(invalidStats, collapse = ", "))), collapse = "\n    "))
     }
     
-    
     # Check which statistics options selected
     requestedStatsNames <- c("n", "mean", "median", "mode", "sd", "variance", "minimum", "maximum", "range", "iqr", "fivenum", "quartile1", "quartile3", "quartiles", "quantiles", "summary")
     requestedStats <- rep(FALSE, times = length(requestedStatsNames))
@@ -649,28 +648,28 @@ getResults.continuous <- function(x, requestedStats, na.rm = getOption("na.rm", 
 }
 
 
-
-x <- DFFH
-dataObjectName <- "DFFH"
-stats <- "default"
-requestedStats <- checkStats(stats)
-columns <- "all"
-digits <- 2L
-na.rm <- TRUE
-silent <- FALSE
-quantile.probs <- 0:4/4
-quantile.type <- 7L
-keepColumnNames <- TRUE
-categorical.emptyCellSymbol <- ""
-categorical.maxLevels <- 10L
-categorical.na.exclude <- na.rm
-output.showStats <- "all"
-# byFactors <- NULL
-byFactors <- c("sex", "doc")
-# ignore <- NULL
-ignore <- "key"
-output.statsAreRows <- TRUE
-
+# # Values used for debugging the descriptiveStatsDF() function
+# x <- DFFH
+# dataObjectName <- "DFFH"
+# stats <- "default"
+# requestedStats <- checkStats(stats)
+# columns <- "all"
+# digits <- 2L
+# na.rm <- TRUE
+# silent <- FALSE
+# quantile.probs <- 0:4/4
+# quantile.type <- 7L
+# keepColumnNames <- TRUE
+# categorical.emptyCellSymbol <- ""
+# categorical.maxLevels <- 10L
+# categorical.na.exclude <- na.rm
+# output.showStats <- "all"
+# # byFactors <- NULL
+# byFactors <- c("sex", "doc")
+# # ignore <- NULL
+# ignore <- "key"
+# output.statsAreRows <- TRUE
+# # End debugging values for descriptiveStatsDF()
 
 # Define the descriptiveStatsDF() function
 descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2L, na.rm = TRUE, silent = FALSE, quantile.probs = 0:4/4, quantile.type = 7L, keepColumnNames = TRUE, categorical.emptyCellSymbol = "", categorical.maxLevels = 10L, categorical.na.exclude = na.rm, output.showStats = "all", byFactors = NULL, ignore = NULL, output.statsAreRows = TRUE) {
@@ -896,7 +895,7 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
 # #     return(list("name" = object, "indices" = temp))
 # # }
 # unbracket <- function(x) {
-#     y <- unlist(strsplit(x = x, split = "\\[|\\]"))
+#     y <- unlist(strsplit(x = x, split = "\\[|\\]|\\$"))
 #     object <- y[1L]
 #     y <- y[-1L]
 #     y <- unlist(strsplit(x = y, split = ",| |c|\\(|\\)"))
