@@ -648,6 +648,224 @@ getResults.continuous <- function(x, requestedStats, na.rm = getOption("na.rm", 
 }
 
 
+# Define the getResults.byFactors() function
+# getResults.byFactors <- function(x.byFactors, x.continuous, ...) {
+getResults.byFactors <- function(x.byFactors, x.continuous, requestedStats, na.rm = TRUE, silent = FALSE, digits = 2L, quantile.probs = 0:4/4, quantile.type = 7L, MFV.outputValue = "minimum", statsAreRows = TRUE) {
+    if(!is.data.frame(x.byFactors) || !is.data.frame(x.continuous)) {
+        x.byFactors <- as.data.frame(x.byFactors, optional = TRUE, stringsAsFactors = TRUE)
+        x.continuous <- as.data.frame(x.continuous, optional = TRUE)
+    }
+#     # NB: Make sure to specify the first argument as:
+#     #     x.byFactors <- x[, byFactors, drop = FALSE]
+#     # OR
+#     #     x.byFactors <- x.categorical[, byFactors, drop = FALSE]
+#     allCombinations <- levels(interaction(x.byFactors, sep = ","))
+#     
+#     factorLevels <- lapply(x.byFactors, levels)
+#     byFactorNames <- colnames(x.byFactors)
+#     
+#     # Initialize an empty list object named "results"
+#     results <- list()
+#     
+#     # If "n" is requested
+#     if(requestedStats["n"]){
+# #         results[["N"]] <- sapply(X = x, FUN = function(x){length(x) - sum(is.na(x))})
+# #         results[["Missing"]] <- sapply(X = x, FUN = function(x){sum(is.na(x))})
+# #         results[["Unique"]] <- sapply(X = x, FUN = function(x){length(unique(x[!is.na(x)]))})
+#         results[["N"]] <- aggregate(x = x.continuous, by = x.byFactors, FUN = function(x){length(x) - sum(is.na(x))})
+#         results[["Missing"]] <- aggregate(x = x.continuous, by = x.byFactors, FUN = function(x){sum(is.na(x))})
+#         results[["Unique"]] <- aggregate(x = x.continuous, by = x.byFactors, FUN = function(x){length(unique(x[!is.na(x)]))})
+#     }
+#     
+#     # If "mean" is requested
+#     if(requestedStats["mean"]){
+# #         results[["Mean"]] <- sapply(X = x, FUN = mean, na.rm = na.rm)
+#         results[["Mean"]] <- aggregate(x = x.continuous, by = x.byFactors, FUN = mean, na.rm = na.rm)
+#     }
+#     
+#     # If "sd" is requested
+#     if(requestedStats["sd"]){
+# #         results[["Std. Dev."]] <- sapply(X = x, FUN = function(x){sqrt(var(x, na.rm = na.rm))})
+#         results[["Std. Dev."]] <- aggregate(x = x.continuous, by = x.byFactors, FUN = sd, na.rm = na.rm)
+#     }
+#     
+#     # If "var" is requested
+#     if(requestedStats["variance"]){
+# #         results[["Variance"]] <- sapply(X = x, FUN = var, na.rm = na.rm)
+#         results[["Variance"]] <- aggregate(x = x.continuous, by = x.byFactors, FUN = var, na.rm = na.rm)
+#     }
+#     
+#     # If "mode" (i.e., the most frequent value) is requested
+#     if(requestedStats["mode"]){
+# #         results[["Mode"]] <- sapply(X = x, FUN = MFV, outputValue = MFV.outputValue, na.rm = na.rm, silent = silent)
+#         results[["Mode"]] <- aggregate(x = x.continuous, by = x.byFactors, FUN = MFV, outputValue = MFV.outputValue, na.rm = na.rm, silent = silent)
+#     }
+#     
+#     # If "min" is requested
+#     if(requestedStats["minimum"]){
+# #         results[["Minimum"]] <- sapply(X = x, FUN = min, na.rm = na.rm)
+#         results[["Minimum"]] <- aggregate(x = x.continuous, by = x.byFactors, FUN = min, na.rm = na.rm)
+#     }
+#     
+#     # If "quartile1" is requested
+#     if(requestedStats["quartile1"]){
+# #DEL #         results[["First Quartile"]] <- sapply(X = x, FUN = function(x){unname(quantile.datesOK(x = x, probs = 1/4, na.rm = na.rm, type = quantile.type))})
+# #KEEP#         results[["First Quartile"]] <- aggregate(x = x.continuous, by = x.byFactors, FUN = function(x){unname(quantile.datesOK(x = x, probs = 1/4, na.rm = na.rm, type = quantile.type))})
+#         results[["First Quartile"]] <- aggregate(x = x.continuous, by = x.byFactors, FUN = function(x){unname(quantile(x = x, probs = 1/4, na.rm = na.rm, type = quantile.type))})
+#     }
+#     
+#     # If "median" is requested
+#     if(requestedStats["median"]){
+# #         results[["Median"]] <- sapply(X = x, FUN = median, na.rm = na.rm)
+#         results[["Median"]] <- aggregate(x = x.continuous, by = x.byFactors, FUN = median, na.rm = na.rm)
+#     }
+#     
+#     # If "quartile3" is requested
+#     if(requestedStats["quartile3"]){
+# #DEL #         results[["Third Quartile"]] <- sapply(X = x, FUN = function(x){unname(quantile.datesOK(x = x, probs = 3/4, na.rm = na.rm, type = quantile.type))})
+# #KEEP#         results[["Third Quartile"]] <- aggregate(x = x.continuous, by = x.byFactors, FUN = function(x){unname(quantile.datesOK(x = x, probs = 3/4, na.rm = na.rm, type = quantile.type))})
+#         results[["Third Quartile"]] <- aggregate(x = x.continuous, by = x.byFactors, FUN = function(x){unname(quantile(x = x, probs = 3/4, na.rm = na.rm, type = quantile.type))})
+#     }
+#     
+#     # If "quartiles" is requested and "fivenum" is not
+#     if(requestedStats["quartiles"] && !requestedStats["fivenum"]){
+# #DEL #         results[["First Quartile"]] <- sapply(X = x, FUN = function(x){unname(quantile.datesOK(x = x, probs = 1/4, na.rm = na.rm, type = quantile.type))})
+# #DEL #         results[["Median"]] <- sapply(X = x, FUN = median, na.rm = na.rm)
+# #DEL #         results[["Third Quartile"]] <- sapply(X = x, FUN = function(x){unname(quantile.datesOK(x = x, probs = 3/4, na.rm = na.rm, type = quantile.type))})
+# #KEEP#         results[["First Quartile"]] <- aggregate(x = x.continuous, by = x.byFactors, FUN = function(x){unname(quantile.datesOK(x = x, probs = 1/4, na.rm = na.rm, type = quantile.type))})
+#         results[["First Quartile"]] <- aggregate(x = x.continuous, by = x.byFactors, FUN = function(x){unname(quantile(x = x, probs = 1/4, na.rm = na.rm, type = quantile.type))})
+#         results[["Median"]] <- aggregate(x = x.continuous, by = x.byFactors, FUN = median, na.rm = na.rm)
+# #KEEP#         results[["Third Quartile"]] <- aggregate(x = x.continuous, by = x.byFactors, FUN = function(x){unname(quantile.datesOK(x = x, probs = 3/4, na.rm = na.rm, type = quantile.type))})
+#         results[["Third Quartile"]] <- aggregate(x = x.continuous, by = x.byFactors, FUN = function(x){unname(quantile(x = x, probs = 3/4, na.rm = na.rm, type = quantile.type))})
+#     }
+#     
+#     # If "max" is requested
+#     if(requestedStats["maximum"]){
+# #         results[["Maximum"]] <- sapply(X = x, FUN = max, na.rm = na.rm)
+#         results[["Maximum"]] <- aggregate(x = x.continuous, by = x.byFactors, FUN = max, na.rm = na.rm)
+#     }
+#     
+#     # If "range" is requested
+#     if(requestedStats["range"]){
+# #         results[["Range"]] <- sapply(X = x, FUN = function(x){diff(range(x, na.rm = na.rm))})
+#         results[["Range"]] <- aggregate(x = x.continuous, by = x.byFactors, FUN = function(x){diff(range(x, na.rm = na.rm))})
+#     }
+#     
+#     # If "iqr" is requested
+#     if(requestedStats["iqr"]){
+# #         results[["IQR"]] <- sapply(X = x, FUN = IQR, na.rm = na.rm, type = quantile.type)
+#         results[["IQR"]] <- aggregate(x = x.continuous, by = x.byFactors, FUN = IQR, na.rm = na.rm, type = quantile.type)
+#     }
+#     
+#     # If "fivenum" is requested
+#     if(requestedStats["fivenum"]) {
+# #DEL #         results.fivenum <- sapply(X = x, FUN = fivenum.datesOK, na.rm = na.rm)
+# #KEEP#         results.fivenum <- aggregate(x = x.continuous, by = x.byFactors, FUN = fivenum, na.rm = na.rm)
+#         results.fivenum <- aggregate(x = x.continuous, by = x.byFactors, FUN = fivenum.datesOK, na.rm = na.rm)
+#         
+#         while(length(results.fivenum) > NCOL(x.continuous)) {
+#             results.fivenum[[1L]] <- NULL
+#         }
+#         
+#         reslist <- list()
+#         for(i in seq_along(results.fivenum)) {
+#             reslist[[i]] <- rbind(rboundDF, results.fivenum[[i]])
+#         }
+#         
+#         # If neither "quartiles" nor "summary" are requested
+#         if(!(requestedStats["quartiles"] || requestedStats["summary"])) {
+#             results[["Minimum"]] <- results.fivenum[1L, ]
+#             results[["Lower Hinge"]] <- results.fivenum[2L, ]
+#             results[["Median"]] <- results.fivenum[3L, ]
+#             results[["Upper Hinge"]] <- results.fivenum[4L, ]
+#             results[["Maximum"]] <- results.fivenum[5L, ]
+#         } else
+#         # If "quartiles" *is* requested
+#             if(requestedStats["quartiles"]) {
+#             results[["Minimum"]] <- results.fivenum[1L, ]
+#             results[["First Quartile"]] <- sapply(X = x, FUN = function(x){unname(quantile.datesOK(x, probs = 1/4, na.rm = na.rm, type = quantile.type))})
+#             results[["Lower Hinge"]] <- results.fivenum[2L, ]
+#             results[["Median"]] <- results.fivenum[3L, ]
+#             results[["Third Quartile"]] <- sapply(X = x, FUN = function(x){unname(quantile.datesOK(x, probs = 3/4, na.rm = na.rm, type = quantile.type))})
+#             results[["Upper Hinge"]] <- results.fivenum[4L, ]
+#             results[["Maximum"]] <- results.fivenum[5L, ]
+#         }
+#     }
+#     
+#     # If "summary" is requested
+#     if(requestedStats["summary"]){
+#         variableHasMissing <- sapply(X = x, FUN = anyNA)
+#         if(any(variableHasMissing) && !all(variableHasMissing)) {
+#             missingNo  <- rbind(sapply(X = x[, !variableHasMissing, drop = FALSE], FUN = summary), "NA's" = 0L)
+#             missingYes <- sapply(X = x[,  variableHasMissing, drop = FALSE], FUN = summary)
+#             results.summary <- cbind(missingNo, missingYes)[, colnames(x), drop = FALSE]
+#         } else {
+#             results.summary <- sapply(X = x, FUN = summary)
+#         }
+#         if(requestedStats["fivenum"]) {
+#             results[["Minimum"]] <- results.summary[1L, ]
+#             results[["First Quartile"]] <- results.summary[2L, ]
+#             results[["Lower Hinge"]] <- results.fivenum[2L, ]
+#             results[["Median"]] <- results.summary[3L, ]
+#             results[["Mean"]] <- results.summary[4L, ]
+#             results[["Third Quartile"]] <- results.summary[5L, ]
+#             results[["Upper Hinge"]] <- results.fivenum[4L, ]
+#             results[["Maximum"]] <- results.summary[6L, ]
+#         } else {
+#             results[["Minimum"]] <- results.summary[1L, ]
+#             results[["First Quartile"]] <- results.summary[2L, ]
+#             results[["Median"]] <- results.summary[3L, ]
+#             results[["Mean"]] <- results.summary[4L, ]
+#             results[["Third Quartile"]] <- results.summary[5L, ]
+#             results[["Maximum"]] <- results.summary[6L, ]
+#         }
+#         if(any(variableHasMissing)) {
+#             results[["NA's"]] <- as.integer(results.summary[7L, ])
+#         }
+#     }
+#     
+#     # If "quantiles" is requested
+#     if(requestedStats["quantiles"]){
+#         results[["Quantiles"]] <- rep("", times = ncol(x))
+#         results.quantiles <- sapply(X = x, FUN = quantile.datesOK, probs = quantile.probs, na.rm = na.rm, type = quantile.type)
+#         results.quantiles.dn <- dimnames(results.quantiles)
+#         results.quantiles <- split(results.quantiles, seq_len(nrow(results.quantiles)))
+#         names(results.quantiles) <- results.quantiles.dn[[1L]]
+#         results <- c(results, lapply(results.quantiles, `names<-`, results.quantiles.dn[[2L]]))
+#     }
+#     
+#     # Pretty up the results if requested
+#     if(!is.null(digits)){
+#         digits <- as.integer(max(digits[1L], 0L))
+#         results <- lapply(X = results, FUN = function(x){
+#             if(is.double(x)) {
+#                 formatC(x, format = "f", digits = digits)
+#             } else if(!is.integer(x)) {
+#                 as.character(x)
+#             } else {
+#                 x
+#             }
+#         })
+#     }
+#     
+#     if(statsAreRows) {
+#         # Convert list to data frame
+#         resultsDF <- data.frame(t(data.frame(results, check.names = FALSE, stringsAsFactors = FALSE)), check.names = FALSE, stringsAsFactors = FALSE)
+#     } else {
+#         results[["Quantiles"]] <- NULL
+#         resultsDF <- data.frame(results, check.names = FALSE, stringsAsFactors = FALSE)
+#     }
+#     
+#     # Return the 'resultsDF' data frame
+#     return(resultsDF)
+# }
+    tempres <- vector(mode = "list", length = NCOL(x.continuous))
+    names(tempres) <- colnames(x.continuous)
+    allCombinations <- levels(interaction(x.byFactor, sep = ","))
+    for (i in seq_along())
+}
+
+
 # # Values used for debugging the descriptiveStatsDF() function
 # x <- DFFH
 # dataObjectName <- "DFFH"
@@ -804,9 +1022,10 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
 #         x <- x[, shouldKeep, drop = FALSE]
 #     }
     
-    
     x.categorical <- x[, (varTypes %in% c("categorical", "binary")), drop = FALSE]
     x.continuous  <- x[, (varTypes %in% c("continuous", "date")),  drop = FALSE]
+    
+    byFactors <- intersect(byFactors, colnames(x.categorical))
     
     # Initialize the 'results' list
     results <- list()
@@ -828,7 +1047,9 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
     
     # Get subset results
     if(length(byFactors) > 0L && any(output.showStats %in% c("all", "byfactors", "bylevels"))) {
-        results[["By Levels"]] <- by(data = x, INDICES = x[, byFactors, drop = FALSE], FUN = summary)
+#         results[["By Levels"]] <- by(data = x, INDICES = x[, byFactors, drop = FALSE], FUN = summary)
+#         results[["By Factors"]] <- by(data = x, INDICES = x[, byFactors, drop = FALSE], FUN = summary)
+        results[["By Factors"]] <- getResults.byFactors(x.continuous = x.continuous, x.byFactors = x.categorical[, c(byFactors), drop = FALSE], requestedStats = requestedStats, na.rm = na.rm, silent = silent, digits = digits, quantile.probs = quantile.probs, quantile.type = quantile.type, statsAreRows = output.statsAreRows)
     }
     
     # Return the list 'results'
