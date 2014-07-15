@@ -77,11 +77,13 @@ checkStats <- function(stats = "default", dataObjectName = NULL){
     
     # Make sure all of the values specified for "stats" are
     # lower case (to facilitate string matching)
-    lowStats <- tolower(stats)
+#     lowStats <- tolower(stats)
+    lowStats <- gsub(pattern = "[[:punct:]]", replacement = "", x = tolower(stats))
     
     # List out all of the options for "stats" that will be
     # accepted/recognized by the function
-    possibleStats <- c("default", "all", "n", "obs", "nobs", "missing", "nmissing", "na", "mean", "average", "avg", "median", "mode", "sd", "standard deviation", "variance", "iqr", "minimum", "maximum", "fivenum", "interquartile range", "range", "std", "std dev", "mfv", "q1", "quartile1", "q3", "quartile3", "quartiles", "quantiles", "q2", "quartile2", "summary")
+#     possibleStats <- c("default", "all", "n", "obs", "nobs", "missing", "nmissing", "na", "mean", "average", "avg", "median", "mode", "sd", "standard deviation", "variance", "iqr", "minimum", "maximum", "fivenum", "interquartile range", "range", "std", "std dev", "mfv", "q1", "quartile1", "q3", "quartile3", "quartiles", "quantiles", "q2", "quartile2", "summary")
+    possibleStats <- c("default", "all", "n", "obs", "nobs", "missing", "nmissing", "na", "mean", "average", "avg", "median", "mode", "sd", "standard deviation", "variance", "iqr", "minimum", "maximum", "fivenum", "interquartile range", "range", "std", "std dev", "mfv", "q1", "quartile1", "q3", "quartile3", "quartiles", "quantiles", "q2", "quartile2", "summary", "hinges", "lower hinge", "lowerhinge", "lhinge", "upper hinge", "upperhinge", "uhinge")
     if(!any(pmatch(x = lowStats, table = possibleStats, nomatch = 0L) > 0L)) {
         stop(paste(strwrap(gettextf("I need at least one valid statistic to be specified before I can do anything with %s. Please check for spelling errors.", sQuote(dataObjectName)), width = 0.95 * getOption("width")), collapse = "\n    "))
     }
@@ -95,7 +97,8 @@ checkStats <- function(stats = "default", dataObjectName = NULL){
     }
     
     # Check which statistics options selected
-    requestedStatsNames <- c("n", "mean", "median", "mode", "sd", "variance", "minimum", "maximum", "range", "iqr", "fivenum", "quartile1", "quartile3", "quartiles", "quantiles", "summary")
+#     requestedStatsNames <- c("n", "mean", "median", "mode", "sd", "variance", "minimum", "maximum", "range", "iqr", "fivenum", "quartile1", "quartile3", "quartiles", "quantiles", "summary")
+    requestedStatsNames <- c("n", "mean", "median", "mode", "sd", "variance", "minimum", "maximum", "range", "iqr", "lowerhinge", "upperhinge", "quartile1", "quartile3", "quantiles")
     requestedStats <- rep(FALSE, times = length(requestedStatsNames))
     names(requestedStats) <- requestedStatsNames
     
@@ -103,10 +106,12 @@ checkStats <- function(stats = "default", dataObjectName = NULL){
     requestedStats["n"] <- any(c("n", "obs", "nobs", "missing", "nmissing", "na", "default", "all") %in% validStats)
     
     # Check for "mean"
-    requestedStats["mean"] <- any(c("mean", "average", "default", "all") %in% validStats)
+#     requestedStats["mean"] <- any(c("mean", "average", "default", "all") %in% validStats)
+    requestedStats["mean"] <- any(c("mean", "average", "avg", "summary", "default", "all") %in% validStats)
     
     # Check for "median"
-    requestedStats["median"] <- any(c("median", "q2", "quartile2", "default", "all") %in% validStats)
+#     requestedStats["median"] <- any(c("median", "q2", "quartile2", "default", "all") %in% validStats)
+    requestedStats["median"] <- any(c("median", "q2", "quartile2", "quartiles", "fivenum", "summary", "default", "all") %in% validStats)
     
     # Check for "mode"
     requestedStats["mode"] <- any(c("mode", "mfv", "all") %in% validStats)
@@ -118,10 +123,12 @@ checkStats <- function(stats = "default", dataObjectName = NULL){
     requestedStats["variance"] <- any(c("variance", "all") %in% validStats)
     
     # Check for "minimum"
-    requestedStats["minimum"] <- any(c("minimum", "default", "all") %in% validStats)
+#     requestedStats["minimum"] <- any(c("minimum", "default", "all") %in% validStats)
+    requestedStats["minimum"] <- any(c("minimum", "fivenum", "summary", "default", "all") %in% validStats)
     
     # Check for "maximum"
-    requestedStats["maximum"] <- any(c("maximum", "default", "all") %in% validStats)
+#     requestedStats["maximum"] <- any(c("maximum", "default", "all") %in% validStats)
+    requestedStats["maximum"] <- any(c("maximum", "fivenum", "summary", "default", "all") %in% validStats)
     
     # Check for "range"
     requestedStats["range"] <- any(c("range", "all") %in% validStats)
@@ -129,32 +136,40 @@ checkStats <- function(stats = "default", dataObjectName = NULL){
     # Check for "iqr"
     requestedStats["iqr"] <- any(c("iqr", "interquartile range", "all") %in% validStats)
     
-    # Check for "fivenum"
-    if(requestedStats["fivenum"] <- any(c("fivenum", "all") %in% validStats)){
-#         requestedStats[c("minimum", "median", "maximum")] <- FALSE
-        requestedStats[c("minimum", "median", "maximum")] <- TRUE
-    }
+#     # Check for "fivenum"
+#     if(requestedStats["fivenum"] <- any(c("fivenum", "all") %in% validStats)){
+# #         requestedStats[c("minimum", "median", "maximum")] <- FALSE
+#         requestedStats[c("minimum", "median", "maximum")] <- TRUE
+#     }
+    
+    # Check for "lowerhinge"
+    requestedStats["lowerhinge"] <- any(c("lower hinge", "lowerhinge", "lhinge", "hinges", "fivenum", "all") %in% validStats)
+    
+    # Check for "upperhinge"
+    requestedStats["upperhinge"] <- any(c("upper hinge", "upperhinge", "uhinge", "hinges", "fivenum", "all") %in% validStats)
     
     # Check for "quartile1"
-    requestedStats["quartile1"] <- any(c("q1", "quartile1") %in% validStats)
+#     requestedStats["quartile1"] <- any(c("q1", "quartile1") %in% validStats)
+    requestedStats["quartile1"] <- any(c("q1", "quartile1", "quartiles", "summary", "all") %in% validStats)
     
     # Check for "quartile3"
-    requestedStats["quartile3"] <- any(c("q3", "quartile3") %in% validStats)
+#     requestedStats["quartile3"] <- any(c("q3", "quartile3") %in% validStats)
+    requestedStats["quartile3"] <- any(c("q3", "quartile3", "quartiles", "summary", "all") %in% validStats)
     
-    # Check for "quartiles"
-    if(requestedStats["quartiles"] <- any(c("quartiles", "all") %in% validStats)){
-#         requestedStats[c("quartile1", "median", "quartile3")] <- FALSE
-        requestedStats[c("quartile1", "median", "quartile3")] <- TRUE
-    }
+#     # Check for "quartiles"
+#     if(requestedStats["quartiles"] <- any(c("quartiles", "all") %in% validStats)){
+# #         requestedStats[c("quartile1", "median", "quartile3")] <- FALSE
+#         requestedStats[c("quartile1", "median", "quartile3")] <- TRUE
+#     }
     
     # Check for "quantiles"
     requestedStats["quantiles"] <- any(c("quantiles", "all") %in% validStats)
     
-    # Check for "summary"
-    if(requestedStats["summary"] <- any(c("summary", "all") %in% validStats)) {
-#         requestedStats[c("minimum", "quartile1", "mean", "median", "quartile3", "maximum", "quartiles")] <- FALSE
-        requestedStats[c("minimum", "quartile1", "mean", "median", "quartile3", "maximum", "quartiles")] <- TRUE
-    }
+#     # Check for "summary"
+#     if(requestedStats["summary"] <- any(c("summary", "all") %in% validStats)) {
+# #         requestedStats[c("minimum", "quartile1", "mean", "median", "quartile3", "maximum", "quartiles")] <- FALSE
+#         requestedStats[c("minimum", "quartile1", "mean", "median", "quartile3", "maximum", "quartiles")] <- TRUE
+#     }
 
     return(requestedStats)
 }
@@ -487,6 +502,12 @@ getResults.continuous <- function(x, requestedStats, na.rm = getOption("na.rm", 
     # Initialize an empty list object named "results"
     results <- list()
     
+    # Check if anything is needed from the fivenum() function and act
+    # accordingly
+    if(any(requestedStats[c("lowerhinge", "upperhinge")])) {
+        results.fivenum <- sapply(X = x, FUN = fivenum.datesOK, na.rm = na.rm)
+    }
+    
     # If "n" is requested
     if(requestedStats["n"]){
         results[["N"]] <- sapply(X = x, FUN = function(x){length(x) - sum(is.na(x))})
@@ -509,14 +530,19 @@ getResults.continuous <- function(x, requestedStats, na.rm = getOption("na.rm", 
         results[["Variance"]] <- sapply(X = x, FUN = var, na.rm = na.rm)
     }
     
-    # If "mode" (i.e., the most frequent value) is requested
-    if(requestedStats["mode"]){
-        results[["Mode"]] <- sapply(X = x, FUN = MFV, outputValue = MFV.outputValue, na.rm = na.rm, silent = silent)
-    }
+#     # If "mode" (i.e., the most frequent value) is requested
+#     if(requestedStats["mode"]){
+#         results[["Mode"]] <- sapply(X = x, FUN = MFV, outputValue = MFV.outputValue, na.rm = na.rm, silent = silent)
+#     }
     
     # If "min" is requested
     if(requestedStats["minimum"]){
         results[["Minimum"]] <- sapply(X = x, FUN = min, na.rm = na.rm)
+    }
+    
+    # If "lowerhinge" is requested
+    if(requestedStats["lowerhinge"]) {
+        results[["Lower Hinge"]] <- results.fivenum[2L, ]
     }
     
     # If "quartile1" is requested
@@ -534,12 +560,17 @@ getResults.continuous <- function(x, requestedStats, na.rm = getOption("na.rm", 
         results[["Third Quartile"]] <- sapply(X = x, FUN = function(x){unname(quantile.datesOK(x = x, probs = 3/4, na.rm = na.rm, type = quantile.type))})
     }
     
-    # If "quartiles" is requested and "fivenum" is not
-    if(requestedStats["quartiles"] && !requestedStats["fivenum"]){
-        results[["First Quartile"]] <- sapply(X = x, FUN = function(x){unname(quantile.datesOK(x = x, probs = 1/4, na.rm = na.rm, type = quantile.type))})
-        results[["Median"]] <- sapply(X = x, FUN = median, na.rm = na.rm)
-        results[["Third Quartile"]] <- sapply(X = x, FUN = function(x){unname(quantile.datesOK(x = x, probs = 3/4, na.rm = na.rm, type = quantile.type))})
+    # If "upperhinge" is requested
+    if(requestedStats["upperhinge"]) {
+        results[["Upper Hinge"]] <- results.fivenum[4L, ]
     }
+    
+#     # If "quartiles" is requested and "fivenum" is not
+#     if(requestedStats["quartiles"] && !requestedStats["fivenum"]){
+#         results[["First Quartile"]] <- sapply(X = x, FUN = function(x){unname(quantile.datesOK(x = x, probs = 1/4, na.rm = na.rm, type = quantile.type))})
+#         results[["Median"]] <- sapply(X = x, FUN = median, na.rm = na.rm)
+#         results[["Third Quartile"]] <- sapply(X = x, FUN = function(x){unname(quantile.datesOK(x = x, probs = 3/4, na.rm = na.rm, type = quantile.type))})
+#     }
     
     # If "max" is requested
     if(requestedStats["maximum"]){
@@ -556,61 +587,61 @@ getResults.continuous <- function(x, requestedStats, na.rm = getOption("na.rm", 
         results[["IQR"]] <- sapply(X = x, FUN = IQR, na.rm = na.rm, type = quantile.type)
     }
     
-    # If "fivenum" is requested
-    if(requestedStats["fivenum"]) {
-        results.fivenum <- sapply(X = x, FUN = fivenum.datesOK, na.rm = na.rm)
-        
-        # If neither "quartiles" nor "summary" are requested
-        if(!(requestedStats["quartiles"] || requestedStats["summary"])) {
-            results[["Minimum"]] <- results.fivenum[1L, ]
-            results[["Lower Hinge"]] <- results.fivenum[2L, ]
-            results[["Median"]] <- results.fivenum[3L, ]
-            results[["Upper Hinge"]] <- results.fivenum[4L, ]
-            results[["Maximum"]] <- results.fivenum[5L, ]
-        } else
-        # If "quartiles" *is* requested
-            if(requestedStats["quartiles"]) {
-            results[["Minimum"]] <- results.fivenum[1L, ]
-            results[["Lower Hinge"]] <- results.fivenum[2L, ]
-            results[["First Quartile"]] <- sapply(X = x, FUN = function(x){unname(quantile.datesOK(x, probs = 1/4, na.rm = na.rm, type = quantile.type))})
-            results[["Median"]] <- results.fivenum[3L, ]
-            results[["Third Quartile"]] <- sapply(X = x, FUN = function(x){unname(quantile.datesOK(x, probs = 3/4, na.rm = na.rm, type = quantile.type))})
-            results[["Upper Hinge"]] <- results.fivenum[4L, ]
-            results[["Maximum"]] <- results.fivenum[5L, ]
-        }
-    }
+#     # If "fivenum" is requested
+#     if(requestedStats["fivenum"]) {
+#         results.fivenum <- sapply(X = x, FUN = fivenum.datesOK, na.rm = na.rm)
+#         
+#         # If neither "quartiles" nor "summary" are requested
+#         if(!(requestedStats["quartiles"] || requestedStats["summary"])) {
+#             results[["Minimum"]] <- results.fivenum[1L, ]
+#             results[["Lower Hinge"]] <- results.fivenum[2L, ]
+#             results[["Median"]] <- results.fivenum[3L, ]
+#             results[["Upper Hinge"]] <- results.fivenum[4L, ]
+#             results[["Maximum"]] <- results.fivenum[5L, ]
+#         } else
+#         # If "quartiles" *is* requested
+#             if(requestedStats["quartiles"]) {
+#             results[["Minimum"]] <- results.fivenum[1L, ]
+#             results[["Lower Hinge"]] <- results.fivenum[2L, ]
+#             results[["First Quartile"]] <- sapply(X = x, FUN = function(x){unname(quantile.datesOK(x, probs = 1/4, na.rm = na.rm, type = quantile.type))})
+#             results[["Median"]] <- results.fivenum[3L, ]
+#             results[["Third Quartile"]] <- sapply(X = x, FUN = function(x){unname(quantile.datesOK(x, probs = 3/4, na.rm = na.rm, type = quantile.type))})
+#             results[["Upper Hinge"]] <- results.fivenum[4L, ]
+#             results[["Maximum"]] <- results.fivenum[5L, ]
+#         }
+#     }
     
-    # If "summary" is requested
-    if(requestedStats["summary"]){
-        variableHasMissing <- sapply(X = x, FUN = anyNA)
-        if(any(variableHasMissing) && !all(variableHasMissing)) {
-            missingNo  <- rbind(sapply(X = x[, !variableHasMissing, drop = FALSE], FUN = summary), "NA's" = 0L)
-            missingYes <- sapply(X = x[,  variableHasMissing, drop = FALSE], FUN = summary)
-            results.summary <- cbind(missingNo, missingYes)[, colnames(x), drop = FALSE]
-        } else {
-            results.summary <- sapply(X = x, FUN = summary)
-        }
-        if(requestedStats["fivenum"]) {
-            results[["Minimum"]] <- results.summary[1L, ]
-            results[["Lower Hinge"]] <- results.fivenum[2L, ]
-            results[["First Quartile"]] <- results.summary[2L, ]
-            results[["Median"]] <- results.summary[3L, ]
-            results[["Mean"]] <- results.summary[4L, ]
-            results[["Third Quartile"]] <- results.summary[5L, ]
-            results[["Upper Hinge"]] <- results.fivenum[4L, ]
-            results[["Maximum"]] <- results.summary[6L, ]
-        } else {
-            results[["Minimum"]] <- results.summary[1L, ]
-            results[["First Quartile"]] <- results.summary[2L, ]
-            results[["Median"]] <- results.summary[3L, ]
-            results[["Mean"]] <- results.summary[4L, ]
-            results[["Third Quartile"]] <- results.summary[5L, ]
-            results[["Maximum"]] <- results.summary[6L, ]
-        }
-        if(any(variableHasMissing)) {
-            results[["NA's"]] <- as.integer(results.summary[7L, ])
-        }
-    }
+#     # If "summary" is requested
+#     if(requestedStats["summary"]){
+#         variableHasMissing <- sapply(X = x, FUN = anyNA)
+#         if(any(variableHasMissing) && !all(variableHasMissing)) {
+#             missingNo  <- rbind(sapply(X = x[, !variableHasMissing, drop = FALSE], FUN = summary), "NA's" = 0L)
+#             missingYes <- sapply(X = x[,  variableHasMissing, drop = FALSE], FUN = summary)
+#             results.summary <- cbind(missingNo, missingYes)[, colnames(x), drop = FALSE]
+#         } else {
+#             results.summary <- sapply(X = x, FUN = summary)
+#         }
+#         if(requestedStats["fivenum"]) {
+#             results[["Minimum"]] <- results.summary[1L, ]
+#             results[["Lower Hinge"]] <- results.fivenum[2L, ]
+#             results[["First Quartile"]] <- results.summary[2L, ]
+#             results[["Median"]] <- results.summary[3L, ]
+#             results[["Mean"]] <- results.summary[4L, ]
+#             results[["Third Quartile"]] <- results.summary[5L, ]
+#             results[["Upper Hinge"]] <- results.fivenum[4L, ]
+#             results[["Maximum"]] <- results.summary[6L, ]
+#         } else {
+#             results[["Minimum"]] <- results.summary[1L, ]
+#             results[["First Quartile"]] <- results.summary[2L, ]
+#             results[["Median"]] <- results.summary[3L, ]
+#             results[["Mean"]] <- results.summary[4L, ]
+#             results[["Third Quartile"]] <- results.summary[5L, ]
+#             results[["Maximum"]] <- results.summary[6L, ]
+#         }
+#         if(any(variableHasMissing)) {
+#             results[["NA's"]] <- as.integer(results.summary[7L, ])
+#         }
+#     }
     
     # If "quantiles" is requested
     if(requestedStats["quantiles"]){
