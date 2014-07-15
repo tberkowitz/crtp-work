@@ -2,6 +2,10 @@
 # -- pander
 # -- xtable
 # ?? Hmisc
+# -- rtf
+# ?? stargazer
+# -- rapport
+
 
 library(pander)
 # # Copied directly from 'Examples' section of the help page entry for
@@ -74,6 +78,25 @@ myReport$format <- "pdf"
 myReport$export()
 
 
+# ## Example 'pander' outputs ##
+# outfile <- paste(getwd(), "PanderTestDocument", sep = "/")
+# myReport <- Pandoc$new(author = "Author Unknown", title = "Pander Test Document", date = as.character(Sys.Date()))
+# # myReport$add(head(iris))
+# myReport$add(descriptiveStatsDF(iris))
+# # myReport$format <- "pdf" # this is the default
+# myReport$export(outfile)
+# 
+# myReport$format <- "rtf"
+# myReport$export(outfile)
+# 
+# myReport$format <- "doc"
+# myReport$export(outfile)
+# 
+# myReport$format <- "docx"
+# myReport$export(outfile)
+# ## End 'pander' examples ##
+
+
 library(rtf)
 testout <- descriptiveStatsDF(iris)
 outfile <- paste(getwd(), "RTFTest.doc", sep = "/")
@@ -93,6 +116,14 @@ addSessionInfo(this = rtf)
 done(rtf)
 view(rtf)
 
-
+# ## Example 'rtf' outputs ##
+# rtf <- RTF(file = paste(getwd(), "RTFTestDocument.rtf", sep = "/"))
+# addHeader(rtf, title = "RTF Test Document", subtitle = "Unknown Author", font.size = 16)
+# # addTable(rtf, head(iris), row.names = FALSE, col.justify = c(rep("R", 4), "C"), header.col.justify = "C")
+# addTable(rtf, descriptiveStatsDF(iris)$Categorical)
+# addNewLine(rtf, n = 2)
+# addTable(rtf, descriptiveStatsDF(iris)$Continuous)
+# done(rtf)
+# ## End 'rtf' examples ##
 
 
