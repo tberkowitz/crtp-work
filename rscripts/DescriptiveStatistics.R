@@ -12,7 +12,7 @@
 ## End goals ##
 
 ### SOURCE "DATA" ###
-source(paste(getwd(), "FakeData.R", sep = "/"))
+# source(paste(getwd(), "FakeData.R", sep = "/"))
 
 ### FUNCTION DEFINITIONS ###
 # Define the MFV() function
@@ -565,13 +565,6 @@ getResults.continuous <- function(x, requestedStats, na.rm = getOption("na.rm", 
         results[["Upper Hinge"]] <- results.fivenum[4L, ]
     }
     
-#     # If "quartiles" is requested and "fivenum" is not
-#     if(requestedStats["quartiles"] && !requestedStats["fivenum"]){
-#         results[["First Quartile"]] <- sapply(X = x, FUN = function(x){unname(quantile.datesOK(x = x, probs = 1/4, na.rm = na.rm, type = quantile.type))})
-#         results[["Median"]] <- sapply(X = x, FUN = median, na.rm = na.rm)
-#         results[["Third Quartile"]] <- sapply(X = x, FUN = function(x){unname(quantile.datesOK(x = x, probs = 3/4, na.rm = na.rm, type = quantile.type))})
-#     }
-    
     # If "max" is requested
     if(requestedStats["maximum"]){
         results[["Maximum"]] <- sapply(X = x, FUN = max, na.rm = na.rm)
@@ -586,62 +579,6 @@ getResults.continuous <- function(x, requestedStats, na.rm = getOption("na.rm", 
     if(requestedStats["iqr"]){
         results[["IQR"]] <- sapply(X = x, FUN = IQR, na.rm = na.rm, type = quantile.type)
     }
-    
-#     # If "fivenum" is requested
-#     if(requestedStats["fivenum"]) {
-#         results.fivenum <- sapply(X = x, FUN = fivenum.datesOK, na.rm = na.rm)
-#         
-#         # If neither "quartiles" nor "summary" are requested
-#         if(!(requestedStats["quartiles"] || requestedStats["summary"])) {
-#             results[["Minimum"]] <- results.fivenum[1L, ]
-#             results[["Lower Hinge"]] <- results.fivenum[2L, ]
-#             results[["Median"]] <- results.fivenum[3L, ]
-#             results[["Upper Hinge"]] <- results.fivenum[4L, ]
-#             results[["Maximum"]] <- results.fivenum[5L, ]
-#         } else
-#         # If "quartiles" *is* requested
-#             if(requestedStats["quartiles"]) {
-#             results[["Minimum"]] <- results.fivenum[1L, ]
-#             results[["Lower Hinge"]] <- results.fivenum[2L, ]
-#             results[["First Quartile"]] <- sapply(X = x, FUN = function(x){unname(quantile.datesOK(x, probs = 1/4, na.rm = na.rm, type = quantile.type))})
-#             results[["Median"]] <- results.fivenum[3L, ]
-#             results[["Third Quartile"]] <- sapply(X = x, FUN = function(x){unname(quantile.datesOK(x, probs = 3/4, na.rm = na.rm, type = quantile.type))})
-#             results[["Upper Hinge"]] <- results.fivenum[4L, ]
-#             results[["Maximum"]] <- results.fivenum[5L, ]
-#         }
-#     }
-    
-#     # If "summary" is requested
-#     if(requestedStats["summary"]){
-#         variableHasMissing <- sapply(X = x, FUN = anyNA)
-#         if(any(variableHasMissing) && !all(variableHasMissing)) {
-#             missingNo  <- rbind(sapply(X = x[, !variableHasMissing, drop = FALSE], FUN = summary), "NA's" = 0L)
-#             missingYes <- sapply(X = x[,  variableHasMissing, drop = FALSE], FUN = summary)
-#             results.summary <- cbind(missingNo, missingYes)[, colnames(x), drop = FALSE]
-#         } else {
-#             results.summary <- sapply(X = x, FUN = summary)
-#         }
-#         if(requestedStats["fivenum"]) {
-#             results[["Minimum"]] <- results.summary[1L, ]
-#             results[["Lower Hinge"]] <- results.fivenum[2L, ]
-#             results[["First Quartile"]] <- results.summary[2L, ]
-#             results[["Median"]] <- results.summary[3L, ]
-#             results[["Mean"]] <- results.summary[4L, ]
-#             results[["Third Quartile"]] <- results.summary[5L, ]
-#             results[["Upper Hinge"]] <- results.fivenum[4L, ]
-#             results[["Maximum"]] <- results.summary[6L, ]
-#         } else {
-#             results[["Minimum"]] <- results.summary[1L, ]
-#             results[["First Quartile"]] <- results.summary[2L, ]
-#             results[["Median"]] <- results.summary[3L, ]
-#             results[["Mean"]] <- results.summary[4L, ]
-#             results[["Third Quartile"]] <- results.summary[5L, ]
-#             results[["Maximum"]] <- results.summary[6L, ]
-#         }
-#         if(any(variableHasMissing)) {
-#             results[["NA's"]] <- as.integer(results.summary[7L, ])
-#         }
-#     }
     
     # If "quantiles" is requested
     if(requestedStats["quantiles"]){
