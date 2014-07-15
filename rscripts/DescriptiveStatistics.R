@@ -82,7 +82,6 @@ checkStats <- function(stats = "default", dataObjectName = NULL){
     # List out all of the options for "stats" that will be
     # accepted/recognized by the function
     possibleStats <- c("default", "all", "n", "obs", "nobs", "missing", "nmissing", "na", "mean", "average", "avg", "median", "mode", "sd", "standard deviation", "variance", "iqr", "minimum", "maximum", "fivenum", "interquartile range", "range", "std", "std dev", "mfv", "q1", "quartile1", "q3", "quartile3", "quartiles", "quantiles", "q2", "quartile2", "summary")
-        # ??"freqs", "frequencies"??
     if(!any(pmatch(x = lowStats, table = possibleStats, nomatch = 0L) > 0L)) {
         stop(paste(strwrap(gettextf("I need at least one valid statistic to be specified before I can do anything with %s. Please check for spelling errors.", sQuote(dataObjectName)), width = 0.95 * getOption("width")), collapse = "\n    "))
     }
@@ -556,7 +555,6 @@ getResults.continuous <- function(x, requestedStats, na.rm = getOption("na.rm", 
     
     # If "fivenum" is requested
     if(requestedStats["fivenum"]) {
-#         results.fivenum <- sapply(X = x, FUN = fivenum, na.rm = na.rm)
         results.fivenum <- sapply(X = x, FUN = fivenum.datesOK, na.rm = na.rm)
         
         # If neither "quartiles" nor "summary" are requested
@@ -650,8 +648,6 @@ getResults.continuous <- function(x, requestedStats, na.rm = getOption("na.rm", 
 
 # Define the getResults.byFactors() function
 getResults.byFactors <- function(x, byFactors, x.continuous, requestedStats, na.rm = TRUE, silent = FALSE, digits = 2L, quantile.probs = 0:4/4, quantile.type = 7L, MFV.outputValue = "minimum", statsAreRows = TRUE) {
-#     allCombinations <- levels(interaction(x[, byFactors, drop = FALSE], sep = ", "))
-#     splitList <- byFactorsList <- split(x = x.continuous, f = allCombinations)
     splitList <- byFactorsList <- split(x = x.continuous, f = levels(interaction(x[, byFactors, drop = FALSE], sep = ", ")))
     for (i in seq_along(splitList)) {
         byFactorsList[[i]] <- getResults.continuous(x = splitList[[i]], requestedStats = requestedStats, na.rm = na.rm, silent = silent, digits = digits, quantile.probs = quantile.probs, quantile.type = quantile.type, MFV.outputValue = MFV.outputValue, statsAreRows = statsAreRows)
@@ -785,38 +781,12 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
     varTypes <- sapply(X = x, FUN = variableType)
     
     invalidVarTypes <- names(varTypes[which(is.na(varTypes))])
-#     invalidVarTypes <- names(varTypes[which(is.na(varTypes) | varTypes == "date")])
     if(length(invalidVarTypes) > 0L) {
         warning(ngettext(n = length(invalidVarTypes),
                          msg1 = paste(strwrap(gettextf("The following variable was left out of the results either because it was not of a recognized variable type or because its type is not currently supported for analysis: %s.", sQuote(invalidVarTypes)), width = 0.95 * getOption("width")), collapse = "\n    "),
                          msg2 = paste(strwrap(gettextf("The following variables were left out of the results either because they were not of recognized variable types or because their types are not currently supported for analysis: %s.", paste(sQuote(invalidVarTypes), collapse = ", ")), width = 0.95 * getOption("width")), collapse = "\n    ")))
     }
     x <- x[, !is.na(varTypes), drop = FALSE]
-#     varTypes <- sapply(X = x, FUN = variableType)
-#     
-#     if(any("categorical", "continuous", "binary", "date") %in% ignore) {
-#         if(all("categorical", "continuous", "binary", "date") %in% ignore) {
-#             stop("If you want me to ignore everything, then what should I report?")
-#         }
-#         shouldKeep <- varTypes != ""
-#         if("categorical" %in% ignore) {
-# #             x <- x[, varTypes != "categorical", drop = FALSE]
-#             shouldKeep <- shouldKeep & varTypes != "categorical"
-#         }
-#         if("continuous" %in% ignore) {
-# #             x <- x[, varTypes != "continuous", drop = FALSE]
-#             shouldKeep <- shouldKeep & varTypes != "continuous"
-#         }
-#         if("binary" %in% ignore) {
-# #             x <- x[, varTypes != "binary", drop = FALSE]
-#             shouldKeep <- shouldKeep & varTypes != "binary"
-#         }
-#         if("date" %in% ignore) {
-# #             x <- x[, varTypes != "date", drop = FALSE]
-#             shouldKeep <- shouldKeep & varTypes != "date"
-#         }
-#         x <- x[, shouldKeep, drop = FALSE]
-#     }
     
     x.categorical <- x[, (varTypes %in% c("categorical", "binary")), drop = FALSE]
     x.continuous  <- x[, (varTypes %in% c("continuous", "date")),  drop = FALSE]
@@ -843,8 +813,6 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
     
     # Get subset results
     if(length(byFactors) > 0L && any(output.showStats %in% c("all", "byfactors", "bylevels"))) {
-#         results[["By Levels"]] <- by(data = x, INDICES = x[, byFactors, drop = FALSE], FUN = summary)
-#         results[["By Factors"]] <- by(data = x, INDICES = x[, byFactors, drop = FALSE], FUN = summary)
         results[["ByFactors"]] <- getResults.byFactors(x = x, byFactors = byFactors, x.continuous = x.continuous, requestedStats = requestedStats, na.rm = na.rm, silent = silent, digits = digits, quantile.probs = quantile.probs, quantile.type = quantile.type, statsAreRows = output.statsAreRows)
     }
     
@@ -864,6 +832,11 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
 # -- pander
 # -- xtable
 # ?? Hmisc
+
+
+
+
+
 
 
 
