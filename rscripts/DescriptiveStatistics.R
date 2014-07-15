@@ -131,7 +131,8 @@ checkStats <- function(stats = "default", dataObjectName = NULL){
     
     # Check for "fivenum"
     if(requestedStats["fivenum"] <- any(c("fivenum", "all") %in% validStats)){
-        requestedStats[c("minimum", "median", "maximum")] <- FALSE
+#         requestedStats[c("minimum", "median", "maximum")] <- FALSE
+        requestedStats[c("minimum", "median", "maximum")] <- TRUE
     }
     
     # Check for "quartile1"
@@ -142,7 +143,8 @@ checkStats <- function(stats = "default", dataObjectName = NULL){
     
     # Check for "quartiles"
     if(requestedStats["quartiles"] <- any(c("quartiles", "all") %in% validStats)){
-        requestedStats[c("quartile1", "median", "quartile3")] <- FALSE
+#         requestedStats[c("quartile1", "median", "quartile3")] <- FALSE
+        requestedStats[c("quartile1", "median", "quartile3")] <- TRUE
     }
     
     # Check for "quantiles"
@@ -150,7 +152,8 @@ checkStats <- function(stats = "default", dataObjectName = NULL){
     
     # Check for "summary"
     if(requestedStats["summary"] <- any(c("summary", "all") %in% validStats)) {
-        requestedStats[c("minimum", "quartile1", "mean", "median", "quartile3", "maximum", "quartiles")] <- FALSE
+#         requestedStats[c("minimum", "quartile1", "mean", "median", "quartile3", "maximum", "quartiles")] <- FALSE
+        requestedStats[c("minimum", "quartile1", "mean", "median", "quartile3", "maximum", "quartiles")] <- TRUE
     }
 
     return(requestedStats)
@@ -828,6 +831,15 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
 
 
 ### SANDBOX ###
+# temp <- descriptiveStatsDF(DFFH)
+# temp.con <- temp$Continuous
+
+
+
+
+
+
+
 
 
 
