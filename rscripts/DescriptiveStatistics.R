@@ -530,10 +530,10 @@ getResults.continuous <- function(x, requestedStats, na.rm = getOption("na.rm", 
         results[["Variance"]] <- sapply(X = x, FUN = var, na.rm = na.rm)
     }
     
-#     # If "mode" (i.e., the most frequent value) is requested
-#     if(requestedStats["mode"]){
-#         results[["Mode"]] <- sapply(X = x, FUN = MFV, outputValue = MFV.outputValue, na.rm = na.rm, silent = silent)
-#     }
+    # If "mode" (i.e., the most frequent value) is requested
+    if(requestedStats["mode"]){
+        results[["Mode"]] <- sapply(X = x, FUN = MFV, outputValue = MFV.outputValue, na.rm = na.rm, silent = silent)
+    }
     
     # If "min" is requested
     if(requestedStats["minimum"]){
