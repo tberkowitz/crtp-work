@@ -626,7 +626,8 @@ getResults.byFactors <- function(x, byFactors, x.continuous, requestedStats, na.
 # # End debugging values for descriptiveStatsDF()
 
 # Define the descriptiveStatsDF() function
-descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2L, na.rm = TRUE, silent = FALSE, quantile.probs = 0:4/4, quantile.type = 7L, keepColumnNames = TRUE, categorical.emptyCellSymbol = "", categorical.maxLevels = 10L, categorical.na.exclude = na.rm, output.showStats = "all", byFactors = NULL, ignore = NULL, output.statsAreRows = TRUE) {
+# descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2L, na.rm = TRUE, silent = FALSE, quantile.probs = 0:4/4, quantile.type = 7L, keepColumnNames = TRUE, categorical.emptyCellSymbol = "", categorical.maxLevels = 10L, categorical.na.exclude = na.rm, output.showStats = "all", byFactors = NULL, ignore = NULL, output.statsAreRows = TRUE) {
+descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2L, na.rm = TRUE, silent = FALSE, quantile.probs = 0:4/4, quantile.type = 7L, keepColumnNames = TRUE, categorical.emptyCellSymbol = "", categorical.maxLevels = 10L, categorical.na.exclude = na.rm, output.showStats = "all", byFactors = NULL, ignore = NULL, output.statsAreRows = TRUE, export = FALSE, export.file = NULL) {
     if(silent) {
         oldWarn <- getOption("warn")
         options("warn" = -1L)
@@ -760,7 +761,52 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
         results[["ByFactors"]] <- getResults.byFactors(x = x, byFactors = byFactors, x.continuous = x.continuous, requestedStats = requestedStats, na.rm = na.rm, silent = silent, digits = digits, quantile.probs = quantile.probs, quantile.type = quantile.type, statsAreRows = output.statsAreRows)
     }
     
-    # Return the list 'results'
+    # Export 'results'?
+    if(export) {
+        require(rtf)
+#         if(missing(export.file) || !nzchar(export.file) || !is.character(export.file)) {
+        if(length(export.file) == 0L || !nzchar(export.file) || !is.character(export.file)) {
+#             export.filepath <- getwd()
+#             export.filename <- "dsdf"
+#             export.fileext <- "rtf"
+# #             export.file <- paste(getwd(), "dsdf.rtf", sep = "/")
+#             export.file <- paste(export.filepath, "/", export.filename, export.fileext, sep = "")
+            export.file <- paste(getwd(), "dsdf.rtf", sep = "/")
+            warning(paste(strwrap(gettextf("Invalid file name given for exporting the results. Defaulting to current working directory and file name 'dsdf.rtf'. Any existing files with this name will be overwritten."), width = 0.95 * getOption("width")), collapse = "\n    "))
+        } else {
+            if(!grepl(pattern = "\\.(rtf|doc|docx)$", x = export.file)) {
+                export.file <- paste(export.file, "rtf", sep = ".")
+            }
+            if(!grepl(pattern = "/|\\\\", x = export.file)) {
+                export.file <- paste(getwd(), export.file, sep = "/")
+            }
+        }
+        rtf <- RTF(file = export.file, width = 8.5, height = 11, font.size = 12)
+        for(i in seq_along(results)) {
+#             addText(rtf, names(results)[i], bold = TRUE)
+#             addNewLine(rtf)
+            if(!is.data.frame(results[i][[1L]]) && is.list(results[i][[1L]])) {
+                addText(rtf, names(results[i]), bold = TRUE)
+                addNewLine(rtf)
+                for(j in seq_along(results[i][[1L]])) {
+                    addText(rtf, names(results[i][[1L]])[j], italic = TRUE)
+                    addNewLine(rtf)
+                    addTable(rtf, results[i][[1L]][[j]])
+                    addNewLine(rtf)
+                }
+            } else {
+                addText(rtf, names(results)[i], bold = TRUE)
+                addNewLine(rtf)
+                addTable(rtf, results[[i]], row.names = TRUE)
+                addNewLine(rtf)
+            }
+            addNewLine(rtf)
+            addNewLine(rtf)
+        }
+        done(rtf)
+    }
+    
+    # Return (i.e. print) the list 'results'
     if("none" %in% output.showStats) {
         return(invisible())
     } else {
@@ -774,6 +820,36 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
 ### SANDBOX ###
 # temp <- descriptiveStatsDF(DFFH)
 # temp.con <- temp$Continuous
+
+# # use naming convention: dsdf.doc
+# library(rtf)
+# rtf <- RTF(file = paste(getwd(), "dsdf.rtf", sep = "/"), width = 8.5, height = 11, font.size = 12)
+# results <- descriptiveStatsDF(iris)
+# for(i in seq_along(results)) {
+#     addText(rtf, names(results)[i], bold = TRUE)
+#     addNewLine(rtf)
+#     addTable(rtf, results[[i]], row.names = TRUE)
+#     addNewLine(rtf)
+#     addNewLine(rtf)
+# }
+# # addTable(rtf, descriptiveStatsDF(iris), row.names = TRUE, col.justify = c("R", "R", "R", "R", "C"), header.col.justify = "C")
+# done(rtf)
+
+# checkFilename <- function(x) {
+#     x <- as.character(x[1L])
+#     if(isPath <- grepl(pattern = "/|\\\\", x = x)) {
+#         y <- unlist(strsplit(x = x, split = "/|\\\\"))
+#         y <- y[length(y)]
+#         if(hasFilename <- !(unlist(strsplit(x = x, split = ""))[nchar(x)] %in% c("/", "\\"))) {
+#             if(hasFileext <- grepl(pattern = "\\.(rtf|doc|docx)$", x = x)) {
+#                 filename
+#             }
+#         }
+#         filename <- gsub(pattern = "(.*)\\.([[:alpha:]]+)$", replacement = "\\1", x = y, perl = TRUE)
+#         fileext  <- gsub(pattern = "(.*)\\.([[:alpha:]]+)$", replacement = "\\L\\2", x = y, perl = TRUE)
+#     }
+#     hasFileExt <- grepl(pattern = "", x = x)
+# }
 
 
 
