@@ -82,8 +82,8 @@ checkStats <- function(stats = "default", dataObjectName = NULL){
     
     # List out all of the options for "stats" that will be
     # accepted/recognized by the function
-#     possibleStats <- c("default", "all", "n", "obs", "nobs", "missing", "nmissing", "na", "mean", "average", "avg", "median", "mode", "sd", "standard deviation", "variance", "iqr", "minimum", "maximum", "fivenum", "interquartile range", "range", "std", "std dev", "mfv", "q1", "quartile1", "q3", "quartile3", "quartiles", "quantiles", "q2", "quartile2", "summary")
-    possibleStats <- c("default", "all", "n", "obs", "nobs", "missing", "nmissing", "na", "mean", "average", "avg", "median", "mode", "sd", "standard deviation", "variance", "iqr", "minimum", "maximum", "fivenum", "interquartile range", "range", "std", "std dev", "mfv", "q1", "quartile1", "q3", "quartile3", "quartiles", "quantiles", "q2", "quartile2", "summary", "hinges", "lower hinge", "lowerhinge", "lhinge", "upper hinge", "upperhinge", "uhinge")
+#     possibleStats <- c("default", "all", "n", "obs", "nobs", "missing", "nmissing", "na", "mean", "average", "avg", "median", "mode", "sd", "standard deviation", "variance", "iqr", "minimum", "maximum", "fivenum", "interquartile range", "range", "std", "std dev", "mfv", "q1", "quartile1", "q3", "quartile3", "quartiles", "quantiles", "q2", "quartile2", "summary", "hinges", "lower hinge", "lowerhinge", "lhinge", "upper hinge", "upperhinge", "uhinge")
+    possibleStats <- c("default", "all", "n", "observations", "nobservations", "missing", "nmissing", "na", "mean", "average", "avg", "median", "mode", "sd", "standard deviation", "variance", "iqr", "minimum", "maximum", "fivenum", "interquartile range", "range", "std", "std dev", "mfv", "q1", "quartile1", "q3", "quartile3", "quartiles", "quantiles", "q2", "quartile2", "summary", "hinges", "lower hinge", "lowerhinge", "lhinge", "upper hinge", "upperhinge", "uhinge", "unique", "nunique", "mcv")
     if(!any(pmatch(x = lowStats, table = possibleStats, nomatch = 0L) > 0L)) {
         stop(paste(strwrap(gettextf("I need at least one valid statistic to be specified before I can do anything with %s. Please check for spelling errors.", sQuote(dataObjectName)), width = 0.95 * getOption("width")), collapse = "\n    "))
     }
@@ -103,7 +103,8 @@ checkStats <- function(stats = "default", dataObjectName = NULL){
     names(requestedStats) <- requestedStatsNames
     
     # Check for "n"
-    requestedStats["n"] <- any(c("n", "obs", "nobs", "missing", "nmissing", "na", "default", "all") %in% validStats)
+#     requestedStats["n"] <- any(c("n", "obs", "nobs", "missing", "nmissing", "na", "default", "all") %in% validStats)
+    requestedStats["n"] <- any(c("n", "observations", "nobservations", "missing", "nmissing", "na", "unique", "nunique", "default", "all") %in% validStats)
     
     # Check for "mean"
 #     requestedStats["mean"] <- any(c("mean", "average", "default", "all") %in% validStats)
@@ -114,7 +115,8 @@ checkStats <- function(stats = "default", dataObjectName = NULL){
     requestedStats["median"] <- any(c("median", "q2", "quartile2", "quartiles", "fivenum", "summary", "default", "all") %in% validStats)
     
     # Check for "mode"
-    requestedStats["mode"] <- any(c("mode", "mfv", "all") %in% validStats)
+#     requestedStats["mode"] <- any(c("mode", "mfv", "all") %in% validStats)
+    requestedStats["mode"] <- any(c("mode", "mfv", "mcv", "all") %in% validStats)
     
     # Check for "sd"
     requestedStats["sd"] <- any(c("sd", "standard deviation", "std", "std dev", "default", "all") %in% validStats)
