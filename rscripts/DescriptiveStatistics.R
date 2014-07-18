@@ -356,14 +356,14 @@ checkColumns <- function(x, columns = "all", dataObjectName = NULL, keepColumnNa
 
 
 # # Used the following to debug the getResults.categorical() function
-x <- factorsdf
-na.rm <- TRUE
-silent <- FALSE
-digits <- 2L
-emptyCellSymbol <- ""
-maxLevels <- 10L
-na.exclude <- FALSE
-statsAreRows <- TRUE
+# x <- factorsdf
+# na.rm <- TRUE
+# silent <- FALSE
+# digits <- 2L
+# emptyCellSymbol <- ""
+# maxLevels <- 10L
+# na.exclude <- FALSE
+# statsAreRows <- TRUE
 # # End debugging values for getResults.categorical() function
 
 # Define the getResults.categorical() function
@@ -477,6 +477,11 @@ getResults.categorical <- function(x, na.rm = FALSE, emptyCellSymbol = "", maxLe
         # Omit the buffer row if the stats are listed as columns
         resultsDF <- data.frame(cbind(t(resultsDF), t(catLevelsDF)), check.names = FALSE, stringsAsFactors = FALSE)
     }
+    
+    # This is the same as results[["Unique"]]
+#     # Add an attribute listing the total number of levels for each
+#     # factor variable
+#     attr(resultsDF, "numLevels") <- numLevels
     
     # Return the results for the categorical variables
     return(resultsDF)
@@ -872,7 +877,85 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
 # # addTable(rtf, descriptiveStatsDF(iris), row.names = TRUE, col.justify = c("R", "R", "R", "R", "C"), header.col.justify = "C")
 # done(rtf)
 
+results <- descriptiveStatsDF(DFFH, output.showStats = "continuous", ignore = "doa")[[1L]]
+temp <- DFFH[, c("key", "age", "htcm", "wtkg")]
+for(i in seq_len(NCOL(temp))) {
+    boxplot(temp[,i,drop=FALSE])
+}
+boxplot(temp, horizontal = TRUE)
 
+layout(matrix(c(1,2),2,1))
+boxplot(temp[,2],horizontal=TRUE)
+hist(temp[,2])
+
+# ##-- Create a scatterplot with marginal histograms -----
+# def.par <- par(no.readonly = TRUE)
+# 
+# x <- pmin(3, pmax(-3, stats::rnorm(50)))
+# y <- pmin(3, pmax(-3, stats::rnorm(50)))
+# xhist <- hist(x, breaks = seq(-3,3,0.5), plot = FALSE)
+# yhist <- hist(y, breaks = seq(-3,3,0.5), plot = FALSE)
+# top <- max(c(xhist$counts, yhist$counts))
+# xrange <- c(-3, 3)
+# yrange <- c(-3, 3)
+# nf <- layout(matrix(c(2,0,1,3),2,2,byrow = TRUE), c(3,1), c(1,3), TRUE)
+# layout.show(nf)
+# 
+# par(mar = c(3,3,1,1))
+# plot(x, y, xlim = xrange, ylim = yrange, xlab = "", ylab = "")
+# par(mar = c(0,3,1,1))
+# barplot(xhist$counts, axes = FALSE, ylim = c(0, top), space = 0)
+# par(mar = c(3,0,1,1))
+# barplot(yhist$counts, axes = FALSE, xlim = c(0, top), space = 0, horiz = TRUE)
+# 
+# par(def.par)  #- reset to default
+
+
+# # http://rgraphgallery.blogspot.com/2013/04/rg-plotting-boxplot-and-histogram.html
+# # data 
+# set.seed(4566)
+# data <- rnorm(100)
+# 
+# # layout where the boxplot is at top  
+# nf <- layout(mat = matrix(c(1,2),2,1, byrow=TRUE),  height = c(1,3))
+# par(mar=c(3.1, 3.1, 1.1, 2.1))
+# boxplot(data, horizontal=TRUE,  outline=TRUE,ylim=c(-4,4), frame=FALSE, col = "green1")
+# hist(data,xlim=c(-4,4), col = "pink")
+
+
+set.seed(0718)
+x <- rnorm(500)
+# boxplot(x, frame = FALSE, axes = FALSE, horizontal = TRUE)
+# # hist(x, freq = FALSE, xlim = 1.5*c(min(x), max(x)))
+# # hist(x, freq = FALSE, xlim = c(floor(min(x)), ceiling(max(x))), add = TRUE)
+# x.hist <- hist(x, plot = FALSE)
+# hist(x, freq = FALSE, xlim = c(floor(min(x)), ceiling(max(x))), ylim = c(0, min(1, 1.05 * max(x.hist$density))))
+# lines(density(x)$x, density(x)$y, lwd = 2, col = "red")
+# box()
+
+dev.off()
+nf <- layout(matrix(c(1,2),nrow=2,ncol=1, byrow=TRUE), height=c(1,3))
+# layout.show(2)
+par(mar=c(0.1, 4.1, 0.1, 2.1))
+boxplot(x, frame = FALSE, axes = FALSE, horizontal = TRUE, ylim = c(floor(min(x)), ceiling(max(x))))
+par(mar=c(3.1, 4.1, 0.1, 2.1))
+hist(x, freq = FALSE, xlim = c(floor(min(x)), ceiling(max(x))), ylim = c(0, ceiling(10.5 * max(x.hist$density))/10), main = NULL)
+lines(density(x)$x, density(x)$y, lwd = 2, col = "red")
+##
+diffx <- diff(par()$usr[1:2])
+# diffy <- diff(par()$usr[3:4])
+xpoint <- (mean(x) + abs(par()$usr[1])) / diffx
+# par(usr = c(0, 1, 0, 1))
+abline(v = xpoint, lwd = 3, col = "blue")
+##
+# par(mar = c(5.1, 4.1, 4.1, 2.1))
+# par(def.par)
+layout(1)
+par(new=TRUE)
+# abline(v=mean(x),col="blue",lwd=3)
+# par(new=TRUE)
+par(mar = c(0.1, 4.1, 0.1, 2.1))
+plot(mean(x),1,type="h",frame=FALSE,axes=FALSE,lwd=3,col="blue",xaxt="n",yaxt="n",ylim=c(-0.1,1),xlab="",ylab="")
 
 
 
