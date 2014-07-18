@@ -668,7 +668,7 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
     
     output.showStats <- unique(match.arg(arg = tolower(output.showStats), choices = c("all", "categorical", "continuous", "byfactors", "bylevels", "none"), several.ok = TRUE))
 #     if(!export.print) {
-    if(!export.printToConsole) {
+    if(!export.printToConsole && export) {
         output.showStats <- c(output.showStats, "none")
     }
     
