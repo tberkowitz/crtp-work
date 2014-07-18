@@ -626,8 +626,8 @@ getResults.byFactors <- function(x, byFactors, x.continuous, requestedStats, na.
 # # End debugging values for descriptiveStatsDF()
 
 # Define the descriptiveStatsDF() function
-# descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2L, na.rm = TRUE, silent = FALSE, quantile.probs = 0:4/4, quantile.type = 7L, keepColumnNames = TRUE, categorical.emptyCellSymbol = "", categorical.maxLevels = 10L, categorical.na.exclude = na.rm, output.showStats = "all", byFactors = NULL, ignore = NULL, output.statsAreRows = TRUE) {
-descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2L, na.rm = TRUE, silent = FALSE, quantile.probs = 0:4/4, quantile.type = 7L, keepColumnNames = TRUE, categorical.emptyCellSymbol = "", categorical.maxLevels = 10L, categorical.na.exclude = na.rm, output.showStats = "all", byFactors = NULL, ignore = NULL, output.statsAreRows = TRUE, export = FALSE, export.file = NULL) {
+# descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2L, na.rm = TRUE, silent = FALSE, quantile.probs = 0:4/4, quantile.type = 7L, keepColumnNames = TRUE, categorical.emptyCellSymbol = "", categorical.maxLevels = 10L, categorical.na.exclude = na.rm, output.showStats = "all", byFactors = NULL, ignore = NULL, output.statsAreRows = TRUE, export = FALSE, export.file = NULL, export.print = !export) {
+descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2L, na.rm = TRUE, silent = FALSE, quantile.probs = 0:4/4, quantile.type = 7L, keepColumnNames = TRUE, categorical.emptyCellSymbol = "", categorical.maxLevels = 10L, categorical.na.exclude = na.rm, output.showStats = "all", byFactors = NULL, ignore = NULL, output.statsAreRows = TRUE, export = FALSE, export.file = NULL, export.printToConsole = !export) {
     if(silent) {
         oldWarn <- getOption("warn")
         options("warn" = -1L)
@@ -667,6 +667,10 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
     requestedStats <- checkStats(stats = as.character(stats), dataObjectName = dataObjectName)
     
     output.showStats <- unique(match.arg(arg = tolower(output.showStats), choices = c("all", "categorical", "continuous", "byfactors", "bylevels", "none"), several.ok = TRUE))
+#     if(!export.print) {
+    if(!export.printToConsole) {
+        output.showStats <- c(output.showStats, "none")
+    }
     
     if(is.data.frame(x)) {
         whatWasIt <- "data.frame"
@@ -796,7 +800,8 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
             addNewLine(rtf)
         }
         done(rtf)
-        cat(paste(strwrap(gettextf("NOTE: Your results have been exported and saved in the following location:\n%s", export.file), width = 0.95 * getOption("width")), collapse = "\n    "), sep = "")
+        on.exit(cat(paste(strwrap(gettextf("NOTE: Your results have been exported and saved in the following location:\n%s", export.file), width = 0.95 * getOption("width")), collapse = "\n    "), sep = ""), add = TRUE)
+#         warning(paste(strwrap(gettextf("NOTE: Your results have been exported and saved in the following location:\n%s", export.file), width = 0.95 * getOption("width")), collapse = "\n    "))
     }
     
     # Return (i.e. print) the list 'results'
