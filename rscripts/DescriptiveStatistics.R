@@ -764,15 +764,8 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
     # Export 'results'?
     if(export) {
         require(rtf)
-#         if(missing(export.file) || !nzchar(export.file) || !is.character(export.file)) {
         if(length(export.file) == 0L || !nzchar(export.file) || !is.character(export.file)) {
-#             export.filepath <- getwd()
-#             export.filename <- "dsdf"
-#             export.fileext <- "rtf"
-# #             export.file <- paste(getwd(), "dsdf.rtf", sep = "/")
-#             export.file <- paste(export.filepath, "/", export.filename, export.fileext, sep = "")
             export.file <- paste(getwd(), "dsdf.rtf", sep = "/")
-#             warning(paste(strwrap(gettextf("Invalid file name given for exporting the results. Defaulting to current working directory and file name 'dsdf.rtf'. Any existing files with this name will be overwritten."), width = 0.95 * getOption("width")), collapse = "\n    "))
             warning(paste(strwrap(gettextf("No valid file name was given for exporting the results. Defaulting to current working directory and file name 'dsdf.rtf'. Any existing files with this name will be overwritten."), width = 0.95 * getOption("width")), collapse = "\n    "))
         } else {
             if(!grepl(pattern = "\\.(rtf|doc|docx)$", x = export.file)) {
@@ -784,8 +777,6 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
         }
         rtf <- RTF(file = export.file, width = 8.5, height = 11, font.size = 12)
         for(i in seq_along(results)) {
-#             addText(rtf, names(results)[i], bold = TRUE)
-#             addNewLine(rtf)
             if(!is.data.frame(results[i][[1L]]) && is.list(results[i][[1L]])) {
                 addText(rtf, names(results[i]), bold = TRUE)
                 addNewLine(rtf)
@@ -837,21 +828,6 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
 # # addTable(rtf, descriptiveStatsDF(iris), row.names = TRUE, col.justify = c("R", "R", "R", "R", "C"), header.col.justify = "C")
 # done(rtf)
 
-# checkFilename <- function(x) {
-#     x <- as.character(x[1L])
-#     if(isPath <- grepl(pattern = "/|\\\\", x = x)) {
-#         y <- unlist(strsplit(x = x, split = "/|\\\\"))
-#         y <- y[length(y)]
-#         if(hasFilename <- !(unlist(strsplit(x = x, split = ""))[nchar(x)] %in% c("/", "\\"))) {
-#             if(hasFileext <- grepl(pattern = "\\.(rtf|doc|docx)$", x = x)) {
-#                 filename
-#             }
-#         }
-#         filename <- gsub(pattern = "(.*)\\.([[:alpha:]]+)$", replacement = "\\1", x = y, perl = TRUE)
-#         fileext  <- gsub(pattern = "(.*)\\.([[:alpha:]]+)$", replacement = "\\L\\2", x = y, perl = TRUE)
-#     }
-#     hasFileExt <- grepl(pattern = "", x = x)
-# }
 
 
 
