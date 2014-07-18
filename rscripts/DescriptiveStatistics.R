@@ -356,20 +356,23 @@ checkColumns <- function(x, columns = "all", dataObjectName = NULL, keepColumnNa
 
 
 # # Used the following to debug the getResults.categorical() function
-# x <- factorsdf
-# na.rm <- TRUE
-# silent <- FALSE
-# digits <- 2L
-# emptyCellSymbol <- ""
-# maxLevels <- 10L
-# na.exclude <- FALSE
-# statsAreRows <- TRUE
+x <- factorsdf
+na.rm <- TRUE
+silent <- FALSE
+digits <- 2L
+emptyCellSymbol <- ""
+maxLevels <- 10L
+na.exclude <- FALSE
+statsAreRows <- TRUE
 # # End debugging values for getResults.categorical() function
 
 # Define the getResults.categorical() function
 getResults.categorical <- function(x, na.rm = FALSE, emptyCellSymbol = "", maxLevels = 10L, na.exclude = na.rm, statsAreRows = TRUE){
     # Initialize an empty list object named "results"
     results <- list()
+    
+    # Guarantee 'x' is a data frame
+    x <- data.frame(x, check.names = FALSE, stringsAsFactors = TRUE)
     
     # Check if each factor has missing values
     hasNA <- sapply(X = x, FUN = anyNA)
@@ -393,6 +396,17 @@ getResults.categorical <- function(x, na.rm = FALSE, emptyCellSymbol = "", maxLe
         results[["Unique"]] <- sapply(X = x, FUN = function(x){length(unique(x))})
         table.useNA <- "always"
     }
+    
+    # Determine the most frequently occurring factor level for each
+    # variable
+    modeLevels <- sapply(X = x, FUN = function(y){sort(table(y, useNA = table.useNA), decreasing = TRUE)[1L]})
+#     names(modeLevels) <- gsub(pattern = "^f[[:digit:]]\\.", replacement = "", x = names(modeLevels))
+    newNames <- names(modeLevels)
+    for(i in seq_along(newNames)) {
+        newNames[i] <- gsub(pattern = paste(names(x)[i], ".", sep = ""), replacement = "", x = names(modeLevels)[i])
+    }
+#     results[["MFV"]] <- paste(names(modeLevels), " (", modeLevels, ", ", formatC(100*modeLevels/results[["N"]], digits = 1L, format = "f"), "%)", sep = "")
+    results[["MFV"]] <- paste(newNames, " (", modeLevels, ", ", formatC(100*modeLevels/results[["N"]], digits = 1L, format = "f"), "%)", sep = "")
     
     # What should be put in the empty "cells" of the factor levels
     # frequencies table? (Only accept the first element if a vector
