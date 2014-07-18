@@ -772,7 +772,8 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
 # #             export.file <- paste(getwd(), "dsdf.rtf", sep = "/")
 #             export.file <- paste(export.filepath, "/", export.filename, export.fileext, sep = "")
             export.file <- paste(getwd(), "dsdf.rtf", sep = "/")
-            warning(paste(strwrap(gettextf("Invalid file name given for exporting the results. Defaulting to current working directory and file name 'dsdf.rtf'. Any existing files with this name will be overwritten."), width = 0.95 * getOption("width")), collapse = "\n    "))
+#             warning(paste(strwrap(gettextf("Invalid file name given for exporting the results. Defaulting to current working directory and file name 'dsdf.rtf'. Any existing files with this name will be overwritten."), width = 0.95 * getOption("width")), collapse = "\n    "))
+            warning(paste(strwrap(gettextf("No valid file name was given for exporting the results. Defaulting to current working directory and file name 'dsdf.rtf'. Any existing files with this name will be overwritten."), width = 0.95 * getOption("width")), collapse = "\n    "))
         } else {
             if(!grepl(pattern = "\\.(rtf|doc|docx)$", x = export.file)) {
                 export.file <- paste(export.file, "rtf", sep = ".")
@@ -804,6 +805,7 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
             addNewLine(rtf)
         }
         done(rtf)
+        cat(paste(strwrap(gettextf("NOTE: Your results have been exported and saved in the following location:\n%s", export.file), width = 0.95 * getOption("width")), collapse = "\n    "), sep = "")
     }
     
     # Return (i.e. print) the list 'results'
