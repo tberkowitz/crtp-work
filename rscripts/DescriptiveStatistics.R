@@ -222,8 +222,8 @@ checkColumns <- function(x, columns = "all", dataObjectName = NULL, keepColumnNa
     # only for use inide this (checkColumns()) function to faciliate
     # readable error and warning printing to the console
     pasteWrap <- function(msg, dataObjectName, what, width = 0.95 * getOption("width")) {
-#         paste(strwrap(gettextf(msg, sQuote(dataObjectName), paste(what, collapse = ", ")), width = width), collapse = "\n    ")
-        strwrap(gettextf(msg, sQuote(dataObjectName), paste(what, collapse = ", ")), width = width, prefix = "\n    ", initial = "")
+        paste(strwrap(gettextf(msg, sQuote(dataObjectName), paste(what, collapse = ", ")), width = width), collapse = "\n    ")
+#         strwrap(gettextf(msg, sQuote(dataObjectName), paste(what, collapse = ", ")), width = width, prefix = "\n    ", initial = "")
     }
     
     # If 'x' doesn't have columns (for some weird reason), then
@@ -309,7 +309,7 @@ checkColumns <- function(x, columns = "all", dataObjectName = NULL, keepColumnNa
                     # evaluating msg1 --> specify to only ever paste()
                     # the first element of invalidColumns for msg1
                     warning(ngettext(n = length(invalidColumns),
-                                     msg1 = pasteWrap(msg = "The following column does not exist in %s and will be ignored: %s.", dataObjectName = dataObjectName, what = invalidColumns),
+                                     msg1 = pasteWrap(msg = "The following column does not exist in %s and will be ignored: %s.", dataObjectName = dataObjectName, what = invalidColumns[1L]),
                                      msg2 = pasteWrap(msg = "The following columns do not exist in %s and will be ignored: %s.", dataObjectName = dataObjectName, what = invalidColumns)))
                     columns <- columns[match(x = columns, table = colnames(x), nomatch = 0L) > 0L]
                 }
@@ -337,7 +337,7 @@ checkColumns <- function(x, columns = "all", dataObjectName = NULL, keepColumnNa
             # the variable
             invalidColumns <- as.integer(columns[which((columns > ncol(x)) | (columns < 1L))])
             warning(ngettext(n = length(invalidColumns),
-                             msg1 = pasteWrap(msg = "The following column index does not exist in the data set %s and will be ignored: %s.", dataObjectName = dataObjectName, what = invalidColumns),
+                             msg1 = pasteWrap(msg = "The following column index does not exist in the data set %s and will be ignored: %s.", dataObjectName = dataObjectName, what = invalidColumns[1L]),
                              msg2 = pasteWrap(msg = "The following column indices do not exist in the data set %s and will be ignored: %s.", dataObjectName = dataObjectName, what = invalidColumns)))
             columns <- columns[!(columns %in% invalidColumns)]
             }
@@ -661,10 +661,17 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
             return(list("name" = object,
                         "indices" = type.convert(y[nzchar(y)], as.is = TRUE)))
         }
-        x <- data.frame(x, check.names = FALSE, stringsAsFactors = FALSE)
+#         x <- data.frame(x, check.names = FALSE, stringsAsFactors = FALSE)
         bracketfree <- unbracket(x = dataObjectName)
         dataObjectName <- bracketfree[["name"]]
         columns <- bracketfree[["indices"]]
+#         originalHasColumnNames <- length(dimnames(x)[[2L]]) > 0L
+#         if(is.character(columns) && originalHasColumnNames) {
+#             columns <- intersect(columns, dimnames(x)[[2L]])
+#         } else {
+#             
+#         }
+        x <- data.frame(x, check.names = FALSE, stringsAsFactors = FALSE)
         if(is.integer(bracketfree[["indices"]])) {
             colnames(x) <- columns
             oldColumnNames <- paste("Column ", columns, sep = "")
@@ -850,11 +857,6 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
 # }
 # # addTable(rtf, descriptiveStatsDF(iris), row.names = TRUE, col.justify = c("R", "R", "R", "R", "C"), header.col.justify = "C")
 # done(rtf)
-
-
-
-
-
 
 
 
