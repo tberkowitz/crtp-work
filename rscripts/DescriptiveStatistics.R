@@ -148,9 +148,9 @@ checkStats <- function(stats = "default", dataObjectName = NULL){
 }
 
 # Define the variableType() function - check if continuous/categorical/binary/etc.
-variableType <- function(x, NAIsError = FALSE){
+variableType <- function(x, NAIsError = FALSE) {
     x <- x[!is.na(x)]
-    if(length(x) < 1L){
+    if(length(x) < 1L) {
         if(NAIsError) {
             stop(strwrap(gettextf("The variable does not have enough non-missing values for me to determine its type."), width = 0.95 * getOption("width"), prefix = "\n    ", initial = ""))
         } else {
@@ -158,11 +158,11 @@ variableType <- function(x, NAIsError = FALSE){
             return(NA_character_)
         }
     }
-    if((length(unique(x)) == 2L && length(x) > 2L && !(is.factor(x) || is.character(x))) || is.logical(x)){
+    if((length(unique(x)) == 2L && length(x) > 2L && !(is.factor(x) || is.character(x))) || is.logical(x)) {
         "binary"
     } else if(any(class(x) %in% c("Date", "POSIXt", "POSIXct", "POSIXlt"))) {
         "date"
-    } else if(is.character(x) || is.factor(x) || (is.integer(x) && length(unique(x)) <= 10L)){
+    } else if(is.character(x) || is.factor(x) || (is.integer(x) && length(unique(x)) <= 10L)) {
         "categorical"
     } else {
         "continuous"
@@ -192,7 +192,8 @@ quantile.datesOK <- function(x, probs = seq(from = 0, to = 1, by = 0.25), type =
     if(any(class(x) %in% c("POSIXt", "Date"))){
         x <- unclass(x)
     }
-    quantile(x, probs = probs, type = type, ...)
+#     quantile(x, probs = probs, type = type, ...)
+    stats::quantile(x, probs = probs, type = type, ...)
 }
 
 # Define the fivenum.datesOK() function
@@ -202,7 +203,8 @@ fivenum.datesOK <- function(x, na.rm = TRUE) {
     } else {
         x
     }
-    results.fivenum.datesOK <- fivenum(x = y, na.rm = na.rm)
+#     results.fivenum.datesOK <- fivenum(x = y, na.rm = na.rm)
+    results.fivenum.datesOK <- stats::fivenum(x = y, na.rm = na.rm)
     #     if(isDateVar) {
     #         class(results.fivenum.datesOK) <- class(x)
     #     }
@@ -507,12 +509,14 @@ getResults.continuous <- function(x, requestedStats, na.rm = getOption("na.rm", 
     
     # If "sd" is requested
     if(requestedStats["sd"]){
-        results[["Std. Dev."]] <- sapply(X = x, FUN = function(x){sqrt(var(x, na.rm = na.rm))})
+#         results[["Std. Dev."]] <- sapply(X = x, FUN = function(x){sqrt(var(x, na.rm = na.rm))})
+        results[["Std. Dev."]] <- sapply(X = x, FUN = stats::sd, na.rm = na.rm)
     }
     
     # If "var" is requested
     if(requestedStats["variance"]){
-        results[["Variance"]] <- sapply(X = x, FUN = var, na.rm = na.rm)
+#         results[["Variance"]] <- sapply(X = x, FUN = var, na.rm = na.rm)
+        results[["Variance"]] <- sapply(X = x, FUN = stats::var, na.rm = na.rm)
     }
     
     # If "mode" (i.e., the most frequent value) is requested
@@ -537,7 +541,8 @@ getResults.continuous <- function(x, requestedStats, na.rm = getOption("na.rm", 
     
     # If "median" is requested
     if(requestedStats["median"]){
-        results[["Median"]] <- sapply(X = x, FUN = median, na.rm = na.rm)
+#         results[["Median"]] <- sapply(X = x, FUN = median, na.rm = na.rm)
+        results[["Median"]] <- sapply(X = x, FUN = stats::median, na.rm = na.rm)
     }
     
     # If "quartile3" is requested
@@ -562,7 +567,8 @@ getResults.continuous <- function(x, requestedStats, na.rm = getOption("na.rm", 
     
     # If "iqr" is requested
     if(requestedStats["iqr"]){
-        results[["IQR"]] <- sapply(X = x, FUN = IQR, na.rm = na.rm, type = quantile.type)
+#         results[["IQR"]] <- sapply(X = x, FUN = IQR, na.rm = na.rm, type = quantile.type)
+        results[["IQR"]] <- sapply(X = x, FUN = stats::IQR, na.rm = na.rm, type = quantile.type)
     }
     
     # If "quantiles" is requested
@@ -672,12 +678,14 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
 #             
 #         }
         x <- data.frame(x, check.names = FALSE, stringsAsFactors = FALSE)
+        colnames(x) <- columns
         if(is.integer(bracketfree[["indices"]])) {
-            colnames(x) <- columns
+#             colnames(x) <- columns
             oldColumnNames <- paste("Column ", columns, sep = "")
             on.exit(warning(strwrap(gettext("NOTE: The data set provided to this function was a subset of a larger data set and the columns (i.e., the variables) were specified by numeric index. Because of this, the column names in the resulting output may not accurately correspond to those in the original data set. This can be fixed by using the 'columns' argument and/or named columns (if possible) to specify the variables of interest."), width = 0.95 * getOption("width"), prefix = "\n    ", initial = ""), call. = FALSE), add = TRUE)
         } else {
-            oldColumnNames <- colnames(x) <- columns
+#             oldColumnNames <- colnames(x) <- columns
+            oldColumnNames <- columns
         }
     }
     
@@ -730,7 +738,6 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
     byFactors <- intersect(checkedColumns[["validColumns"]], byFactors)
     
     x <- x[, checkedColumns[["validColumns"]], drop = FALSE]
-    
     
     if(keepColumnNames) {
         colnames(x) <- checkedColumns[["validColumnNames"]]
@@ -800,24 +807,37 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
         rtf <- RTF(file = export.file, width = 8.5, height = 11, font.size = 12)
         for(i in seq_along(results)) {
             if(!is.data.frame(results[i][[1L]]) && is.list(results[i][[1L]])) {
-                addText(rtf, names(results[i]), bold = TRUE)
-                addNewLine(rtf)
+#                 addText(rtf, names(results[i]), bold = TRUE)
+#                 addNewLine(rtf)
+                rtf::addText(rtf, names(results[i]), bold = TRUE)
+                rtf::addNewLine(rtf)
                 for(j in seq_along(results[i][[1L]])) {
-                    addText(rtf, names(results[i][[1L]])[j], italic = TRUE)
-                    addNewLine(rtf)
-                    addTable(rtf, results[i][[1L]][[j]])
-                    addNewLine(rtf)
+#                     addText(rtf, names(results[i][[1L]])[j], italic = TRUE)
+#                     addNewLine(rtf)
+#                     addTable(rtf, results[i][[1L]][[j]])
+#                     addNewLine(rtf)
+                    rtf::addText(rtf, names(results[i][[1L]])[j], italic = TRUE)
+                    rtf::addNewLine(rtf)
+                    rtf::addTable(rtf, results[i][[1L]][[j]])
+                    rtf::addNewLine(rtf)
                 }
             } else {
-                addText(rtf, names(results)[i], bold = TRUE)
-                addNewLine(rtf)
-                addTable(rtf, results[[i]], row.names = TRUE)
-                addNewLine(rtf)
+#                 addText(rtf, names(results)[i], bold = TRUE)
+#                 addNewLine(rtf)
+#                 addTable(rtf, results[[i]], row.names = TRUE)
+#                 addNewLine(rtf)
+                rtf::addText(rtf, names(results)[i], bold = TRUE)
+                rtf::addNewLine(rtf)
+                rtf::addTable(rtf, results[[i]], row.names = TRUE)
+                rtf::addNewLine(rtf)
             }
-            addNewLine(rtf)
-            addNewLine(rtf)
+#             addNewLine(rtf)
+#             addNewLine(rtf)
+            rtf::addNewLine(rtf)
+            rtf::addNewLine(rtf)
         }
-        done(rtf)
+#         done(rtf)
+        rtf::done(rtf)
         on.exit(cat(strwrap(gettextf("NOTE: Your results have been exported and saved in the following location:\n%s", export.file), width = 0.95 * getOption("width"), prefix = "\n    ", initial = ""), sep = ""), add = TRUE)
     }
     
