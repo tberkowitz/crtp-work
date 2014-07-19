@@ -794,7 +794,8 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
     if(export) {
         require(rtf)
         if(length(export.file) == 0L || !nzchar(export.file) || !is.character(export.file)) {
-            export.file <- paste(getwd(), "dsdf.rtf", sep = "/")
+#             export.file <- paste(getwd(), "dsdf.rtf", sep = "/")
+            export.file <- paste(getwd(), "dsdf%03d.rtf", sep = "/")
             warning(strwrap(gettextf("No valid file name was given for exporting the results. Defaulting to current working directory and file name 'dsdf.rtf'. Any existing files with this name will be overwritten."), width = 0.95 * getOption("width"), prefix = "\n    ", initial = ""))
         } else {
             if(!grepl(pattern = "\\.(rtf|doc|docx)$", x = export.file)) {
@@ -870,85 +871,262 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
 # # addTable(rtf, descriptiveStatsDF(iris), row.names = TRUE, col.justify = c("R", "R", "R", "R", "C"), header.col.justify = "C")
 # done(rtf)
 
-results <- descriptiveStatsDF(DFFH, output.showStats = "continuous", ignore = "doa")[[1L]]
-temp <- DFFH[, c("key", "age", "htcm", "wtkg")]
-for(i in seq_len(NCOL(temp))) {
-    boxplot(temp[,i,drop=FALSE])
-}
-boxplot(temp, horizontal = TRUE)
 
-layout(matrix(c(1,2),2,1))
-boxplot(temp[,2],horizontal=TRUE)
-hist(temp[,2])
-
-# ##-- Create a scatterplot with marginal histograms -----
-# def.par <- par(no.readonly = TRUE)
+# ## PLOTTING ESCAPADES ##
+# results <- descriptiveStatsDF(DFFH, output.showStats = "continuous", ignore = "doa")[[1L]]
+# temp <- DFFH[, c("key", "age", "htcm", "wtkg")]
+# for(i in seq_len(NCOL(temp))) {
+#     boxplot(temp[,i,drop=FALSE])
+# }
+# boxplot(temp, horizontal = TRUE)
 # 
-# x <- pmin(3, pmax(-3, stats::rnorm(50)))
-# y <- pmin(3, pmax(-3, stats::rnorm(50)))
-# xhist <- hist(x, breaks = seq(-3,3,0.5), plot = FALSE)
-# yhist <- hist(y, breaks = seq(-3,3,0.5), plot = FALSE)
-# top <- max(c(xhist$counts, yhist$counts))
-# xrange <- c(-3, 3)
-# yrange <- c(-3, 3)
-# nf <- layout(matrix(c(2,0,1,3),2,2,byrow = TRUE), c(3,1), c(1,3), TRUE)
-# layout.show(nf)
+# layout(matrix(c(1,2),2,1))
+# boxplot(temp[,2],horizontal=TRUE)
+# hist(temp[,2])
 # 
-# par(mar = c(3,3,1,1))
-# plot(x, y, xlim = xrange, ylim = yrange, xlab = "", ylab = "")
-# par(mar = c(0,3,1,1))
-# barplot(xhist$counts, axes = FALSE, ylim = c(0, top), space = 0)
-# par(mar = c(3,0,1,1))
-# barplot(yhist$counts, axes = FALSE, xlim = c(0, top), space = 0, horiz = TRUE)
+# # ##-- Create a scatterplot with marginal histograms -----
+# # def.par <- par(no.readonly = TRUE)
+# # 
+# # x <- pmin(3, pmax(-3, stats::rnorm(50)))
+# # y <- pmin(3, pmax(-3, stats::rnorm(50)))
+# # xhist <- hist(x, breaks = seq(-3,3,0.5), plot = FALSE)
+# # yhist <- hist(y, breaks = seq(-3,3,0.5), plot = FALSE)
+# # top <- max(c(xhist$counts, yhist$counts))
+# # xrange <- c(-3, 3)
+# # yrange <- c(-3, 3)
+# # nf <- layout(matrix(c(2,0,1,3),2,2,byrow = TRUE), c(3,1), c(1,3), TRUE)
+# # layout.show(nf)
+# # 
+# # par(mar = c(3,3,1,1))
+# # plot(x, y, xlim = xrange, ylim = yrange, xlab = "", ylab = "")
+# # par(mar = c(0,3,1,1))
+# # barplot(xhist$counts, axes = FALSE, ylim = c(0, top), space = 0)
+# # par(mar = c(3,0,1,1))
+# # barplot(yhist$counts, axes = FALSE, xlim = c(0, top), space = 0, horiz = TRUE)
+# # 
+# # par(def.par)  #- reset to default
 # 
-# par(def.par)  #- reset to default
-
-
-# # http://rgraphgallery.blogspot.com/2013/04/rg-plotting-boxplot-and-histogram.html
-# # data 
-# set.seed(4566)
-# data <- rnorm(100)
 # 
-# # layout where the boxplot is at top  
-# nf <- layout(mat = matrix(c(1,2),2,1, byrow=TRUE),  height = c(1,3))
-# par(mar=c(3.1, 3.1, 1.1, 2.1))
-# boxplot(data, horizontal=TRUE,  outline=TRUE,ylim=c(-4,4), frame=FALSE, col = "green1")
-# hist(data,xlim=c(-4,4), col = "pink")
-
-
-set.seed(0718)
-x <- rnorm(500)
-# boxplot(x, frame = FALSE, axes = FALSE, horizontal = TRUE)
-# # hist(x, freq = FALSE, xlim = 1.5*c(min(x), max(x)))
-# # hist(x, freq = FALSE, xlim = c(floor(min(x)), ceiling(max(x))), add = TRUE)
+# # # http://rgraphgallery.blogspot.com/2013/04/rg-plotting-boxplot-and-histogram.html
+# # # data 
+# # set.seed(4566)
+# # data <- rnorm(100)
+# # 
+# # # layout where the boxplot is at top  
+# # nf <- layout(mat = matrix(c(1,2),2,1, byrow=TRUE),  height = c(1,3))
+# # par(mar=c(3.1, 3.1, 1.1, 2.1))
+# # boxplot(data, horizontal=TRUE,  outline=TRUE,ylim=c(-4,4), frame=FALSE, col = "green1")
+# # hist(data,xlim=c(-4,4), col = "pink")
+# 
+# 
+# set.seed(0718)
+# x <- rnorm(500, sd = 100)
 # x.hist <- hist(x, plot = FALSE)
-# hist(x, freq = FALSE, xlim = c(floor(min(x)), ceiling(max(x))), ylim = c(0, min(1, 1.05 * max(x.hist$density))))
+# # boxplot(x, frame = FALSE, axes = FALSE, horizontal = TRUE)
+# # # hist(x, freq = FALSE, xlim = 1.5*c(min(x), max(x)))
+# # # hist(x, freq = FALSE, xlim = c(floor(min(x)), ceiling(max(x))), add = TRUE)
+# # x.hist <- hist(x, plot = FALSE)
+# # hist(x, freq = FALSE, xlim = c(floor(min(x)), ceiling(max(x))), ylim = c(0, min(1, 1.05 * max(x.hist$density))))
+# # lines(density(x)$x, density(x)$y, lwd = 2, col = "red")
+# # box()
+# 
+# dev.off()
+# nf <- layout(matrix(c(1,2),nrow=2,ncol=1, byrow=TRUE), height=c(1,3))
+# # layout.show(2)
+# par(mar=c(0.1, 4.1, 0.1, 2.1))
+# boxplot(x, frame = FALSE, axes = FALSE, horizontal = TRUE, ylim = c(floor(min(x)), ceiling(max(x))))
+# par(mar=c(3.1, 4.1, 0.1, 2.1))
+# hist(x, freq = FALSE, xlim = c(floor(min(x)), ceiling(max(x))), ylim = c(0, ceiling(10.5 * max(x.hist$density))/10), main = NULL)
 # lines(density(x)$x, density(x)$y, lwd = 2, col = "red")
-# box()
-
-dev.off()
-nf <- layout(matrix(c(1,2),nrow=2,ncol=1, byrow=TRUE), height=c(1,3))
-# layout.show(2)
-par(mar=c(0.1, 4.1, 0.1, 2.1))
-boxplot(x, frame = FALSE, axes = FALSE, horizontal = TRUE, ylim = c(floor(min(x)), ceiling(max(x))))
-par(mar=c(3.1, 4.1, 0.1, 2.1))
-hist(x, freq = FALSE, xlim = c(floor(min(x)), ceiling(max(x))), ylim = c(0, ceiling(10.5 * max(x.hist$density))/10), main = NULL)
-lines(density(x)$x, density(x)$y, lwd = 2, col = "red")
-##
-diffx <- diff(par()$usr[1:2])
-# diffy <- diff(par()$usr[3:4])
-xpoint <- (mean(x) + abs(par()$usr[1])) / diffx
-# par(usr = c(0, 1, 0, 1))
-abline(v = xpoint, lwd = 3, col = "blue")
-##
-# par(mar = c(5.1, 4.1, 4.1, 2.1))
-# par(def.par)
-layout(1)
-par(new=TRUE)
-# abline(v=mean(x),col="blue",lwd=3)
+# ##
+# diffx <- diff(par()$usr[1:2])
+# # diffy <- diff(par()$usr[3:4])
+# xpoint <- (mean(x) + abs(par()$usr[1])) / diffx
+# # par(usr = c(0, 1, 0, 1))
+# abline(v = xpoint, lwd = 3, col = "blue")
+# ##
+# # par(mar = c(5.1, 4.1, 4.1, 2.1))
+# # par(def.par)
+# layout(1)
 # par(new=TRUE)
-par(mar = c(0.1, 4.1, 0.1, 2.1))
-plot(mean(x),1,type="h",frame=FALSE,axes=FALSE,lwd=3,col="blue",xaxt="n",yaxt="n",ylim=c(-0.1,1),xlab="",ylab="")
+# # abline(v=mean(x),col="blue",lwd=3)
+# # par(new=TRUE)
+# par(mar = c(0.1, 4.1, 0.1, 2.1))
+# plot(mean(x),1,type="h",frame=FALSE,axes=FALSE,lwd=3,col="blue",xaxt="n",yaxt="n",ylim=c(-0.1,1),xlab="",ylab="")
+# 
+# 
+# set.seed(0719)
+# x <- rnorm(400, mean = 4)
+# x.hist <- hist(x, plot = FALSE)
+# par(def.par)
+# # par(mfrow=c(1,2))
+# par(mfcol=c(2,1))
+# par(mar=c(0.1,4.1,0.1,2.1))
+# x.limits <- c(min(x, na.rm = TRUE), max(x, na.rm = TRUE))
+# boxplot(x = x, horizontal = TRUE, axes = FALSE, xlim = x.limits)
+# hist(x = x, freq = FALSE, xlim = x.limits, main = NULL)
+# 
+# x.hist <- hist(x = x, plot = FALSE)
+# 
+# 
+# dev.off()
+# # 2014-07-19: http://stackoverflow.com/a/16083416
+# set.seed(123)
+# data <- rnorm(1000)
+# nf <- layout(mat = matrix(c(1,2),2,1, byrow=TRUE),  height = c(1,3))
+# par(mar=c(5.1, 4.1, 1.1, 2.1))
+# boxplot(data, horizontal=TRUE,  outline=FALSE,ylim=c(-4,4),xlab="",ylab="",axes=FALSE)
+# hist(data,xlim=c(-4,4))
+# 
+# 
+# # findDecimalPoint <- function(x, decimal.mark = ".") {
+# #     if(is.integer(x[1L])) {
+# #         return(nchar(x[1L]) + 1L)
+# #     }
+# #     decimal.mark <- as.character(decimal.mark[1L])
+# #     if(length(decimal.mark) == 0L || !(decimal.mark %in% c(".", ","))) {
+# #         decimal.mark <- "."
+# #     }
+# #     x <- unlist(strsplit(x = as.character(as.numeric(x[1L])), split = decimal.mark, fixed = TRUE))
+# #     return(nchar(x[1L]) + 1L)
+# # }
+# # findDecimalPoint <- function(x) {
+# #     x <- as.numeric(x)[!is.na(as.numeric(x))]
+# # #     iparts <- trunc(x)
+# # #     isPositive <- nchar(iparts) == nchar(abs(iparts))
+# # #     return(nchar(iparts) - !isPositive + 1L)
+# # #     return(nchar(abs(iparts)) + 1L)
+# #     return(nchar(abs(trunc(x))) + 1L)
+# # }
+# # round(head(x), )
+# # 
+# # set.seed(0719)
+# # x <- rnorm(20)
+# # findDecimalPoint <- function(x, decimal.mark = ".") {
+# #     if(is.integer(x)) {
+# #         return(nchar(x) + 1L)
+# #     }
+# #     decimal.mark <- as.character(decimal.mark)
+# #     if(length(decimal.mark) == 0L || !all(decimal.mark %in% c(".", ","))) {
+# #         decimal.mark[!(decimal.mark %in% c(".", ","))] <- "."
+# #     }
+# #     x <- unlist(strsplit(x = as.character(as.numeric(x)), split = decimal.mark, fixed = TRUE))
+# #     return(nchar(x[1L]) + 1L)
+# # }
+# 
+# # getRounding <- function(x) {
+# #     # The following integer will represent how many places you would
+# #     # need to "move" the decimal point *to the left* in order to end
+# #     # up with exactly one non-zero digit to the left of the decimal
+# #     # point. (Negative values mean you need to move to the right.)
+# #     minplaces <- floor(log10(abs(x)))
+# #     mins <- floor(x / (10^minplaces)) * 10^minplaces
+# #     
+# #     maxplaces <- ceiling(log10(abs(x))) - 1L
+# #     maxs <- ceiling(x / (10^maxplaces)) * 10^maxplaces
+# #     return(list("mins" = mins, "maxs" = maxs))
+# # }
+# # getRounding <- function(x) {
+# #     places <- trunc(log10(abs(range(x))))
+# #     places[!is.finite(places)] <- 0L
+# #     c(floor(range(x) / (10^places))[1L], ceiling(range(x) / (10^places))[2L]) * 10^places
+# # #     c(floor(range(x) / (10^places))[1L], ceiling(range(x) / (10^(places-1L)))[2L]) * 10^places
+# # }
+
+# ## USE THIS STUFF ##
+# getRounding <- function(x) {
+#     larx <- log10(abs(range(x)))
+#     larx[!is.finite(larx) | is.na(larx)] <- 0L
+#     minplaces <- floor(larx[1L])
+#     maxplaces <- ceiling(larx[2L])
+#     c((floor(range(x)[1L] / (10^minplaces)) * 10^minplaces), (ceiling(range(x)[2L] / (10^(maxplaces - 1L))) * 10^(maxplaces - 1L)))
+# }
+# 
+# 
+# set.seed(0718)
+# x <- rnorm(500, sd = 100)
+# # x <- rexp(500, rate = 0.01)
+# x.boxplot.stats <- boxplot(x, plot = FALSE)$stats
+# x.hist.density <- hist(x, plot = FALSE)$density
+# 
+# dev.off()
+# nf <- layout(matrix(c(1,2),nrow=2,ncol=1, byrow=TRUE), height=c(1,3))
+# par(mar=c(0, 4.1, 1.1, 2.1))
+# boxplot(x, frame = FALSE, axes = FALSE, horizontal = TRUE, ylim = getRounding(x))
+# # abline(v = mean(x), lwd = 2, col = "blue")
+# # abline(v = median(x), lwd = 2, lty = "dashed", col = "orange")
+# # abline(v = unname(quantile(x, probs = c(1/4, 3/4), type = 7L)), lwd = 2, lty = "dashed", col = "dark green")
+# segments(x0 = mean(x), y0 = 0L, x1 = mean(x), y1 = 1L, lwd = 2, col = "blue")
+# segments(x0 = median(x), y0 = 0L, x1 = median(x), y1 = 1L, lwd = 2, lty = "dashed", col = "orange")
+# segments(x0 = unname(quantile(x, probs = c(1/4, 3/4), type = 7L)), y0 = 0L, x1 = unname(quantile(x, probs = c(1/4, 3/4), type = 7L)), y1 = 1L, lwd = 2, lty = "dashed", col = "dark green")
+# segments(x0 = x.boxplot.stats[1L], y0 = 0L, x1 = x.boxplot.stats[1L], y1 = 1L, col = "magenta", lty = 3L, lwd = 2L)
+# segments(x0 = x.boxplot.stats[5L], y0 = 0L, x1 = x.boxplot.stats[5L], y1 = 1L, col = "magenta", lty = 3L, lwd = 2L)
+# 
+# par(mar=c(3.1, 4.1, 0, 2.1))
+# # hist(x, freq = FALSE, xlim = getRounding(x), ylim = getRounding(hist(x, plot = FALSE)$density), main = NULL)
+# hist(x, freq = FALSE, xlim = getRounding(x), ylim = getRounding(x.hist.density), main = NULL)
+# lines(density(x)$x, density(x)$y, lwd = 2, col = "red")
+# abline(v = mean(x), lwd = 2, col = "blue")
+# abline(v = unname(quantile(x, probs = c(1/4, 3/4), type = 7L)), lwd = 2, lty = "dashed", col = "dark green")
+# abline(v = median(x), lwd = 2, lty = "dashed", col = "orange")
+# # abline(v = min(x), lwd = 2, lty = 3, col = "magenta")
+# # abline(v = max(x), lwd = 2, lty = 3, col = "magenta")
+# abline(v = x.boxplot.stats[1L], lwd = 2, lty = 3, col = "magenta")
+# abline(v = x.boxplot.stats[5L], lwd = 2, lty = 3, col = "magenta")
+# ## END USE THIS STUFF ##
+
+# ## EXTRA IDEAS/PLANS ##
+# par(new = TRUE)
+# # plot(ecdf(x), col = "violet", frame = FALSE, axes = FALSE, xlim = getRounding(x), ylim = getRounding(hist(x, plot = FALSE)$density), xlab = "", ylab = "", main = "")
+# plot(x = sort(x), y = seq_along(x) * max(x.hist.density) / length(x), col = "purple", type = "s", frame = FALSE, axes = FALSE, xlim = getRounding(x), ylim = getRounding(hist(x, plot = FALSE)$density), xlab = "", ylab = "", main = "")
+# # segments(x0 = mean(x), y0 = max(x.hist.density), x1 = max(x), y1 = max(x.hist.density), col = "violet", lty = 5L)
+# 
+# # legend("right",
+# #        inset = 0.05,
+# #        legend = c("Mean", "Median", "Quartiles", "Min. and Max."),
+# #        lty = c(1L, 2L, 2L, 3L),
+# #        lwd = c(2L, 2L, 2L, 2L),
+# #        col = c("blue", "orange", "dark green", "magenta"))
+# # legend("right",
+# #        inset = 0.01,
+# #        legend = c(paste(formatC(mean(x), digits = 1L, format = "f"), " (", formatC(sd(x), digits = 1L, format = "f"), ")", sep = ""), paste(formatC(median(x), digits = 1, format = "f"), " (", formatC(quantile(x, probs = 1/4, type = 7L), digits = 1L, format = "f"), " - ", formatC(quantile(x, probs = 3/4, type = 7L), digits = 1L, format = "f"), ")", sep = "")))
+# 
+# 
+# # # Line types
+# # lty <- 1L
+# # lty.density <- lty
+# # lty.mean <- lty
+# # lty.median <- lty + 1L
+# # lty.quartile1 <- lty + 1L
+# # lty.quartile3 <- lty + 1L
+# # lty.minimum <- lty + 2L
+# # lty.maximum <- lty + 2L
+# # 
+# # # Line widths
+# # lwd <- 2L
+# # lwd.density <- lwd
+# # lwd.mean <- lwd
+# # lwd.median <- lwd
+# # lwd.quartile1 <- lwd
+# # lwd.quartile3 <- lwd
+# # lwd.minimum <- lwd
+# # lwd.maximum <- lwd
+# # 
+# # # Line colors
+# # col <- "black"
+# # col.density <- "red"
+# # col.mean <- "blue"
+# # col.median <- "orange"
+# # col.quartile1 <- "dark green"
+# # col.quartile3 <- "dark green"
+# # col.minimum <- "magenta"
+# # col.maximum <- "magenta"
+# # 
+# # # Plot range limits
+# # ylim.boxplot <- xlim.histogram <- getRounding(x)
+# # ylim.histogram <- getRounding(hist(x, plot = FALSE)$density)
+# ## END EXTRA IDEAS/PLANS ##
+
 
 
 
