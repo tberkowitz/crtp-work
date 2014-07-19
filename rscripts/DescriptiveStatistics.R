@@ -33,8 +33,6 @@ MFV <- function(x, outputValue, na.rm = getOption("na.rm", default = FALSE), sil
     
     uniqueX <- unique(x)
     if(length(x) == length(uniqueX)){
-# #         warning("There were no duplicate values in the data. Result is the first data value.")
-#         warning(paste(strwrap("There were no duplicate values in the data. Result is the first data value.", width = 0.95 * getOption("width")), collapse = "\n    "))
         warning(strwrap("There were no duplicate values in the data. Result is the first data value.", width = 0.95 * getOption("width"), prefix = "\n    ", initial = ""))
         if(na.rm){
             x <- x[!is.na(x)]
@@ -51,8 +49,6 @@ MFV <- function(x, outputValue, na.rm = getOption("na.rm", default = FALSE), sil
     freqs <- as.vector(table(x)) # NB: table() sorts frequencies by their unique values in ascending order
     maxFreq <- max(freqs)
     if(identical(length(unique(freqs)), 1L)){
-# #         warning(sprintf("All data values occur with frequency %1d. Only the first value will be returned.", as.integer(unique(freqs))))
-#         warning(paste(strwrap(gettextf("All data values occur with frequency %1d. Only the first value will be returned.", as.integer(unique(freqs))), width = 0.95 * getOption("width")), collapse = "\n    "))
         warning(strwrap(gettextf("All data values occur with frequency %1d. Only the first value will be returned.", as.integer(unique(freqs))), width = 0.95 * getOption("width"), prefix = "\n    ", initial = ""))
         return(x[1L])
     }
@@ -87,7 +83,6 @@ checkStats <- function(stats = "default", dataObjectName = NULL){
     # accepted/recognized by the function
     possibleStats <- c("default", "all", "n", "observations", "nobservations", "missing", "nmissing", "na", "mean", "average", "avg", "median", "mode", "sd", "standard deviation", "variance", "iqr", "minimum", "maximum", "fivenum", "interquartile range", "range", "std", "std dev", "mfv", "q1", "quartile1", "q3", "quartile3", "quartiles", "quantiles", "q2", "quartile2", "summary", "hinges", "lower hinge", "lowerhinge", "lhinge", "upper hinge", "upperhinge", "uhinge", "unique", "nunique", "mcv")
     if(!any(pmatch(x = lowStats, table = possibleStats, nomatch = 0L) > 0L)) {
-#         stop(paste(strwrap(gettextf("I need at least one valid statistic to be specified before I can do anything with %s. Please check for spelling errors.", sQuote(dataObjectName)), width = 0.95 * getOption("width")), collapse = "\n    "))
         stop(strwrap(gettextf("I need at least one valid statistic to be specified before I can do anything with %s. Please check for spelling errors.", sQuote(dataObjectName)), width = 0.95 * getOption("width"), prefix = "\n    ", initial = ""))
     }
     validStats <- match.arg(arg = lowStats, choices = possibleStats, several.ok = TRUE)
@@ -96,7 +91,6 @@ checkStats <- function(stats = "default", dataObjectName = NULL){
         # values resemble the original user input, not the
         # tolower()ed argument(s)
         invalidStats <- stats[-match(x = possibleStats, table = lowStats, nomatch = 0L)]
-#         warning(paste(strwrap(gettextf("At least one specified statistic was invalid. Only recognized statistics were used for the results. I did not recognize: %s.", paste(invalidStats, collapse = ", "))), collapse = "\n    "))
         warning(strwrap(gettextf("At least one specified statistic was invalid. Only recognized statistics were used for the results. I did not recognize: %s.", paste(invalidStats, collapse = ", ")), width = 0.95 * getOption("width"), prefix = "\n    ", initial = ""))
     }
     
@@ -223,7 +217,6 @@ checkColumns <- function(x, columns = "all", dataObjectName = NULL, keepColumnNa
     # readable error and warning printing to the console
     pasteWrap <- function(msg, dataObjectName, what, width = 0.95 * getOption("width")) {
         paste(strwrap(gettextf(msg, sQuote(dataObjectName), paste(what, collapse = ", ")), width = width), collapse = "\n    ")
-#         strwrap(gettextf(msg, sQuote(dataObjectName), paste(what, collapse = ", ")), width = width, prefix = "\n    ", initial = "")
     }
     
     # If 'x' doesn't have columns (for some weird reason), then
@@ -298,7 +291,6 @@ checkColumns <- function(x, columns = "all", dataObjectName = NULL, keepColumnNa
         # If user specifies columns by name
             if(!all(match(x = columns, table = colnames(x), nomatch = 0L) > 0L)){
                 if(!any(match(x = columns, table = colnames(x), nomatch = 0L) > 0L)){
-#                     stop(paste(strwrap(gettextf("None of the specified columns exists in the data set %s.", sQuote(dataObjectName)), width = 0.95 * getOption("width")), collapse = "\n    "))
                     stop(strwrap(gettextf("None of the specified columns exists in the data set %s.", sQuote(dataObjectName)), width = 0.95 * getOption("width"), prefix = "\n    ", initial = ""))
                 } else {
                     invalidColumns <- columns[!(match(x = columns, table = colnames(x), nomatch = 0L) > 0L)]
@@ -326,8 +318,6 @@ checkColumns <- function(x, columns = "all", dataObjectName = NULL, keepColumnNa
         if(any(columns > ncol(x)) || any(columns < 1L)){
             if(all(columns > ncol(x)) || all(columns < 1L) || is.null(columns)) {
                 stop(ngettext(n = length(columns),
-#                                 msg1 = paste(strwrap(gettextf("The specified column does not exist in the data set %s.", sQuote(dataObjectName)), width = 0.95 * getOption("width")), collapse = "\n    "),
-#                                 msg2 = paste(strwrap(gettextf("None of the specified columns exists in the data set %s.", sQuote(dataObjectName)), width = 0.95 * getOption("width")), collapse = "\n    ")))
                                 msg1 = strwrap(gettextf("The specified column does not exist in the data set %s.", sQuote(dataObjectName)), width = 0.95 * getOption("width"), prefix = "\n    ", initial = ""),
                                 msg2 = strwrap(gettextf("None of the specified columns exists in the data set %s.", sQuote(dataObjectName)), width = 0.95 * getOption("width"), prefix = "\n    ", initial = "")))
             } else {
@@ -400,12 +390,10 @@ getResults.categorical <- function(x, na.rm = FALSE, emptyCellSymbol = "", maxLe
     # Determine the most frequently occurring factor level for each
     # variable
     modeLevels <- sapply(X = x, FUN = function(y){sort(table(y, useNA = table.useNA), decreasing = TRUE)[1L]})
-#     names(modeLevels) <- gsub(pattern = "^f[[:digit:]]\\.", replacement = "", x = names(modeLevels))
     newNames <- names(modeLevels)
     for(i in seq_along(newNames)) {
         newNames[i] <- gsub(pattern = paste(names(x)[i], ".", sep = ""), replacement = "", x = names(modeLevels)[i])
     }
-#     results[["MFV"]] <- paste(names(modeLevels), " (", modeLevels, ", ", formatC(100*modeLevels/results[["N"]], digits = 1L, format = "f"), "%)", sep = "")
     results[["MFV"]] <- paste(newNames, " (", modeLevels, ", ", formatC(100*modeLevels/results[["N"]], digits = 1L, format = "f"), "%)", sep = "")
     
     # What should be put in the empty "cells" of the factor levels
@@ -444,7 +432,6 @@ getResults.categorical <- function(x, na.rm = FALSE, emptyCellSymbol = "", maxLe
                 formattedList[[i]] <- formattedList[[i]][seq_len(maxLevels)]
             }
         }
-#         warning(paste(strwrap(gettextf("At least one factor has too many levels to display. Only the first %d levels were included in the output. You can change this behavior by increasing the %s argument.", as.integer(maxLevels), sQuote("maxLevels")), width = 0.95 * getOption("width")), collapse = "\n    "))
         warning(strwrap(gettextf("At least one factor has too many levels to display. Only the first %d levels were included in the output. You can change this behavior by increasing the %s argument.", as.integer(maxLevels), sQuote("maxLevels")), width = 0.95 * getOption("width"), prefix = "\n    ", initial = ""))
     }
     # Number of levels for each item in the list (i.e. each factor)
@@ -477,11 +464,6 @@ getResults.categorical <- function(x, na.rm = FALSE, emptyCellSymbol = "", maxLe
         # Omit the buffer row if the stats are listed as columns
         resultsDF <- data.frame(cbind(t(resultsDF), t(catLevelsDF)), check.names = FALSE, stringsAsFactors = FALSE)
     }
-    
-    # This is the same as results[["Unique"]]
-#     # Add an attribute listing the total number of levels for each
-#     # factor variable
-#     attr(resultsDF, "numLevels") <- numLevels
     
     # Return the results for the categorical variables
     return(resultsDF)
@@ -667,7 +649,6 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
     dataObjectName <- deparse(substitute(x))
     if(grepl(pattern = "\\[|\\$", x = dataObjectName)) {
         if(grepl(pattern = "-|!", x = dataObjectName)) {
-#             stop(paste(strwrap(gettextf("Please use the %s argument to specify columns you do not want to include in the results.", sQuote("ignore")), width = 0.95 * getOption("width")), collapse = "\n    "))
             stop(strwrap(gettextf("Please use the %s argument to specify columns you do not want to include in the results.", sQuote("ignore")), width = 0.95 * getOption("width"), prefix = "\n    ", initial = ""))
         }
         unbracket <- function(x) {
@@ -694,7 +675,6 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
         if(is.integer(bracketfree[["indices"]])) {
             colnames(x) <- columns
             oldColumnNames <- paste("Column ", columns, sep = "")
-#             on.exit(warning(paste(strwrap(gettext("NOTE: The data set provided to this function was a subset of a larger data set and the columns (i.e., the variables) were specified by numeric index. Because of this, the column names in the resulting output may not accurately correspond to those in the original data set. This can be fixed by using the 'columns' argument and/or named columns (if possible)."), width = 0.95 * getOption("width")), collapse = "\n    "), call. = FALSE), add = TRUE)
             on.exit(warning(strwrap(gettext("NOTE: The data set provided to this function was a subset of a larger data set and the columns (i.e., the variables) were specified by numeric index. Because of this, the column names in the resulting output may not accurately correspond to those in the original data set. This can be fixed by using the 'columns' argument and/or named columns (if possible) to specify the variables of interest."), width = 0.95 * getOption("width"), prefix = "\n    ", initial = ""), call. = FALSE), add = TRUE)
         } else {
             oldColumnNames <- colnames(x) <- columns
@@ -706,7 +686,6 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
     requestedStats <- checkStats(stats = as.character(stats), dataObjectName = dataObjectName)
     
     output.showStats <- unique(match.arg(arg = tolower(output.showStats), choices = c("all", "categorical", "continuous", "byfactors", "bylevels", "none"), several.ok = TRUE))
-#     if(!export.print) {
     if(!export.printToConsole && export) {
         output.showStats <- c(output.showStats, "none")
     }
@@ -742,7 +721,6 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
     }
     
     if(length(byFactors) > 0L && mode(columns) != mode(byFactors)) {
-#         warning(paste(strwrap(gettextf("The %s argument was of mode %s whereas the %s argument was of mode %s. The %s argument was set to NULL.", sQuote("columns"), mode(columns), sQuote("byFactors"), mode(byFactors), sQuote("byFactors")), width = 0.95 * getOption("width")), collapse = "\n    "))
         warning(strwrap(gettextf("The %s argument was of mode %s whereas the %s argument was of mode %s. The %s argument was set to NULL.", sQuote("columns"), mode(columns), sQuote("byFactors"), mode(byFactors), sQuote("byFactors")), width = 0.95 * getOption("width"), prefix = "\n    ", initial = ""))
         byFactors <- NULL
     }
@@ -772,8 +750,6 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
     invalidVarTypes <- names(varTypes[which(is.na(varTypes))])
     if(length(invalidVarTypes) > 0L) {
         warning(ngettext(n = length(invalidVarTypes),
-#                          msg1 = paste(strwrap(gettextf("The following variable was left out of the results either because it was not of a recognized variable type or because its type is not currently supported for analysis: %s.", sQuote(invalidVarTypes)), width = 0.95 * getOption("width")), collapse = "\n    "),
-#                          msg2 = paste(strwrap(gettextf("The following variables were left out of the results either because they were not of recognized variable types or because their types are not currently supported for analysis: %s.", paste(sQuote(invalidVarTypes), collapse = ", ")), width = 0.95 * getOption("width")), collapse = "\n    ")))
                          msg1 = strwrap(gettextf("The following variable was left out of the results either because it was not of a recognized variable type or because its type is not currently supported for analysis: %s.", sQuote(invalidVarTypes)), width = 0.95 * getOption("width"), prefix = "\n    ", initial = ""),
                          msg2 = strwrap(gettextf("The following variables were left out of the results either because they were not of recognized variable types or because their types are not currently supported for analysis: %s.", paste(sQuote(invalidVarTypes), collapse = ", ")), width = 0.95 * getOption("width"), prefix = "\n    ", initial = "")))
     }
@@ -812,7 +788,6 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
         require(rtf)
         if(length(export.file) == 0L || !nzchar(export.file) || !is.character(export.file)) {
             export.file <- paste(getwd(), "dsdf.rtf", sep = "/")
-#             warning(paste(strwrap(gettextf("No valid file name was given for exporting the results. Defaulting to current working directory and file name 'dsdf.rtf'. Any existing files with this name will be overwritten."), width = 0.95 * getOption("width")), collapse = "\n    "))
             warning(strwrap(gettextf("No valid file name was given for exporting the results. Defaulting to current working directory and file name 'dsdf.rtf'. Any existing files with this name will be overwritten."), width = 0.95 * getOption("width"), prefix = "\n    ", initial = ""))
         } else {
             if(!grepl(pattern = "\\.(rtf|doc|docx)$", x = export.file)) {
@@ -844,8 +819,6 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
         }
         done(rtf)
         on.exit(cat(strwrap(gettextf("NOTE: Your results have been exported and saved in the following location:\n%s", export.file), width = 0.95 * getOption("width"), prefix = "\n    ", initial = ""), sep = ""), add = TRUE)
-#         on.exit(cat(paste(strwrap(gettextf("NOTE: Your results have been exported and saved in the following location:\n%s", export.file), width = 0.95 * getOption("width")), collapse = "\n    "), sep = ""), add = TRUE)
-# #         warning(paste(strwrap(gettextf("NOTE: Your results have been exported and saved in the following location:\n%s", export.file), width = 0.95 * getOption("width")), collapse = "\n    "))
     }
     
     # Return (i.e. print) the list 'results'
