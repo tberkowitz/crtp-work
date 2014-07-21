@@ -1034,6 +1034,7 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
 # # }
 
 # ## USE THIS STUFF ##
+# def.par <- par(no.readonly = TRUE)
 # getRounding <- function(x) {
 #     larx <- log10(abs(range(x)))
 #     larx[!is.finite(larx) | is.na(larx)] <- 0L
@@ -1050,29 +1051,26 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
 # x.hist.density <- hist(x, plot = FALSE)$density
 # 
 # dev.off()
-# nf <- layout(matrix(c(1,2),nrow=2,ncol=1, byrow=TRUE), height=c(1,3))
-# par(mar=c(0, 4.1, 1.1, 2.1))
+# nf <- layout(matrix(c(1, 2), nrow = 2, ncol = 1, byrow = TRUE), height = c(1, 3))
+# par(mar = c(0, 4.1, 1.1, 2.1))
 # boxplot(x, frame = FALSE, axes = FALSE, horizontal = TRUE, ylim = getRounding(x))
-# # abline(v = mean(x), lwd = 2, col = "blue")
-# # abline(v = median(x), lwd = 2, lty = "dashed", col = "orange")
-# # abline(v = unname(quantile(x, probs = c(1/4, 3/4), type = 7L)), lwd = 2, lty = "dashed", col = "dark green")
 # segments(x0 = mean(x), y0 = 0L, x1 = mean(x), y1 = 1L, lwd = 2, col = "blue")
 # segments(x0 = median(x), y0 = 0L, x1 = median(x), y1 = 1L, lwd = 2, lty = "dashed", col = "orange")
 # segments(x0 = unname(quantile(x, probs = c(1/4, 3/4), type = 7L)), y0 = 0L, x1 = unname(quantile(x, probs = c(1/4, 3/4), type = 7L)), y1 = 1L, lwd = 2, lty = "dashed", col = "dark green")
 # segments(x0 = x.boxplot.stats[1L], y0 = 0L, x1 = x.boxplot.stats[1L], y1 = 1L, col = "magenta", lty = 3L, lwd = 2L)
 # segments(x0 = x.boxplot.stats[5L], y0 = 0L, x1 = x.boxplot.stats[5L], y1 = 1L, col = "magenta", lty = 3L, lwd = 2L)
 # 
-# par(mar=c(3.1, 4.1, 0, 2.1))
-# # hist(x, freq = FALSE, xlim = getRounding(x), ylim = getRounding(hist(x, plot = FALSE)$density), main = NULL)
+# par(mar = c(3.1, 4.1, 0, 2.1))
 # hist(x, freq = FALSE, xlim = getRounding(x), ylim = getRounding(x.hist.density), main = NULL)
 # lines(density(x)$x, density(x)$y, lwd = 2, col = "red")
 # abline(v = mean(x), lwd = 2, col = "blue")
 # abline(v = unname(quantile(x, probs = c(1/4, 3/4), type = 7L)), lwd = 2, lty = "dashed", col = "dark green")
 # abline(v = median(x), lwd = 2, lty = "dashed", col = "orange")
-# # abline(v = min(x), lwd = 2, lty = 3, col = "magenta")
-# # abline(v = max(x), lwd = 2, lty = 3, col = "magenta")
 # abline(v = x.boxplot.stats[1L], lwd = 2, lty = 3, col = "magenta")
 # abline(v = x.boxplot.stats[5L], lwd = 2, lty = 3, col = "magenta")
+# 
+# layout(1)
+# par(def.par)  #- reset to default
 # ## END USE THIS STUFF ##
 
 # ## EXTRA IDEAS/PLANS ##
@@ -1129,5 +1127,186 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
 
 
 
+## USE THIS STUFF ##
+# getBoxHist.standalone <- function(x, na.rm = TRUE) {
+# getBoxHist.standalone <- function(x, na.rm = TRUE, dataObjectName = NULL, title.line = -1L, title.cex = 1.0, title.col = "black", title.font = 2L, quantile.type = 7L) {
+getBoxHist.standalone <- function(x, na.rm = TRUE, dataObjectName = NULL, quantile.type = 7L, title.line = -1L, title.cex = 1.0, title.col = "black", title.font = 2L) {
+    def.par <- par(no.readonly = TRUE)
+    on.exit(layout(1), add = TRUE)
+    on.exit(par(def.par), add = TRUE)
+    
+    getRounding <- function(x, na.rm = TRUE) {
+        larx <- log10(abs(range(x, na.rm = na.rm)))
+        larx[!is.finite(larx) | is.na(larx)] <- 0L
+        minplaces <- floor(larx[1L])
+        maxplaces <- ceiling(larx[2L])
+        c((floor(range(x)[1L] / (10^minplaces)) * 10^minplaces), (ceiling(range(x)[2L] / (10^(maxplaces - 1L))) * 10^(maxplaces - 1L)))
+    }
+    
+    defaultIfNULL <- function(option, default) {
+#         textOption <- deparse(substitute(option))
+        if(!exists(deparse(substitute(option)))) {
+            option <- NULL
+        }
+        if(length(option) == 0L || !is.finite(option) || is.na(option)) {
+            default
+        } else {
+            option
+        }
+    }
+    
+    if(length(dataObjectName) < 1L) {
+        dataObjectName <- deparse(substitute(x))
+    }
+    
+    quantile.type <- as.integer(abs(quantile.type[1L]))
+    if(!(quantile.type %in% as.integer(1:9))) {
+        quantile.type <- 7L
+    }
+    
+    lty <- lty[1L] #<--CHANGE TO ACCEPT A VECTOR AT SOME POINT?
+    if(is.character(lty)) {
+        validLineTypes <- c("blank", "solid", "dashed", "dotted", "dotdash", "longdash", "twodash")
+        if(!(lty %in% validLineTypes)) {
+            warning(strwrap(gettextf("Custom or invalid line type specifications such as %s currently are not supported. The %s option has been set to 1 (%s). Valid character options are: %s.", sQuote(lty), sQuote("lty"), sQuote("solid"), paste(sQuote(validLineTypes), collapse = ", ")), width = 0.95 * getOption("width"), prefix = "\n    ", initial = ""))
+            lty <- 1L
+        } else {
+            lty <- match(x = lty, table = validLineTypes, nomatch = 0L) - 1L
+        }
+    }
+    lwd <- abs(lwd[!is.na(lwd)])[1L] #<-- ACCEPT VECTOR AT SOME POINT?
+    col <- col[1L] #<-- ACCEPT VECTOR AT SOME POINT?
+    
+    lty.density <- defaultIfNULL(lty.density, lty)
+    lwd.density <- defaultIfNULL(lwd.density, lwd)
+    col.density <- defaultIfNULL(col.density, "red")
+    
+    lty.mean <- defaultIfNULL(lty.mean, lty)
+    lwd.mean <- defaultIfNULL(lwd.mean, lwd)
+    col.mean <- defaultIfNULL(col.mean, "blue")
+    
+    lty.median <- defaultIfNULL(lty.median, (lty %% 6L) + 1L)
+    lwd.median <- defaultIfNULL(lwd.median, lwd)
+    col.median <- defaultIfNULL(col.median, "orange")
+    
+    lty.quartile1 <- defaultIfNULL(lty.quartile1, (lty %% 6L) + 1L)
+    lwd.quartile1 <- defaultIfNULL(lwd.quartile1, lwd)
+    col.quartile1 <- defaultIfNULL(col.quartile1, "green3")
+    
+    lty.quartile3 <- defaultIfNULL(lty.quartile3, (lty %% 6L) + 1L)
+    lwd.quartile3 <- defaultIfNULL(lwd.quartile3, lwd)
+    col.quartile3 <- defaultIfNULL(col.quartile3, "green3")
+    
+    lty.minimum <- defaultIfNULL(lty.minimum, (lty %% 6L) + 2L)
+    lwd.minimum <- defaultIfNULL(lwd.minimum, lwd)
+    col.minimum <- defaultIfNULL(col.minimum, "magenta")
+    
+    lty.maximum <- defaultIfNULL(lty.maximum, (lty %% 6L) + 2L)
+    lwd.maximum <- defaultIfNULL(lwd.maximum, lwd)
+    col.maximum <- defaultIfNULL(col.maximum, "magenta")
+    
+#     set.seed(0718)
+#     x <- rnorm(500, sd = 100)
+#     # x <- rexp(500, rate = 0.01)
+    x.boxplot.stats <- boxplot(x, plot = FALSE)$stats
+    x.hist.density <- hist(x, plot = FALSE)$density
+    x.density <- density(x)
+    
+#     dev.off()
+    nf <- layout(matrix(c(1, 2), nrow = 2, ncol = 1, byrow = TRUE), height = c(1, 3))
+    par(mar = c(0, 4.1, 1.1, 2.1))
+    boxplot(x, frame = FALSE, axes = FALSE, horizontal = TRUE, ylim = getRounding(x, na.rm = na.rm))
+    segments(x0 = mean(x, na.rm = na.rm), y0 = 0L, x1 = mean(x, na.rm = na.rm), y1 = 1L, lwd = 2, col = "blue")
+    segments(x0 = median(x, na.rm = na.rm), y0 = 0L, x1 = median(x, na.rm = na.rm), y1 = 1L, lwd = 2, lty = "dashed", col = "orange")
+    segments(x0 = quantile(x, probs = c(1/4, 3/4), type = quantile.type, names = FALSE, na.rm = na.rm), y0 = 0L, x1 = quantile(x, probs = c(1/4, 3/4), type = quantile.type, names = FALSE, na.rm = na.rm), y1 = 1L, lwd = 2, lty = "dashed", col = "dark green")
+    segments(x0 = x.boxplot.stats[1L], y0 = 0L, x1 = x.boxplot.stats[1L], y1 = 1L, col = "magenta", lty = 3L, lwd = 2L)
+    segments(x0 = x.boxplot.stats[5L], y0 = 0L, x1 = x.boxplot.stats[5L], y1 = 1L, col = "magenta", lty = 3L, lwd = 2L)
+    # For "font = ": 1 = plain text (default), 2 = bold face, 3 = italic, 4 = bold italic, 5 = symbol font
+#     mtext(sprintf("Plots for %s", sQuote(dataObjectName)), line = title.line, cex = title.cex, col = title.col, font = title.font)
+    title(main = sprintf("Plots for %s", sQuote(dataObjectName)), col.main = title.col, cex.main = title.cex, font.main = title.font, line = title.line)
+    
+    par(mar = c(3.1, 4.1, 0, 2.1))
+    hist(x, freq = FALSE, xlim = getRounding(x, na.rm = na.rm), ylim = getRounding(x.hist.density, na.rm = na.rm), main = NULL)
+#     lines(density(x)$x, density(x)$y, lwd = 2, col = "red")
+    lines(x.density$x, x.density$y, lwd = 2, col = "red")
+    abline(v = mean(x, na.rm = na.rm), lwd = 2, col = "blue")
+    abline(v = quantile(x, probs = c(1/4, 3/4), type = quantile.type, names = FALSE, na.rm = na.rm), lwd = 2, lty = "dashed", col = "dark green")
+    abline(v = median(x, na.rm = na.rm), lwd = 2, lty = "dashed", col = "orange")
+    abline(v = x.boxplot.stats[1L], lwd = 2, lty = 3, col = "magenta")
+    abline(v = x.boxplot.stats[5L], lwd = 2, lty = 3, col = "magenta")
+}
+## END USE THIS STUFF ##
+
+
+
+
+# # Line types
+# lty = 1L, lty.density = lty, lty.mean = lty, lty.median = lty + 1L, lty.quartile1 = lty + 1L, lty.quartile3 = lty + 1L, lty.minimum = lty + 2L, lty.maximum = lty + 2L,
+# # Line widths
+# lwd = 2L, lwd.density = lwd, lwd.mean = lwd, lwd.median = lwd, lwd.quartile1 = lwd, lwd.quartile3 = lwd, lwd.minimum = lwd, lwd.maximum = lwd,
+# # Line colors
+# col = "black", col.density = "red", col.mean = "blue", col.median = "orange", col.quartile1 = "dark green", col.quartile3 = "dark green", col.minimum = "magenta", col.maximum = "magenta",
+#     # Line types
+# #     lty <- 1L
+# #     lty.density <- lty
+# #     lty.mean <- lty
+# #     lty.median <- lty + 1L
+# #     lty.quartile1 <- lty + 1L
+# #     lty.quartile3 <- lty + 1L
+# #     lty.minimum <- lty + 2L
+# #     lty.maximum <- lty + 2L
+#     lty <- lty[1L] #<--CHANGE TO ACCEPT A VECTOR (AT SOME POINT)
+#     if(is.character(lty)) {
+#         validLineTypes <- c("blank", "solid", "dashed", "dotted", "dotdash", "longdash", "twodash")
+#         if(!(lty %in% validLineTypes)) {
+#             warning(strwrap(gettextf("Custom or invalid line type specifications such as %s currently are not supported. The %s option has been set to 1 (%s). Valid character options are: %s.", sQuote(lty), sQuote("lty"), sQuote("solid"), paste(sQuote(validLineTypes), collapse = ", ")), width = 0.95 * getOption("width"), prefix = "\n    ", initial = ""))
+#             lty <- 1L
+#         } else {
+#             lty <- match(x = lty, table = validLineTypes, nomatch = 0L) - 1L
+#         }
+#     }
+#     lty.density <- defaultIfNULL(lty.density, lty)
+#     lty.mean <- defaultIfNULL(lty.mean, lty)
+#     lty.median <- defaultIfNULL(lty.median, (lty %% 6L) + 1L)
+#     lty.quartile1 <- defaultIfNULL(lty.quartile1, (lty %% 6L) + 1L)
+#     lty.quartile3 <- defaultIfNULL(lty.quartile3, (lty %% 6L) + 1L)
+#     lty.minimum <- defaultIfNULL(lty.minimum, (lty %% 6L) + 2L)
+#     lty.maximum <- defaultIfNULL(lty.maximum, (lty %% 6L) + 2L)
+#     
+#     # Line widths
+# #     lwd <- 2L
+# #     lwd.density <- lwd
+# #     lwd.mean <- lwd
+# #     lwd.median <- lwd
+# #     lwd.quartile1 <- lwd
+# #     lwd.quartile3 <- lwd
+# #     lwd.minimum <- lwd
+# #     lwd.maximum <- lwd
+#     lwd <- abs(lwd[!is.na(lwd)])[1L] #<-- ACCEPT VECTOR AT SOME POINT?
+#     lwd.density <- defaultIfNULL(lwd.density, lwd)
+#     lwd.mean <- defaultIfNULL(lwd.mean, lwd)
+#     lwd.median <- defaultIfNULL(lwd.median, lwd)
+#     lwd.quartile1 <- defaultIfNULL(lwd.quartile1, lwd)
+#     lwd.quartile3 <- defaultIfNULL(lwd.quartile3, lwd)
+#     lwd.minimum <- defaultIfNULL(lwd.minimum, lwd)
+#     lwd.maximum <- defaultIfNULL(lwd.maximum, lwd)
+#     
+#     # Line colors
+# #     col <- "black"
+# #     col.density <- "red"
+# #     col.mean <- "blue"
+# #     col.median <- "orange"
+# #     col.quartile1 <- "dark green"
+# #     col.quartile3 <- "dark green"
+# #     col.minimum <- "magenta"
+# #     col.maximum <- "magenta"
+#     col <- col[1L]
+#     col.density <- defaultIfNULL(col.density, "red")
+#     col.mean <- defaultIfNULL(col.mean, "blue")
+#     col.median <- defaultIfNULL(col.median, "orange")
+#     col.quartile1 <- defaultIfNULL(col.quartile1, "green3")
+#     col.quartile3 <- defaultIfNULL(col.quartile3, "green3")
+#     col.minimum <- defaultIfNULL(col.minimum, "magenta")
+#     col.maximum <- defaultIfNULL(col.maximum, "magenta")
 
 
