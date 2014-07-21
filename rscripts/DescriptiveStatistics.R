@@ -843,6 +843,7 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
 
 
 ## USE THIS STUFF ##
+# Define the checkPlotLines() function
 checkPlotLines <- function(plotLines = "default", dataObjectName = NULL) {
     # Supply a data object name if none is provided
     if(length(dataObjectName) == 0L){
@@ -855,7 +856,7 @@ checkPlotLines <- function(plotLines = "default", dataObjectName = NULL) {
     
     # List out all of the options for "plotLines" that will be
     # accepted/recognized by the function
-    possiblePlotLines <- c("default", "all", "mean", "average", "avg", "median", "q2", "quartile2", "mode", "mfv", "mcv", "sd", "standard deviation", "stddeviation", "std deviation", "variance", "iqr", "interquartile range", "iq range", "minimum", "maximum", "fivenum", "range", "q1", "quartile1", "q3", "quartile3", "quartiles", "quantiles", "summary", "hinges", "lower hinge", "lowerhinge", "lhinge", "upper hinge", "upperhinge", "uhinge", "ecdf")
+    possiblePlotLines <- c("default", "all", "mean", "average", "avg", "median", "q2", "quartile2", "mode", "mfv", "mcv", "sd", "standard deviation", "stddeviation", "std deviation", "variance", "iqr", "interquartile range", "iq range", "minimum", "maximum", "fivenum", "range", "q1", "quartile1", "q3", "quartile3", "quartiles", "quantiles", "summary", "hinges", "lower hinge", "lowerhinge", "lhinge", "upper hinge", "upperhinge", "uhinge", "ecdf", "density")
     if(!any(pmatch(x = lowPlotLines, table = possiblePlotLines, nomatch = 0L) > 0L)) {
         stop(strwrap(gettextf("I need at least one valid statistic to be specified before I can plot any lines. Please check for spelling errors."), width = 0.95 * getOption("width"), prefix = "\n    ", initial = ""))
     }
@@ -868,10 +869,13 @@ checkPlotLines <- function(plotLines = "default", dataObjectName = NULL) {
         warning(strwrap(gettextf("At least one specified statistic was invalid. Only recognized statistics were plotted. I did not recognize: %s.", paste(invalidPlotLines, collapse = ", ")), width = 0.95 * getOption("width"), prefix = "\n    ", initial = ""))
     }
     
-    # Check which statistics options selected
-    requestedPlotLinesNames <- c("mean", "median", "mode", "sd", "variance", "minimum", "maximum", "range", "iqr", "lowerhinge", "upperhinge", "quartile1", "quartile3", "quantiles", "ecdf")
+    # Check which statistics options selected to be plotted
+    requestedPlotLinesNames <- c("density", "mean", "median", "mode", "sd", "variance", "minimum", "maximum", "range", "iqr", "lowerhinge", "upperhinge", "quartile1", "quartile3", "quantiles", "ecdf")
     requestedPlotLines <- rep(FALSE, length.out = length(requestedPlotLinesNames))
     names(requestedPlotLines) <- requestedPlotLinesNames
+    
+    # Check for "density"
+    requestedPlotLines["density"] <- any(c("density", "default", "all") %in% validPlotLines)
     
     # Check for "mean"
     requestedPlotLines["mean"] <- any(c("mean", "average", "avg", "summary", "default", "all") %in% validPlotLines)
@@ -920,6 +924,47 @@ checkPlotLines <- function(plotLines = "default", dataObjectName = NULL) {
     
     return(requestedPlotLines)
 }
+
+
+# tempfun <- function(...){list(...)}
+# parameters <- tempfun(lty = "dashed", lwd = 2, lwd.mean = 3, font.main = 4, col.main = "red", col.mean = "green3", line.main = -1L)
+# # Define the setPlotAesthetics() function
+# setPlotFeatures <- function(requestedPlotLines, ...) {
+#     parameters <- list(...)
+# #     prefixes <- c("cex", "col", "lty", "lwd")
+#     rootParameters <- c("cex", "col", "lty", "lwd")
+#     allFeatures <- names(requestedPlotLines)
+# #     requestedFeatures <- names(requestedPlotLines[requestedPlotLines])
+#     requestedFeatures <- allFeatures[requestedPlotLines]
+# #     parametersNeeded <- c(prefixes, as.vector(outer(prefixes, requestedFeatures, FUN = "paste", sep = ".")))
+# #     parametersNeeded <- as.vector(outer(prefixes, requestedFeatures, FUN = "paste", sep = "."))
+# #     parametersNeeded <- union(as.vector(outer(rootParameters, requestedFeatures, FUN = "paste", sep = ".")), union(names(parameters), rootParameters))
+#     parametersNeeded <- union(as.vector(outer(rootParameters, requestedFeatures, FUN = "paste", sep = ".")), rootParameters)
+#     
+# #     specifiedParameters <- c(par(prefixes), parameters[parametersNeeded])
+# #     names(specifiedParameters) <- c(prefixes, parametersNeeded)
+# #     specifiedParameters <- c(par(rootParameters), parameters[parametersNeeded])
+# #     names(specifiedParameters) <- c(rootParameters, parametersNeeded)
+#     specifiedParameters <- parameters[parametersNeeded]
+#     names(specifiedParameters) <- parametersNeeded
+# #     prefixes <- sapply(X = strsplit(x = names(specifiedParameters), split = ".", fixed = TRUE), FUN = `[`, 1L)
+# #     prefixes <- gsub(pattern = "^(.*)\\..*", replacement = "\\1", x = names(specifiedParameters))
+#     prefixes <- rep(rootParameters, times = length(requestedFeatures) + 1L)
+#     
+# #     lapply(X = specifiedParameters, FUN = function(x){param <- unlist(strsplit(x = names(x), split = ".", fixed = TRUE))[1L]; defaultIfNULL(option = x, default = par(deparse(substitute(param))))})
+#     for(i in seq_along(specifiedParameters)) {
+#         if(is.null(specifiedParameters[[i]])) {
+#             specifiedParameters[[i]] <- par(prefixes[i])
+#         }
+#     }
+#     
+#     features.cex <- paste("cex.", requestedFeatures, sep = "")
+#     features.col <- paste("col.", requestedFeatures, sep = "")
+#     features.lwd <- paste("lwd.", requestedFeatures, sep = "")
+#     features.lty <- paste("lty.", requestedFeatures, sep = "")
+#     features.font.main <- "font.main"
+#     features.line.main <- "line.main"
+# }
 
 
 # For "font = ": 1 = plain text (default), 2 = bold face, 3 = italic, 4 = bold italic, 5 = symbol font
@@ -1044,6 +1089,43 @@ getBoxHist.standalone <- function(x, na.rm = TRUE, dataObjectName = NULL, quanti
 # #        inset = 0.01,
 # #        legend = c(paste(formatC(mean(x), digits = 1L, format = "f"), " (", formatC(sd(x), digits = 1L, format = "f"), ")", sep = ""), paste(formatC(median(x), digits = 1, format = "f"), " (", formatC(quantile(x, probs = 1/4, type = 7L), digits = 1L, format = "f"), " - ", formatC(quantile(x, probs = 3/4, type = 7L), digits = 1L, format = "f"), ")", sep = "")))
 # ## END EXTRA IDEAS/PLANS ##
+
+
+
+
+# Define the getBoxHist() function
+getBoxHist <- function(x, requestedPlotLines, na.rm = TRUE, dataObjectName = NULL, quantile.probs = 0:4/4, quantile.type = 7L) {
+    def.par <- par(no.readonly = TRUE)
+    on.exit(layout(1), add = TRUE)
+    on.exit(par(def.par), add = TRUE)
+    
+    getRounding <- function(x, na.rm = TRUE) {
+        larx <- log10(abs(range(x, na.rm = na.rm)))
+        larx[!is.finite(larx) | is.na(larx)] <- 0L
+        minplaces <- floor(larx[1L])
+        maxplaces <- ceiling(larx[2L])
+        c((floor(range(x)[1L] / (10^minplaces)) * 10^minplaces), (ceiling(range(x)[2L] / (10^(maxplaces - 1L))) * 10^(maxplaces - 1L)))
+    }
+    
+    defaultIfNULL <- function(option, default) {
+        parPrefix <- gsub(pattern = "^(.*)\\..*", replacement = "\\1", x = option)
+        if(missing(default)) {
+            default <- par(parPrefix)
+        }
+        if(length(option) == 0L || !is.finite(option) || is.na(option)) {
+            default
+        } else {
+            option
+        }
+    }
+    
+    if(length(dataObjectName) < 1L) {
+        dataObjectName <- deparse(substitute(x))
+    }
+    
+}
+
+
 
 
 
