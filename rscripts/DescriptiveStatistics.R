@@ -1127,10 +1127,92 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
 
 
 
+# checkStats <- function(stats = "default", dataObjectName = NULL){
+checkPlotLines <- function(plotLines = "default", dataObjectName = NULL) {
+    # Supply a data object name if none is provided
+    if(length(dataObjectName) == 0L){
+        dataObjectName <- "the data set"
+    }
+    
+    # Make sure all of the values specified for "plotLines" are
+    # lower case (to facilitate string matching)
+    lowPlotLines <- gsub(pattern = "[[:punct:]]", replacement = "", x = tolower(plotLines))
+    
+    # List out all of the options for "plotLines" that will be
+    # accepted/recognized by the function
+    possiblePlotLines <- c("default", "all", "mean", "average", "avg", "median", "q2", "quartile2", "mode", "mfv", "mcv", "sd", "standard deviation", "stddeviation", "std deviation", "variance", "iqr", "interquartile range", "iq range", "minimum", "maximum", "fivenum", "range", "q1", "quartile1", "q3", "quartile3", "quartiles", "quantiles", "summary", "hinges", "lower hinge", "lowerhinge", "lhinge", "upper hinge", "upperhinge", "uhinge", "ecdf")
+    if(!any(pmatch(x = lowPlotLines, table = possiblePlotLines, nomatch = 0L) > 0L)) {
+        stop(strwrap(gettextf("I need at least one valid statistic to be specified before I can plot any lines. Please check for spelling errors."), width = 0.95 * getOption("width"), prefix = "\n    ", initial = ""))
+    }
+    validPlotLines <- match.arg(arg = lowPlotLines, choices = possiblePlotLines, several.ok = TRUE)
+    if(length(lowPlotLines) != length(validPlotLines)) {
+        # Use "plotLines" instead of "lowPlotLines" so the printed
+        # values resemble the original user input, not the
+        # tolower()ed argument(s)
+#         invalidPlotLines <- plotLines[-match(x = possiblePlotLines, table = lowPlotLines, nomatch = 0L)]
+        invalidPlotLines <- setdiff(lowPlotLines, possiblePlotLines)
+        warning(strwrap(gettextf("At least one specified statistic was invalid. Only recognized statistics were plotted. I did not recognize: %s.", paste(invalidPlotLines, collapse = ", ")), width = 0.95 * getOption("width"), prefix = "\n    ", initial = ""))
+    }
+    
+    # Check which statistics options selected
+    requestedPlotLinesNames <- c("mean", "median", "mode", "sd", "variance", "minimum", "maximum", "range", "iqr", "lowerhinge", "upperhinge", "quartile1", "quartile3", "quantiles", "ecdf")
+    requestedPlotLines <- rep(FALSE, length.out = length(requestedPlotLinesNames))
+    names(requestedPlotLines) <- requestedPlotLinesNames
+    
+    # Check for "mean"
+    requestedPlotLines["mean"] <- any(c("mean", "average", "avg", "summary", "default", "all") %in% validPlotLines)
+    
+    # Check for "median"
+    requestedPlotLines["median"] <- any(c("median", "q2", "quartile2", "quartiles", "fivenum", "summary", "default", "all") %in% validPlotLines)
+    
+    # Check for "mode"
+    requestedPlotLines["mode"] <- any(c("mode", "mfv", "mcv", "all") %in% validPlotLines)
+    
+    # Check for "sd"
+    requestedPlotLines["sd"] <- any(c("sd", "standard deviation", "stddeviation", "std deviation", "all") %in% validPlotLines)
+    
+    # Check for "variance"
+    requestedPlotLines["variance"] <- any(c("variance", "all") %in% validPlotLines)
+    
+    # Check for "minimum"
+    requestedPlotLines["minimum"] <- any(c("minimum", "fivenum", "summary", "all") %in% validPlotLines)
+    
+    # Check for "maximum"
+    requestedPlotLines["maximum"] <- any(c("maximum", "fivenum", "summary", "all") %in% validPlotLines)
+    
+    # Check for "range"
+    requestedPlotLines["range"] <- any(c("range", "all") %in% validPlotLines)
+    
+    # Check for "iqr"
+    requestedPlotLines["iqr"] <- any(c("iqr", "interquartile range", "iq range", "all") %in% validPlotLines)
+    
+    # Check for "lowerhinge"
+    requestedPlotLines["lowerhinge"] <- any(c("lower hinge", "lowerhinge", "lhinge", "hinges", "fivenum", "all") %in% validPlotLines)
+    
+    # Check for "upperhinge"
+    requestedPlotLines["upperhinge"] <- any(c("upper hinge", "upperhinge", "uhinge", "hinges", "fivenum", "all") %in% validPlotLines)
+    
+    # Check for "quartile1"
+    requestedPlotLines["quartile1"] <- any(c("q1", "quartile1", "quartiles", "summary", "all") %in% validPlotLines)
+    
+    # Check for "quartile3"
+    requestedPlotLines["quartile3"] <- any(c("q3", "quartile3", "quartiles", "summary", "all") %in% validPlotLines)
+    
+    # Check for "quantiles"
+    requestedPlotLines["quantiles"] <- any(c("quantiles", "all") %in% validPlotLines)
+    
+    # Check for "ecdf"
+    requestedPlotLines["ecdf"] <- any(c("ecdf", "all") %in% validPlotLines)
+    
+    return(requestedPlotLines)
+}
+
+
 ## USE THIS STUFF ##
 # getBoxHist.standalone <- function(x, na.rm = TRUE) {
 # getBoxHist.standalone <- function(x, na.rm = TRUE, dataObjectName = NULL, title.line = -1L, title.cex = 1.0, title.col = "black", title.font = 2L, quantile.type = 7L) {
-getBoxHist.standalone <- function(x, na.rm = TRUE, dataObjectName = NULL, quantile.type = 7L, title.line = -1L, title.cex = 1.0, title.col = "black", title.font = 2L) {
+# getBoxHist.standalone <- function(x, na.rm = TRUE, dataObjectName = NULL, quantile.type = 7L, title.line = -1L, title.cex = 1.0, title.col = "black", title.font = 2L) {
+getBoxHist.standalone <- function(x, na.rm = TRUE, dataObjectName = NULL, quantile.type = 7L, line.main = -1L, cex.main = 1.0, col.main = "black", font.main = 2L, lty = 1L, lty.density = lty, lty.mean = lty, lty.median = lty + 1L, lty.quartile1 = lty + 1L, lty.quartile3 = lty + 1L, lty.minimum = lty + 2L, lty.maximum = lty + 2L, lwd = 2L, lwd.density = lwd, lwd.mean = lwd, lwd.median = lwd, lwd.quartile1 = lwd, lwd.quartile3 = lwd, lwd.minimum = lwd, lwd.maximum = lwd, col = "black", col.density = "red", col.mean = "blue", col.median = "orange", col.quartile1 = "dark green", col.quartile3 = "dark green", col.minimum = "magenta", col.maximum = "magenta") {
     def.par <- par(no.readonly = TRUE)
     on.exit(layout(1), add = TRUE)
     on.exit(par(def.par), add = TRUE)
@@ -1205,6 +1287,11 @@ getBoxHist.standalone <- function(x, na.rm = TRUE, dataObjectName = NULL, quanti
     lwd.maximum <- defaultIfNULL(lwd.maximum, lwd)
     col.maximum <- defaultIfNULL(col.maximum, "magenta")
     
+    col.main <- defaultIfNULL(col.main, "black")
+    cex.main <- defaultIfNULL(cex.main, 1.0)
+    font.main <- defaultIfNULL(font.main, 1L)
+    line.main <- defaultIfNULL(line.main, -1L)
+    
 #     set.seed(0718)
 #     x <- rnorm(500, sd = 100)
 #     # x <- rexp(500, rate = 0.01)
@@ -1216,24 +1303,37 @@ getBoxHist.standalone <- function(x, na.rm = TRUE, dataObjectName = NULL, quanti
     nf <- layout(matrix(c(1, 2), nrow = 2, ncol = 1, byrow = TRUE), height = c(1, 3))
     par(mar = c(0, 4.1, 1.1, 2.1))
     boxplot(x, frame = FALSE, axes = FALSE, horizontal = TRUE, ylim = getRounding(x, na.rm = na.rm))
-    segments(x0 = mean(x, na.rm = na.rm), y0 = 0L, x1 = mean(x, na.rm = na.rm), y1 = 1L, lwd = 2, col = "blue")
-    segments(x0 = median(x, na.rm = na.rm), y0 = 0L, x1 = median(x, na.rm = na.rm), y1 = 1L, lwd = 2, lty = "dashed", col = "orange")
-    segments(x0 = quantile(x, probs = c(1/4, 3/4), type = quantile.type, names = FALSE, na.rm = na.rm), y0 = 0L, x1 = quantile(x, probs = c(1/4, 3/4), type = quantile.type, names = FALSE, na.rm = na.rm), y1 = 1L, lwd = 2, lty = "dashed", col = "dark green")
-    segments(x0 = x.boxplot.stats[1L], y0 = 0L, x1 = x.boxplot.stats[1L], y1 = 1L, col = "magenta", lty = 3L, lwd = 2L)
-    segments(x0 = x.boxplot.stats[5L], y0 = 0L, x1 = x.boxplot.stats[5L], y1 = 1L, col = "magenta", lty = 3L, lwd = 2L)
+#     segments(x0 = mean(x, na.rm = na.rm), y0 = 0L, x1 = mean(x, na.rm = na.rm), y1 = 1L, lwd = 2, col = "blue")
+#     segments(x0 = median(x, na.rm = na.rm), y0 = 0L, x1 = median(x, na.rm = na.rm), y1 = 1L, lwd = 2, lty = "dashed", col = "orange")
+#     segments(x0 = quantile(x, probs = c(1/4, 3/4), type = quantile.type, names = FALSE, na.rm = na.rm), y0 = 0L, x1 = quantile(x, probs = c(1/4, 3/4), type = quantile.type, names = FALSE, na.rm = na.rm), y1 = 1L, lwd = 2, lty = "dashed", col = "dark green")
+#     segments(x0 = x.boxplot.stats[1L], y0 = 0L, x1 = x.boxplot.stats[1L], y1 = 1L, col = "magenta", lty = 3L, lwd = 2L)
+#     segments(x0 = x.boxplot.stats[5L], y0 = 0L, x1 = x.boxplot.stats[5L], y1 = 1L, col = "magenta", lty = 3L, lwd = 2L)
+    segments(x0 = mean(x, na.rm = na.rm), y0 = 0L, x1 = mean(x, na.rm = na.rm), y1 = 1L, lty = lty.mean, lwd = lwd.mean, col = col.mean)
+    segments(x0 = median(x, na.rm = na.rm), y0 = 0L, x1 = median(x, na.rm = na.rm), y1 = 1L, lty = lty.median, lwd = lwd.median, col = col.median)
+    segments(x0 = quantile(x, probs = 1/4, type = quantile.type, names = FALSE, na.rm = na.rm), y0 = 0L, x1 = quantile(x, probs = 1/4, type = quantile.type, names = FALSE, na.rm = na.rm), y1 = 1L, lty = lty.quartile1, lwd = lwd.quartile1, col = col.quartile1)
+    segments(x0 = quantile(x, probs = 3/4, type = quantile.type, names = FALSE, na.rm = na.rm), y0 = 0L, x1 = quantile(x, probs = 3/4, type = quantile.type, names = FALSE, na.rm = na.rm), y1 = 1L, lty = lty.quartile3, lwd = lwd.quartile3, col = col.quartile3)
+    segments(x0 = x.boxplot.stats[1L], y0 = 0L, x1 = x.boxplot.stats[1L], y1 = 1L, lty = lty.minimum, lwd = lwd.minimum, col = col.minimum)
+    segments(x0 = x.boxplot.stats[5L], y0 = 0L, x1 = x.boxplot.stats[5L], y1 = 1L, lty = lty.maximum, lwd = lwd.maximum, col = col.maximum)
     # For "font = ": 1 = plain text (default), 2 = bold face, 3 = italic, 4 = bold italic, 5 = symbol font
 #     mtext(sprintf("Plots for %s", sQuote(dataObjectName)), line = title.line, cex = title.cex, col = title.col, font = title.font)
-    title(main = sprintf("Plots for %s", sQuote(dataObjectName)), col.main = title.col, cex.main = title.cex, font.main = title.font, line = title.line)
+    title(main = sprintf("Plots for %s", sQuote(dataObjectName)), col.main = col.main, cex.main = cex.main, font.main = font.main, line = line.main)
     
     par(mar = c(3.1, 4.1, 0, 2.1))
     hist(x, freq = FALSE, xlim = getRounding(x, na.rm = na.rm), ylim = getRounding(x.hist.density, na.rm = na.rm), main = NULL)
-#     lines(density(x)$x, density(x)$y, lwd = 2, col = "red")
-    lines(x.density$x, x.density$y, lwd = 2, col = "red")
-    abline(v = mean(x, na.rm = na.rm), lwd = 2, col = "blue")
-    abline(v = quantile(x, probs = c(1/4, 3/4), type = quantile.type, names = FALSE, na.rm = na.rm), lwd = 2, lty = "dashed", col = "dark green")
-    abline(v = median(x, na.rm = na.rm), lwd = 2, lty = "dashed", col = "orange")
-    abline(v = x.boxplot.stats[1L], lwd = 2, lty = 3, col = "magenta")
-    abline(v = x.boxplot.stats[5L], lwd = 2, lty = 3, col = "magenta")
+# #     lines(density(x)$x, density(x)$y, lwd = 2, col = "red")
+#     lines(x.density$x, x.density$y, lwd = 2, col = "red")
+#     abline(v = mean(x, na.rm = na.rm), lwd = 2, col = "blue")
+#     abline(v = quantile(x, probs = c(1/4, 3/4), type = quantile.type, names = FALSE, na.rm = na.rm), lwd = 2, lty = "dashed", col = "dark green")
+#     abline(v = median(x, na.rm = na.rm), lwd = 2, lty = "dashed", col = "orange")
+#     abline(v = x.boxplot.stats[1L], lwd = 2, lty = 3, col = "magenta")
+#     abline(v = x.boxplot.stats[5L], lwd = 2, lty = 3, col = "magenta")
+    lines(x.density$x, x.density$y, lty = lty.density, lwd = lwd.density, col = col.density)
+    abline(v = mean(x, na.rm = na.rm), lty = lty.mean, lwd = lwd.mean, col = col.mean)
+    abline(v = median(x, na.rm = na.rm), lty = lty.median, lwd = lwd.median, col = col.median)
+    abline(v = quantile(x, probs = 1/4, type = quantile.type, names = FALSE, na.rm = na.rm), lty = lty.quartile1, lwd = lwd.quartile1, col = col.quartile1)
+    abline(v = quantile(x, probs = 3/4, type = quantile.type, names = FALSE, na.rm = na.rm), lty = lty.quartile3, lwd = lwd.quartile3, col = col.quartile3)
+    abline(v = x.boxplot.stats[1L], lty = lty.minimum, lwd = lwd.minimum, col = col.minimum)
+    abline(v = x.boxplot.stats[5L], lty = lty.maximum, lwd = lwd.maximum, col = col.maximum)
 }
 ## END USE THIS STUFF ##
 
