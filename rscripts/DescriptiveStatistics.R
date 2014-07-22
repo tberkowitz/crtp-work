@@ -1281,4 +1281,265 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
 
 
 
+# For "font = ": 1 = plain text (default), 2 = bold face, 3 = italic, 4 = bold italic, 5 = symbol font
+# getBoxHist.standalone <- function(x, na.rm = TRUE, dataObjectName = NULL, quantile.type = 7L, line.main = -1L, cex.main = 1.0, col.main = "black", font.main = 2L, lty = 1L, lty.density = lty, lty.mean = lty, lty.median = lty + 1L, lty.quartile1 = lty + 1L, lty.quartile3 = lty + 1L, lty.minimum = lty + 2L, lty.maximum = lty + 2L, lwd = 2L, lwd.density = lwd, lwd.mean = lwd, lwd.median = lwd, lwd.quartile1 = lwd, lwd.quartile3 = lwd, lwd.minimum = lwd, lwd.maximum = lwd, col = "black", col.density = "red", col.mean = "blue", col.median = "orange", col.quartile1 = "dark green", col.quartile3 = "dark green", col.minimum = "magenta", col.maximum = "magenta") {
+getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, plotDensityCurve = TRUE, plotVerticalLines = TRUE, plotStatsValues = TRUE, quantile.type = 7L, line.main = -0.5, cex.main = 1.0, col.main = "black", font.main = 2, lty = par("lty"), lwd = par("lwd"), col = par("col")) {
+    def.par <- par(no.readonly = TRUE)
+    on.exit(layout(1), add = TRUE)
+    on.exit(par(def.par), add = TRUE)
+    
+    getRounding <- function(x, na.rm = TRUE) {
+        larx <- log10(abs(range(x, na.rm = na.rm)))
+        larx[!is.finite(larx) | is.na(larx)] <- 0L
+        minplaces <- floor(larx[1L])
+        maxplaces <- ceiling(larx[2L])
+        c((floor(range(x)[1L] / (10^minplaces)) * 10^minplaces), (ceiling(range(x)[2L] / (10^(maxplaces - 1L))) * 10^(maxplaces - 1L)))
+    }
+    
+#     defaultIfNULL <- function(option, default) {
+#         if(!exists(deparse(substitute(option)))) {
+#             option <- NULL
+#         }
+#         if(length(option) == 0L || !is.finite(option) || is.na(option)) {
+#             default
+#         } else {
+#             option
+#         }
+#     }
+    
+    if(length(dataObjectName) < 1L) {
+        dataObjectName <- deparse(substitute(x))
+    }
+    
+    quantile.type <- as.integer(abs(quantile.type[1L]))
+    if(!(quantile.type %in% as.integer(1:9))) {
+        quantile.type <- 7L
+    }
+    
+#     lty <- lty[1L] #<--CHANGE TO ACCEPT A VECTOR AT SOME POINT?
+#     if(is.character(lty)) {
+#         validLineTypes <- c("blank", "solid", "dashed", "dotted", "dotdash", "longdash", "twodash")
+#         if(!(lty %in% validLineTypes)) {
+#             warning(strwrap(gettextf("Custom or invalid line type specifications such as %s currently are not supported. The %s option has been set to 1 (%s). Valid character options are: %s.", sQuote(lty), sQuote("lty"), sQuote("solid"), paste(sQuote(validLineTypes), collapse = ", ")), width = 0.95 * getOption("width"), prefix = "\n    ", initial = ""))
+#             lty <- 1L
+#         } else {
+#             lty <- match(x = lty, table = validLineTypes, nomatch = 0L) - 1L
+#         }
+#     }
+#     lwd <- abs(lwd[!is.na(lwd)])[1L] #<-- ACCEPT VECTOR AT SOME POINT?
+#     col <- col[1L] #<-- ACCEPT VECTOR AT SOME POINT?
+#     
+#     lty.density <- defaultIfNULL(lty.density, lty)
+#     lwd.density <- defaultIfNULL(lwd.density, lwd)
+#     col.density <- defaultIfNULL(col.density, "red")
+#     
+#     lty.mean <- defaultIfNULL(lty.mean, lty)
+#     lwd.mean <- defaultIfNULL(lwd.mean, lwd)
+#     col.mean <- defaultIfNULL(col.mean, "blue")
+#     
+#     lty.median <- defaultIfNULL(lty.median, (lty %% 6L) + 1L)
+#     lwd.median <- defaultIfNULL(lwd.median, lwd)
+#     col.median <- defaultIfNULL(col.median, "orange")
+#     
+#     lty.quartile1 <- defaultIfNULL(lty.quartile1, (lty %% 6L) + 1L)
+#     lwd.quartile1 <- defaultIfNULL(lwd.quartile1, lwd)
+#     col.quartile1 <- defaultIfNULL(col.quartile1, "green3")
+#     
+#     lty.quartile3 <- defaultIfNULL(lty.quartile3, (lty %% 6L) + 1L)
+#     lwd.quartile3 <- defaultIfNULL(lwd.quartile3, lwd)
+#     col.quartile3 <- defaultIfNULL(col.quartile3, "green3")
+#     
+#     lty.minimum <- defaultIfNULL(lty.minimum, (lty %% 6L) + 2L)
+#     lwd.minimum <- defaultIfNULL(lwd.minimum, lwd)
+#     col.minimum <- defaultIfNULL(col.minimum, "magenta")
+#     
+#     lty.maximum <- defaultIfNULL(lty.maximum, (lty %% 6L) + 2L)
+#     lwd.maximum <- defaultIfNULL(lwd.maximum, lwd)
+#     col.maximum <- defaultIfNULL(col.maximum, "magenta")
+#     
+#     col.main <- defaultIfNULL(col.main, "black")
+#     cex.main <- defaultIfNULL(cex.main, 1.0)
+#     font.main <- defaultIfNULL(font.main, 1L)
+#     line.main <- defaultIfNULL(line.main, -1L)
+    
+#     if(missing(lty) || length(lty) == 0L) {
+#         lty.density <- "solid"
+# #         lty.vertical <- c("mean" = "solid", "median" = "dashed", "quartile1" = "dashed", "quartile3" = "dashed")
+#         lty.vertical <- c("solid", "dashed", "dashed", "dashed")
+#     } else if(length(lty) < 5L) {
+#         if(length(lty) == 4L) {
+#             lty.density <- lty[1L]
+#             lty.vertical <- lty
+#         } else {
+#             lty <- rep(lty, length.out = 5L)
+#             lty.density <- lty[1L]
+#             lty.vertical <- lty[2L:5L]
+#         }
+#     } else {
+#         lty.density <- lty[1L]
+#         lty.vertical <- lty[2L:5L]
+#     if(missing(lty) || length(lty) == 0L) {
+#         lty.density <- 1L
+#         lty.vertical <- c(1L, 2L, 2L, 2L)
+#     } else if(length(lty) == 1L) {
+#         lty.density <- lty.vertical <- lty
+#     } else {
+#         lty.density <- lty[1L]
+#         lty.vertical <- lty[-1L]
+#     }
+    if(missing(lty) || length(lty) == 0L) {
+        lty <- par("lty")
+    }
+    if(length(lty) == 1L) {
+        lty.density <- lty.vertical <- lty
+    } else {
+        lty.density <- lty[1L]
+        lty.vertical <- lty[-1L]
+    }
+    
+#     if(missing(lwd) || length(lwd) == 0L) {
+#         lwd.density <- lwd.vertical <- 2L
+#     } else if(length(lwd) == 1L) {
+#         lwd.density <- lwd.vertical <- lwd
+#     } else {
+#         lwd.density <- lwd[1L]
+#         lwd.vertical <- lwd[-1L]
+#     }
+    if(missing(lwd) || length(lwd) == 0L) {
+        lwd <- par("lwd")
+    }
+    if(length(lwd) == 1L) {
+        lwd.density <- lwd.vertical <- lwd
+    } else {
+        lwd.density <- lwd[1L]
+        lwd.vertical <- lwd[-1L]
+    }
+    
+#     if(missing(col) || length(col) == 0L) {
+#         col.density <- "red"
+#         col.vertical <- gray(0.2)
+#     } else if(length(col) == 1L) {
+#         col.density <- col.vertical <- col
+#     } else {
+#         col.density <- col[1L]
+#         col.vertical <- col[-1L]
+#     }
+    if(missing(col) || length(col) == 0L) {
+        col <- par("col")
+    }
+    if(length(col) == 1L) {
+        col.density <- col.vertical <- col
+    } else {
+        col.density <- col[1L]
+        col.vertical <- col[-1L]
+    }
+    
+    x.boxplot.stats <- boxplot(x, plot = FALSE)$stats
+#     x.hist.density <- hist(x, plot = FALSE)$density
+    # Retrieved 2014-07-22: http://stackoverflow.com/a/9122859
+    x.hist <- hist(x, plot = FALSE)
+    x.hist$density <- x.hist$counts / sum(x.hist$counts)
+    if(plotDensityCurve) {
+        x.density <- density(x)
+        x.density$y <- x.density$y * diff(x.hist$breaks)[1L]
+    }
+    if(plotVerticalLines) {
+        x.mean <- mean(x, na.rm = na.rm)
+        x.median <- stats::median(x, na.rm = na.rm)
+#         x.quartile1 <- stats::quantile(x, probs = 1/4, na.rm = na.rm, type = quantile.type, names = FALSE)
+#         x.quartile3 <- stats::quantile(x, probs = 3/4, na.rm = na.rm, type = quantile.type, names = FALSE)
+        x.lowerhinge <- stats::fivenum(x, na.rm = na.rm)[2L]
+        x.upperhinge <- stats::fivenum(x, na.rm = na.rm)[4L]
+    }
+    
+    nf <- layout(matrix(c(1, 2), nrow = 2, ncol = 1, byrow = TRUE), height = c(1, 3))
+    par(mar = c(0, 4.1, 1.1, 2.1))
+    boxplot(x, frame = FALSE, axes = FALSE, horizontal = TRUE, ylim = getRounding(x, na.rm = na.rm))
+    if(plotVerticalLines) {
+#         segments(x0 = c(mean(x, na.rm = na.rm), median(x, na.rm = na.rm), quantile(x, na.rm = na.rm, probs = c(1/4, 3/4), type = quantile.type, names = FALSE)),
+#                  y0 = rep(0L, length.out = 4L),
+#                  x1 = c(mean(x, na.rm = na.rm), median(x, na.rm = na.rm), quantile(x, na.rm = na.rm, probs = c(1/4, 3/4), type = quantile.type, names = FALSE)),
+#                  y1 = rep(1L, length.out = 4L),
+#                  lty = lty.vertical,
+#                  lwd = lwd.vertical,
+#                  col = col.vertical)
+#         text(x = quantile(x, na.rm = na.rm, probs = 1/4, type = quantile.type, names = FALSE), y = 1.5, labels = formatC(quantile(x, na.rm = na.rm, probs = 1/4, type = quantile.type, names = FALSE), format = "f", digits = 1L))
+#         segments(x0 = c(x.mean, x.median, x.quartile1, x.quartile3),
+#                  y0 = rep(0L, length.out = 4L),
+#                  x1 = c(x.mean, x.median, x.quartile1, x.quartile3),
+#                  y1 = rep(1L, length.out = 4L),
+#                  lty = lty.vertical,
+#                  lwd = lwd.vertical,
+#                  col = col.vertical)
+#         text(x = x.quartile1, y = 1.5, labels = formatC(quantile(x, na.rm = na.rm, probs = 1/4, type = quantile.type, names = FALSE), format = "f", digits = 1L))
+        segments(x0 = c(x.mean, x.median, x.lowerhinge, x.upperhinge),
+                 y0 = rep(0L, length.out = 4L),
+                 x1 = c(x.mean, x.median, x.lowerhinge, x.upperhinge),
+                 y1 = rep(1L, length.out = 4L),
+                 lty = lty.vertical,
+                 lwd = lwd.vertical,
+                 col = col.vertical)
+        if(plotStatsValues) {
+            oldXPD <- par()$xpd
+            par(xpd = TRUE)
+            text(x = c(x.median, x.lowerhinge, x.upperhinge), y = 4/3, labels = formatC(c(x.median, x.lowerhinge, x.upperhinge), format = "f", digits = 1L), col = col.vertical)
+            text(x = c(x.median, x.lowerhinge, x.upperhinge), y = 4.5/3, labels = c("Q2", "Q1", "Q3"), col = col.vertical)
+            par(xpd = oldXPD)
+        }
+    }
+#     segments(x0 = mean(x, na.rm = na.rm), y0 = 0L, x1 = mean(x, na.rm = na.rm), y1 = 1L, lty = lty.mean, lwd = lwd.mean, col = col.mean)
+#     segments(x0 = median(x, na.rm = na.rm), y0 = 0L, x1 = median(x, na.rm = na.rm), y1 = 1L, lty = lty.median, lwd = lwd.median, col = col.median)
+#     segments(x0 = quantile(x, probs = 1/4, type = quantile.type, names = FALSE, na.rm = na.rm), y0 = 0L, x1 = quantile(x, probs = 1/4, type = quantile.type, names = FALSE, na.rm = na.rm), y1 = 1L, lty = lty.quartile1, lwd = lwd.quartile1, col = col.quartile1)
+#     segments(x0 = quantile(x, probs = 3/4, type = quantile.type, names = FALSE, na.rm = na.rm), y0 = 0L, x1 = quantile(x, probs = 3/4, type = quantile.type, names = FALSE, na.rm = na.rm), y1 = 1L, lty = lty.quartile3, lwd = lwd.quartile3, col = col.quartile3)
+    
+#     title(main = sprintf("Plots for %s", sQuote(dataObjectName)), col.main = col.main, cex.main = cex.main, font.main = font.main, line = line.main)
+    
+    par(mar = c(5.1, 4.1, 0, 2.1))
+    plot(x.hist, freq = FALSE, main = NULL, xlim = getRounding(x, na.rm = na.rm), ylim = getRounding(x.hist$density, na.rm = na.rm), xlab = sprintf("Values of %s", sQuote(dataObjectName)), ylab = "Relative Frequency")
+    if(plotDensityCurve) {
+        lines(x.density$x, x.density$y, lty = lty.density, lwd = lwd.density, col = col.density)
+    }
+    if(plotVerticalLines) {
+#         abline(v = c(mean(x, na.rm = na.rm), median(x, na.rm = na.rm), quantile(x, na.rm = na.rm, probs = c(1/4, 3/4), type = quantile.type, names = FALSE)),
+#                lty = lty.vertical,
+#                lwd = lwd.vertical,
+#                col = col.vertical)
+#         abline(v = c(x.mean, x.median, x.quartile1, x.quartile3),
+#                lty = lty.vertical,
+#                lwd = lwd.vertical,
+#                col = col.vertical)
+        abline(v = c(x.mean, x.median, x.lowerhinge, x.upperhinge),
+               lty = lty.vertical,
+               lwd = lwd.vertical,
+               col = col.vertical)
+    }
+#     abline(v = mean(x, na.rm = na.rm), lty = lty.mean, lwd = lwd.mean, col = col.mean)
+#     abline(v = median(x, na.rm = na.rm), lty = lty.median, lwd = lwd.median, col = col.median)
+#     abline(v = quantile(x, probs = 1/4, type = quantile.type, names = FALSE, na.rm = na.rm), lty = lty.quartile1, lwd = lwd.quartile1, col = col.quartile1)
+#     abline(v = quantile(x, probs = 3/4, type = quantile.type, names = FALSE, na.rm = na.rm), lty = lty.quartile3, lwd = lwd.quartile3, col = col.quartile3)
+}
+
+getBoxHist(x)
+getBoxHist(x, col = c("red", gray(0.2)), lty = c(1, 1, 2, 2, 2), lwd = 2)
+getBoxHist(x, col = c("red", gray(0.5)), lty = c(1, 1, 2, 2, 2), lwd = 2)
+getBoxHist(x, col = c("red", gray(0.7)), lty = c(1, 1, 2, 2, 2), lwd = 2)
+
+
+
+par(xpd = NA)
+convfrom <- "ndc"
+convto <- "user"
+xleft <- 0
+ybottom <- 0
+xright <- 1
+ytop <- 1
+rect(xleft = grconvertX(xleft, from = convfrom, to = convto), ybottom = grconvertY(ybottom, from = convfrom, to = convto),
+     xright = grconvertX(xright, from = convfrom, to = convto), ytop = grconvertY(ytop, from = convfrom, to = convto))
+
+
+
+
+
+
+
 
