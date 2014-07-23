@@ -830,14 +830,15 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
 
 
 
-getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, plotDensityCurve = TRUE, plotVerticalLines = TRUE, plotStatsValues = TRUE, lty = par("lty"), lwd = par("lwd"), col = par("col")) {
+# getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, plotDensityCurve = TRUE, plotVerticalLines = TRUE, plotStatsValues = TRUE, lty = par("lty"), lwd = par("lwd"), col = par("col")) {
+getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, plotDensityCurve = TRUE, plotVerticalLines = TRUE, plotStatsValues = TRUE, lty = par("lty"), lwd = par("lwd"), col = par("col"), digits = 2L, textLineWidthFactor = 0.15 * par("cex"), textLineHeightFactor = 1.015 * par("cex"), boxplotBuffer = 0.3) {
     def.par <- par(no.readonly = TRUE)
     on.exit(layout(1), add = TRUE)
     on.exit(par(def.par), add = TRUE)
     
     fPart <- function(x) abs(x - trunc(x))
     
-    getRounding <- function(x, na.rm = TRUE) {
+    getRounding <- function(x, na.rm = TRUE, adj = TRUE) {
         arx <- abs(range(x, na.rm = na.rm))
 #         larx <- log10(abs(range(x, na.rm = na.rm)))
         larx <- log10(arx)
@@ -850,8 +851,11 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, plotDensityCurve 
 #         mindenom <- 2^(fPart(arx[1L]/minpower)<0.5)
 #         maxdenom <- 2^(fPart(arx[2L]/maxpower)<0.5)
         powers <- 10^(floor(larx))
-        denoms <- 2^(fPart(arx / powers) < 0.5)
-        adj <- sign(range(x)) * powers * (denoms - 1L) / 2^(denoms - 1L)
+#         denoms <- 2^(fPart(arx / powers) < 0.5)
+#         denoms <- 2^(fPart(arx / powers) < log10(5))
+        denoms <- fPart(arx / powers) < 0.5 & fPart(arx / powers) > 0
+#         adj <- adj * (sign(range(x)) * powers * (denoms - 1L) / 2^(denoms - 1L))
+        adj <- adj * sign(range(x)) * powers * denoms / 2
 #         c((floor(range(x)[1L] / (10^minplaces)) * 10^minplaces), (ceiling(range(x)[2L] / (10^(maxplaces - 1L))) * 10^(maxplaces - 1L)))
 #         tentativeLimits <- c((floor(range(x)[1L] / (10^minplaces)) * 10^minplaces), (ceiling(range(x)[2L] / (10^(maxplaces - 1L))) * 10^(maxplaces - 1L)))
 #         tentativeLimits <- c((floor(range(x)[1L] / (10^minplaces)) * 10^minplaces), (ceiling(range(x)[2L] / (10^(maxplaces))) * 10^(maxplaces)))
@@ -902,7 +906,7 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, plotDensityCurve 
         x.density <- density(x)
         x.density$y <- x.density$y * diff(x.hist$breaks)[1L]
     }
-    if(plotVerticalLines) {
+    if(plotVerticalLines || plotStatsValues) {
         x.mean <- mean(x, na.rm = na.rm)
         x.median <- stats::median(x, na.rm = na.rm)
         x.lowerhinge <- stats::fivenum(x, na.rm = na.rm)[2L]
@@ -911,7 +915,7 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, plotDensityCurve 
     
     nf <- layout(matrix(c(1, 2), nrow = 2, ncol = 1, byrow = TRUE), height = c(1, 3))
     par(mar = c(0, 4.1, 1.1, 2.1))
-    boxplot(x, frame = FALSE, axes = FALSE, horizontal = TRUE, ylim = getRounding(x, na.rm = na.rm))
+    boxplot(x, frame = FALSE, axes = FALSE, horizontal = TRUE, ylim = getRounding(x, na.rm = na.rm, adj = FALSE))
     if(plotVerticalLines) {
         segments(x0 = c(x.mean, x.median, x.lowerhinge, x.upperhinge),
                  y0 = rep(0L, length.out = 4L),
@@ -923,8 +927,11 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, plotDensityCurve 
         if(plotStatsValues) {
             oldXPD <- par()$xpd
             par(xpd = TRUE)
-            text(x = c(x.median, x.lowerhinge, x.upperhinge), y = 4/3, labels = formatC(c(x.median, x.lowerhinge, x.upperhinge), format = "f", digits = 1L), col = col.vertical)
-            text(x = c(x.median, x.lowerhinge, x.upperhinge), y = 4.5/3, labels = c("Q2", "Q1", "Q3"), col = col.vertical)
+#             text(x = c(x.median, x.lowerhinge, x.upperhinge), y = 4/3, labels = formatC(c(x.median, x.lowerhinge, x.upperhinge), format = "f", digits = 1L), col = col.vertical)
+#             text(x = c(x.median, x.lowerhinge, x.upperhinge), y = 4.5/3, labels = c("Q2", "Q1", "Q3"), col = col.vertical)
+            text(x = c(x.median, x.lowerhinge, x.upperhinge), y = boxplotBuffer + textLineHeightFactor, labels = formatC(c(x.median, x.lowerhinge, x.upperhinge), format = "f", digits = 1L), col = col.vertical)
+#             text(x = c(x.median, x.lowerhinge, x.upperhinge), y = textLineHeightFactor * (boxplotBuffer + textLineHeightFactor), labels = c("Q2", "Q1", "Q3"), col = col.vertical)
+            text(x = c(x.median, x.lowerhinge, x.upperhinge), y = boxplotBuffer + textLineHeightFactor + textLineHeightFactor * strheight(x.median), labels = c("Q2", "Q1", "Q3"), col = col.vertical)
             par(xpd = oldXPD)
         }
     }
@@ -932,7 +939,7 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, plotDensityCurve 
 #     title(main = sprintf("Plots for %s", sQuote(dataObjectName)), col.main = col.main, cex.main = cex.main, font.main = font.main, line = line.main)
     
     par(mar = c(5.1, 4.1, 0, 2.1))
-    plot(x.hist, freq = FALSE, main = NULL, xlim = getRounding(x, na.rm = na.rm), ylim = getRounding(x.hist$density, na.rm = na.rm), xlab = sprintf("Values of %s", sQuote(dataObjectName)), ylab = "Relative Frequency")
+    plot(x.hist, freq = FALSE, main = NULL, xlim = getRounding(x, na.rm = na.rm, adj = FALSE), ylim = getRounding(x.hist$density, na.rm = na.rm, adj = TRUE), xlab = sprintf("Values of %s", sQuote(dataObjectName)), ylab = "Relative Frequency")
     if(plotDensityCurve) {
         lines(x.density$x, x.density$y, lty = lty.density, lwd = lwd.density, col = col.density)
     }
@@ -941,6 +948,15 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, plotDensityCurve 
                lty = lty.vertical,
                lwd = lwd.vertical,
                col = col.vertical)
+    }
+    if(plotStatsValues) {
+#         text(x = max(x, na.rm = na.rm), y = max(x.hist$density, na.rm = na.rm), labels = c("Mean (SD)", paste(formatC(x.mean, format = "f", digits = digits), " (", formatC(sd(x, na.rm = na.rm), format = "f", digits = digits), ")", sep = "")), col = col.vertical)
+#         text(x = max(x, na.rm = na.rm), y = max(x.hist$density, na.rm = na.rm), labels = expression(Mean ~ (SD) ~ \\n .(x.mean) ~ (.(sd(x, na.rm = na.rm)))), col = col.vertical)
+#         text(x = max(x, na.rm = na.rm), y = max(x.hist$density, na.rm = na.rm), labels = bquote(paste("Mean (SD)", "\n", .(formatC(x.mean, format = "f", digits = digits)), " (", .(formatC(sd(x, na.rm = na.rm), format = "f", digits = digits)), ")")), col = col.vertical)
+#         text(x = max(x, na.rm = na.rm) - 1.015 * par("cex") * strwidth(paste(formatC(x.mean, format = "f", digits = digits), " (", formatC(sd(x, na.rm = na.rm), format = "f", digits = digits), ")", sep = "")), y = max(x.hist$density, na.rm = na.rm) + c(0, -1.015 * par("cex") * strheight("Mean (SD)")), labels = c("Mean (SD)", paste(formatC(x.mean, format = "f", digits = digits), " (", formatC(sd(x, na.rm = na.rm), format = "f", digits = digits), ")", sep = "")), col = col.vertical)
+#         text(x = max(x, na.rm = na.rm) - 0.1 * par("cex") * strwidth("Mean (SD)"), y = max(x.hist$density, na.rm = na.rm) + c(0, -1.015 * par("cex") * strheight("Mean (SD)")), labels = c("Mean (SD)", paste(formatC(x.mean, format = "f", digits = digits), " (", formatC(sd(x, na.rm = na.rm), format = "f", digits = digits), ")", sep = "")), col = col.vertical)
+#         text(x = max(x, na.rm = na.rm) - 0.15 * par("cex") * strwidth(paste(formatC(x.mean, format = "f", digits = digits), " (", formatC(sd(x, na.rm = na.rm), format = "f", digits = digits), ")", sep = "")), y = max(x.hist$density, na.rm = na.rm) + c(0, -1.015 * par("cex") * strheight("Mean (SD)")), labels = c("Mean (SD)", paste(formatC(x.mean, format = "f", digits = digits), " (", formatC(sd(x, na.rm = na.rm), format = "f", digits = digits), ")", sep = "")), col = col.vertical)
+        text(x = max(x, na.rm = na.rm) - abs(textLineWidthFactor) * strwidth(paste(formatC(x.mean, format = "f", digits = digits), " (", formatC(sd(x, na.rm = na.rm), format = "f", digits = digits), ")", sep = "")), y = max(x.hist$density, na.rm = na.rm) + c(0, -abs(textLineHeightFactor) * strheight("Mean (SD)")), labels = c("Mean (SD)", paste(formatC(x.mean, format = "f", digits = digits), " (", formatC(sd(x, na.rm = na.rm), format = "f", digits = digits), ")", sep = "")), col = col.vertical)
     }
     layout(1)
 }
