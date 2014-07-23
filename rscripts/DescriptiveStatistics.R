@@ -829,18 +829,35 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
 }
 
 
+
 getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, plotDensityCurve = TRUE, plotVerticalLines = TRUE, plotStatsValues = TRUE, lty = par("lty"), lwd = par("lwd"), col = par("col")) {
     def.par <- par(no.readonly = TRUE)
     on.exit(layout(1), add = TRUE)
     on.exit(par(def.par), add = TRUE)
     
+    fPart <- function(x) abs(x - trunc(x))
+    
     getRounding <- function(x, na.rm = TRUE) {
-        larx <- log10(abs(range(x, na.rm = na.rm)))
+        arx <- abs(range(x, na.rm = na.rm))
+#         larx <- log10(abs(range(x, na.rm = na.rm)))
+        larx <- log10(arx)
         larx[!is.finite(larx) | is.na(larx)] <- 0L
-        minplaces <- floor(larx[1L])
-        maxplaces <- ceiling(larx[2L])
-        c((floor(range(x)[1L] / (10^minplaces)) * 10^minplaces), (ceiling(range(x)[2L] / (10^(maxplaces - 1L))) * 10^(maxplaces - 1L)))
+#         minplaces <- floor(larx[1L])
+# #         maxplaces <- ceiling(larx[2L])
+#         maxplaces <- floor(larx[2L])
+#         minpower <- 10^(floor(larx[1L]))
+#         maxpower <- 10^(floor(larx[2L]))
+#         mindenom <- 2^(fPart(arx[1L]/minpower)<0.5)
+#         maxdenom <- 2^(fPart(arx[2L]/maxpower)<0.5)
+        powers <- 10^(floor(larx))
+        denoms <- 2^(fPart(arx / powers) < 0.5)
+        adj <- sign(range(x)) * powers * (denoms - 1L) / 2^(denoms - 1L)
+#         c((floor(range(x)[1L] / (10^minplaces)) * 10^minplaces), (ceiling(range(x)[2L] / (10^(maxplaces - 1L))) * 10^(maxplaces - 1L)))
 #         tentativeLimits <- c((floor(range(x)[1L] / (10^minplaces)) * 10^minplaces), (ceiling(range(x)[2L] / (10^(maxplaces - 1L))) * 10^(maxplaces - 1L)))
+#         tentativeLimits <- c((floor(range(x)[1L] / (10^minplaces)) * 10^minplaces), (ceiling(range(x)[2L] / (10^(maxplaces))) * 10^(maxplaces)))
+#         tentativeLimits <- c((floor(range(x)[1L] / minpower) * minpower), (ceiling(range(x)[2L] / maxpower) * maxpower))
+#         c((floor(range(x)[1L] / minpower) * minpower/mindenom), (ceiling(range(x)[2L] / maxpower) * maxpower/maxdenom))
+        c(floor(range(x)[1L] / powers[1L]), ceiling(range(x)[2L] / powers[2L])) * powers - adj
     }
     
     if(length(dataObjectName) < 1L) {
