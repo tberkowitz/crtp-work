@@ -1257,4 +1257,57 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
 
 
 
+# set.seed(0724)
+# x <- rnorm(500, sd = 100)
+# y <- rnorm(500, sd = 0.01)
+# 
+# x.hist <- hist(x, plot = FALSE)
+# # y.hist <- hist(y, plot = FALSE)
+# y.hist <- hist(y, breaks = 12, plot = FALSE)
+# 
+# plot(x.hist, freq = FALSE, axes = FALSE)
+# axis(side = 1, at = x.hist$breaks)
+# axis(side = 1, at = axTicks(side = 1, axp = c(par("xaxp")[-3L], 10)))
+# 
+# plot(y.hist, freq = FALSE, axes = FALSE)
+# axis(side = 1, at = axTicks(side = 1, axp = c(extendrange(par("xaxp")[-3L], f = 0.1), 10)))
+
+set.seed(0724)
+x <- rnorm(50, sd = 100)
+y <- rnorm(50, sd = 0.01)
+
+x.hist <- hist(x, plot = FALSE)
+y.hist <- hist(y, plot = FALSE)
+
+x.hist$density <- x.hist$counts / sum(x.hist$counts)
+y.hist$density <- y.hist$counts / sum(y.hist$counts)
+
+plot(x.hist, freq=FALSE)
+axis(side = 1, )
+
+
+
+goodTicks <- function(x, numTicks = 6L) {
+    x.hist <- hist(x, plot = FALSE)
+    x.hist$density <- x.hist$counts / sum(x.hist$counts)
+    plot(x.hist, freq = FALSE, xaxt = "n", xlab = gettextf("Values of %s", sQuote(deparse(substitute(x)))), main = NULL)
+#     axis(side = 1, at = axTicks(side = 1, axp = c(range(x.hist$breaks), par("xaxp")[3L])))
+    xticks <- axTicks(side = 1, axp = c(range(x.hist$breaks), as.integer(abs(numTicks))))
+    axis(side = 1, at = xticks, labels = formatC(xticks, format="g"))
+}
+goodTicks(x)
+goodTicks(y)
+
+
+
+
+
+
+
+
+
+
+
+
+
 
