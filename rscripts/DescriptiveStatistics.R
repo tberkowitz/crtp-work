@@ -618,45 +618,45 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, plotDensityCurve 
     on.exit(layout(1), add = TRUE)
     on.exit(par(def.par), add = TRUE)
     
-#     fPart <- function(x) abs(x - trunc(x))
-#     
+# #     fPart <- function(x) abs(x - trunc(x))
+# #     
+# #     getRounding <- function(x, na.rm = TRUE, adj = TRUE) {
+# #         arx <- abs(range(x, na.rm = na.rm))
+# #         larx <- log10(arx)
+# #         larx[!is.finite(larx) | is.na(larx)] <- 0L
+# # #         powers <- 10^(floor(larx))
+# #         powers <- 10^(floor(larx) - 1L)
+# #         denoms <- fPart(arx / powers) < 0.5 & fPart(arx / powers) > 0
+# #         adj <- adj * sign(range(x)) * powers * denoms / 2
+# #         c(floor(range(x)[1L] / powers[1L]), ceiling(range(x)[2L] / powers[2L])) * powers - adj
+# #     }
 #     getRounding <- function(x, na.rm = TRUE, adj = TRUE) {
-#         arx <- abs(range(x, na.rm = na.rm))
-#         larx <- log10(arx)
-#         larx[!is.finite(larx) | is.na(larx)] <- 0L
-# #         powers <- 10^(floor(larx))
-#         powers <- 10^(floor(larx) - 1L)
-#         denoms <- fPart(arx / powers) < 0.5 & fPart(arx / powers) > 0
-#         adj <- adj * sign(range(x)) * powers * denoms / 2
-#         c(floor(range(x)[1L] / powers[1L]), ceiling(range(x)[2L] / powers[2L])) * powers - adj
+#         fPart <- function(x) abs(x - trunc(x))
+#     #     arx <- abs(range(x, na.rm = na.rm))
+#     #     larx <- log10(arx)
+#     #     larx[!is.finite(larx) | is.na(larx)] <- 0L
+#     #     powers <- 10^(floor(larx) - 1L)
+#     #     denoms <- fPart(arx / powers) < 0.5 & fPart(arx / powers) > 0
+#     #     adj <- adj * sign(range(x)) * powers * denoms / 2
+#     #     c(floor(range(x)[1L] / powers[1L]), ceiling(range(x)[2L] / powers[2L])) * powers - adj
+#         minx <- abs(range(x, na.rm = na.rm)[1L])
+#         lminx <- log10(minx)
+#         lminx[!is.finite(lminx) | is.na(lminx)] <- 0L
+#         minpower <- 10^(floor(lminx) - 1L)
+#     #     mindenom <- fPart(minx / minpower) < 0.5 & fPart(minx / minpower) > 0
+# #         mindenom <- fPart(minx / minpower) > 0.5 & fPart(minx / minpower) < 0
+#         mindenom <- fPart(minx / minpower) > 0.5
+#         minadj <- adj * sign(minx) * minpower * mindenom / 2
+#         
+#         maxx <- abs(range(x, na.rm = na.rm)[2L])
+#         lmaxx <- log10(maxx)
+#         lmaxx[!is.finite(lmaxx) | is.na(lmaxx)] <- 0L
+#         maxpower <- 10^(floor(lmaxx) - 1L)
+#         maxdenom <- fPart(maxx / maxpower) < 0.5 & fPart(maxx / maxpower) > 0
+#         maxadj <- adj * sign(maxx) * maxpower * maxdenom / 2
+#         
+#         c(floor(minx / minpower) * minpower - minadj, ceiling(maxx / maxpower) * maxpower - maxadj)
 #     }
-    getRounding <- function(x, na.rm = TRUE, adj = TRUE) {
-        fPart <- function(x) abs(x - trunc(x))
-    #     arx <- abs(range(x, na.rm = na.rm))
-    #     larx <- log10(arx)
-    #     larx[!is.finite(larx) | is.na(larx)] <- 0L
-    #     powers <- 10^(floor(larx) - 1L)
-    #     denoms <- fPart(arx / powers) < 0.5 & fPart(arx / powers) > 0
-    #     adj <- adj * sign(range(x)) * powers * denoms / 2
-    #     c(floor(range(x)[1L] / powers[1L]), ceiling(range(x)[2L] / powers[2L])) * powers - adj
-        minx <- abs(range(x, na.rm = na.rm)[1L])
-        lminx <- log10(minx)
-        lminx[!is.finite(lminx) | is.na(lminx)] <- 0L
-        minpower <- 10^(floor(lminx) - 1L)
-    #     mindenom <- fPart(minx / minpower) < 0.5 & fPart(minx / minpower) > 0
-#         mindenom <- fPart(minx / minpower) > 0.5 & fPart(minx / minpower) < 0
-        mindenom <- fPart(minx / minpower) > 0.5
-        minadj <- adj * sign(minx) * minpower * mindenom / 2
-        
-        maxx <- abs(range(x, na.rm = na.rm)[2L])
-        lmaxx <- log10(maxx)
-        lmaxx[!is.finite(lmaxx) | is.na(lmaxx)] <- 0L
-        maxpower <- 10^(floor(lmaxx) - 1L)
-        maxdenom <- fPart(maxx / maxpower) < 0.5 & fPart(maxx / maxpower) > 0
-        maxadj <- adj * sign(maxx) * maxpower * maxdenom / 2
-        
-        c(floor(minx / minpower) * minpower - minadj, ceiling(maxx / maxpower) * maxpower - maxadj)
-    }
     
     if(length(dataObjectName) < 1L) {
         dataObjectName <- deparse(substitute(x))
@@ -709,7 +709,8 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, plotDensityCurve 
     
     nf <- layout(matrix(c(1, 2), nrow = 2, ncol = 1, byrow = TRUE), height = c(1, 3))
     par(mar = c(0, 4.1, 1.1, 2.1))
-    boxplot(x, frame = FALSE, axes = FALSE, horizontal = TRUE, ylim = getRounding(x, na.rm = na.rm, adj = TRUE))
+#     boxplot(x, frame = FALSE, axes = FALSE, horizontal = TRUE, ylim = getRounding(x, na.rm = na.rm, adj = TRUE))
+    boxplot(x, frame = FALSE, axes = FALSE, horizontal = TRUE, ylim = range(x))
     if(plotVerticalLines) {
         segments(x0 = c(x.mean, x.median, x.lowerhinge, x.upperhinge),
                  y0 = rep(0L, length.out = 4L),
@@ -730,7 +731,8 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, plotDensityCurve 
     # title(main = sprintf("Plots for %s", sQuote(dataObjectName)), col.main = col.main, cex.main = cex.main, font.main = font.main, line = line.main)
     
     par(mar = c(5.1, 4.1, 0, 2.1))
-    plot(x.hist, freq = FALSE, main = NULL, xlim = getRounding(x, na.rm = na.rm, adj = TRUE), ylim = getRounding(x.hist$density, na.rm = na.rm, adj = TRUE), xlab = sprintf("Values of %s", sQuote(dataObjectName)), ylab = "Relative Frequency")
+#     plot(x.hist, freq = FALSE, main = NULL, xlim = getRounding(x, na.rm = na.rm, adj = TRUE), ylim = getRounding(x.hist$density, na.rm = na.rm, adj = TRUE), xlab = sprintf("Values of %s", sQuote(dataObjectName)), ylab = "Relative Frequency")
+    plot(x.hist, freq = FALSE, main = NULL, xlab = sprintf("Values of %s", sQuote(dataObjectName)), ylab = "Relative Frequency", xlim = range(x))
     if(plotDensityCurve) {
         lines(x.density$x, x.density$y, lty = lty.density, lwd = lwd.density, col = col.density)
     }
@@ -1161,6 +1163,95 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
 #     maxadj <- adj * sign(maxx) * maxpower * maxdenom / 2
 #     
 #     c(floor(minx / minpower) * minpower - minadj, ceiling(maxx / maxpower) * maxpower - maxadj)
+# }
+
+
+
+
+
+# set.seed(0724)
+# x <- rnorm(500, sd = 100)
+# y <- rnorm(500, sd = 0.01)
+# 
+# # getRounding <- function(x, na.rm = TRUE, adj = TRUE) {
+# #     fPart <- function(x) abs(x - trunc(x))
+# # #     arx <- abs(range(x, na.rm = na.rm))
+# # #     larx <- log10(arx)
+# # #     larx[!is.finite(larx) | is.na(larx)] <- 0L
+# # #     powers <- 10^(floor(larx) - 1L)
+# # #     denoms <- fPart(arx / powers) < 0.5 & fPart(arx / powers) > 0
+# # #     adj <- adj * sign(range(x)) * powers * denoms / 2
+# # #     c(floor(range(x)[1L] / powers[1L]), ceiling(range(x)[2L] / powers[2L])) * powers - adj
+# #     minx <- min(x[is.finite(x)], na.rm = na.rm)
+# #     aminx <- abs(minx)
+# #     laminx <- log10(aminx)
+# #     minpower <- 10^(floor(laminx) - 1L)
+# #     mindenom <- fPart(aminx / minpower) > 0.5# & fPart(aminx / minpower) < 0
+# #     minadj <- adj * sign(minx) * minpower * mindenom / 2
+# #     
+# #     maxx <- max(x[is.finite(x)], na.rm = na.rm)
+# #     amaxx <- abs(maxx)
+# #     lamaxx <- log10(amaxx)
+# #     maxpower <- 10^(floor(lamaxx) - 1L)
+# #     maxdenom <- fPart(amaxx / maxpower) < 0.5 & fPart(amaxx / maxpower) > 0
+# #     maxadj <- adj * sign(maxx) * maxpower * maxdenom / 2
+# #     
+# #     c(floor(minx / minpower) * minpower - minadj, ceiling(maxx / maxpower) * maxpower - maxadj)
+# # }
+# 
+# x.hist <- hist(x, plot = FALSE)
+# hist(y, axes = FALSE)
+# axis(side = 1, labels = TRUE)
+# 
+# 
+# set.seed(0724)
+# x<-rnorm(30, sd = 100)
+# x<-rnorm(30, sd = 0.01)
+# # x <- unclass(DFFH$doa)
+# 
+# 
+# roundNearestDigit <- function(x, ndigits = 1L, special = NULL) {
+#     fPart <- function(x) abs(x - trunc(x))
+# #     special <- match.arg(arg = special, choices = c("range", "minimum", "maximum", "none"), several.ok = TRUE)
+#     special <- match.arg(arg = special, choices = c("range", "minimum", "maximum", "all"), several.ok = TRUE)
+#     if(length(special) > 1L && "range" %in% special) {
+#         special <- "range"
+#     } else {
+#         special <- special[1L]
+#     }
+# #     x[!is.finite(x) | is.na(x)] <- 1L
+#     x <- switch(special,
+#                 "minimum" = min(x[is.finite(x) & !is.na(x)]),
+#                 "maximum" = max(x[is.finite(x) & !is.na(x)]),
+#                 "range" = range(x[is.finite(x) & !is.na(x)]),
+#                 "all" = x[is.finite(x) & !is.na(x)],
+#                 stop("invalid 'special' selection"))
+#     absx <- abs(x)
+#     logabsx <- log10(absx)
+#     logabsx[!is.finite(logabsx) | is.na(logabsx)] <- 0L
+#     powerOfTen <- floor(logabsx)
+#     adjustedPowerOfTen <- powerOfTen + 1L - abs(as.integer(ndigits))
+#     scaledx <- x / (10^adjustedPowerOfTen)
+# #     return(scaledx)
+# #     roundedx <- switch(special,
+# #                        "minimum" = floor(scaledx) * 10^adjustedPowerOfTen,
+# #                        "maximum" = ceiling(scaledx) * 10^adjustedPowerOfTen,
+# #                        "range" = list("Minimum" = floor(scaledx) * 10^adjustedPowerOfTen, "Maximum" = ceiling(scaledx) * 10^adjustedPowerOfTen),
+# #                        "none" = round(scaledx, digits = 0L) * 10^adjustedPowerOfTen,
+# #                        stop("invalid 'special' selection"))
+# #     roundedx <- switch(special,
+# #                        "minimum" = floor(min(scaledx)) * 10^adjustedPowerOfTen,
+# #                        "maximum" = ceiling(max(scaledx)) * 10^adjustedPowerOfTen,
+# #                        "range" = c(floor(min(scaledx)) * 10^adjustedPowerOfTen, ceiling(max(scaledx)) * 10^adjustedPowerOfTen),
+# #                        "all" = round(scaledx, digits = 0L) * 10^adjustedPowerOfTen,
+# #                        stop("invalid 'special' selection"))
+#     roundedx <- switch(special,
+#                        "minimum" = floor(scaledx) * 10^adjustedPowerOfTen,
+#                        "maximum" = ceiling(scaledx) * 10^adjustedPowerOfTen,
+#                        "range" = c(floor(scaledx[1L]) * 10^adjustedPowerOfTen[1L], ceiling(scaledx[2L]) * 10^adjustedPowerOfTen[2L]),
+#                        "all" = round(scaledx, digits = 0L) * 10^adjustedPowerOfTen,
+#                        stop("invalid 'special' selection"))
+#     return(roundedx)
 # }
 
 
