@@ -615,7 +615,8 @@ getResults.byFactors <- function(x, byFactors, x.continuous, requestedStats, na.
 # Define the getBoxHist() function
 # getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, plotDensityCurve = TRUE, plotVerticalLines = TRUE, plotStatsValues = TRUE, lty = par("lty"), lwd = par("lwd"), col = par("col"), digits = 2L, textLineWidthFactor = 0.15 * par("cex"), textLineHeightFactor = 1.015 * par("cex"), boxplotBuffer = 0.3) {
 # getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, plotDensityCurve = TRUE, plotVerticalLines = TRUE, plotStatsValues = TRUE, lty = par("lty"), lwd = par("lwd"), col = par("col"), digits = 2L, textLineWidthFactor = 0.15 * par("cex"), textLineHeightFactor = 1.015 * par("cex"), boxplotBuffer = 0.3, col.lines = col, col.fill.box = NULL, col.fill.hist = NULL) {
-getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, digits = 2L, plotDensityCurve = TRUE, plotVerticalLines = TRUE, plotStatsValues = TRUE, ..., lty = par("lty"), lwd = par("lwd"), col = par("col"), textLineWidthFactor = 0.15, textLineHeightFactor = 1.015, boxplotBuffer = 0.3) {
+# getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, digits = 2L, plotDensityCurve = TRUE, plotVerticalLines = TRUE, plotStatsValues = TRUE, ..., lty = par("lty"), lwd = par("lwd"), col = par("col"), textLineWidthFactor = 0.15, textLineHeightFactor = 1.015, boxplotBuffer = 0.3) {
+getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, digits = 2L, plotDensityCurve = TRUE, plotVerticalLines = TRUE, plotStatsValues = TRUE, ..., textLineWidthFactor = 0.15, textLineHeightFactor = 1.015, boxplotBuffer = 0.3) {
     def.par <- par(no.readonly = TRUE)
     on.exit(layout(1), add = TRUE)
     on.exit(par(def.par), add = TRUE)
@@ -659,15 +660,25 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, digits = 2L, plot
 #         
 #         c(floor(minx / minpower) * minpower - minadj, ceiling(maxx / maxpower) * maxpower - maxadj)
 #     }
+    defaultIfNULL <- function(option, default) {
+        if(is.null(option)) {
+            default
+        } else {
+            option
+        }
+    }
     
     pars <- list(...)
-    if(is.null(pars[["cex"]])) {
-        textLineWidthFactor <- textLineWidthFactor * par("cex")
-        textLineHeightFactor <- textLineHeightFactor * par("cex")
-    } else {
-        textLineWidthFactor <- textLineWidthFactor * pars[["cex"]]
-        textLineHeightFactor <- textLineHeightFactor * pars[["cex"]]
-    }
+#     if(is.null(pars[["cex"]])) {
+#         textLineWidthFactor <- textLineWidthFactor * par("cex")
+#         textLineHeightFactor <- textLineHeightFactor * par("cex")
+#     } else {
+#         textLineWidthFactor <- textLineWidthFactor * pars[["cex"]]
+#         textLineHeightFactor <- textLineHeightFactor * pars[["cex"]]
+#     }
+    pars[["cex"]] <- defaultIfNULL(pars[["cex"]], par("cex"))
+    textLineWidthFactor <- textLineWidthFactor * pars[["cex"]]
+    textLineHeightFactor <- textLineHeightFactor * pars[["cex"]]
     
     if(length(dataObjectName) < 1L) {
         dataObjectName <- deparse(substitute(x))
@@ -682,12 +693,15 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, digits = 2L, plot
 #         lty.density <- lty[1L]
 #         lty.vertical <- lty[-1L]
 #     }
-    if(is.null(pars[["lty"]])) {
-        lty <- par("lty")
-    } else {
-        lty <- pars[["lty"]]
-    }
-    lty.density <- lty.vertical <- lty
+#     if(is.null(pars[["lty"]])) {
+#         lty <- par("lty")
+#     } else {
+#         lty <- pars[["lty"]]
+#     }
+#     lty.density <- lty.vertical <- lty
+    pars[["lty"]] <- defaultIfNULL(pars[["lty"]], par("lty"))
+    pars[["lty.density"]] <- defaultIfNULL(pars[["lty.density"]], pars[["lty"]])
+    pars[["lty.vertical"]] <- defaultIfNULL(pars[["lty.vertical"]], pars[["lty"]])
     
 #     if(missing(lwd) || length(lwd) == 0L) {
 #         lwd <- par("lwd")
@@ -698,12 +712,15 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, digits = 2L, plot
 #         lwd.density <- lwd[1L]
 #         lwd.vertical <- lwd[-1L]
 #     }
-    if(is.null(pars[["lwd"]])) {
-        lwd <- par("lwd")
-    } else {
-        lwd <- pars[["lwd"]]
-    }
-    lwd.density <- lwd.vertical <- lwd
+#     if(is.null(pars[["lwd"]])) {
+#         lwd <- par("lwd")
+#     } else {
+#         lwd <- pars[["lwd"]]
+#     }
+#     lwd.density <- lwd.vertical <- lwd
+    pars[["lwd"]] <- defaultIfNULL(pars[["lwd"]], par("lwd"))
+    pars[["lwd.density"]] <- defaultIfNULL(pars[["lwd.density"]], pars[["lwd"]])
+    pars[["lwd.vertical"]] <- defaultIfNULL(pars[["lwd.vertical"]], pars[["lwd"]])
     
 #     if(missing(col) || length(col) == 0L) {
 #         col <- par("col")
@@ -714,12 +731,15 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, digits = 2L, plot
 #         col.density <- col[1L]
 #         col.vertical <- col[-1L]
 #     }
-    if(is.null(pars[["col"]])) {
-        col <- par("col")
-    } else {
-        col <- pars[["col"]]
-    }
-    col.density <- col.vertical <- col
+#     if(is.null(pars[["col"]])) {
+#         col <- par("col")
+#     } else {
+#         col <- pars[["col"]]
+#     }
+#     col.density <- col.vertical <- col
+    pars[["col"]] <- defaultIfNULL(pars[["col"]], par("col"))
+    pars[["col.density"]] <- defaultIfNULL(pars[["col.density"]], pars[["col"]])
+    pars[["col.vertical"]] <- defaultIfNULL(pars[["col.vertical"]], pars[["col"]])
     
     x.boxplot.stats <- boxplot(x, plot = FALSE)$stats
     # Retrieved 2014-07-22: http://stackoverflow.com/a/9122859
@@ -754,11 +774,12 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, digits = 2L, plot
         lines(x.density$x, x.density$y, lty = lty.density, lwd = lwd.density, col = col.density, ...)
     }
     if(plotVerticalLines) {
-# #         abline(v = c(x.mean, x.median, x.lowerhinge, x.upperhinge),
-# #                lty = lty.vertical,
-# #                lwd = lwd.vertical,
-# #                col = col.vertical)
-#         abline(v = c(x.mean, x.median, x.lowerhinge, x.upperhinge), lty = lty.vertical, lwd = lwd.vertical, col = col.vertical, pars)
+# # #         abline(v = c(x.mean, x.median, x.lowerhinge, x.upperhinge),
+# # #                lty = lty.vertical,
+# # #                lwd = lwd.vertical,
+# # #                col = col.vertical)
+# #         abline(v = c(x.mean, x.median, x.lowerhinge, x.upperhinge), lty = lty.vertical, lwd = lwd.vertical, col = col.vertical, pars)
+#         abline(v = c(x.mean, x.median, x.lowerhinge, x.upperhinge), lty = lty.vertical, lwd = lwd.vertical, col = col.vertical, ...)
         abline(v = c(x.mean, x.median, x.lowerhinge, x.upperhinge), lty = lty.vertical, lwd = lwd.vertical, col = col.vertical, ...)
     }
 
@@ -963,8 +984,9 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
     # Get plot results for continuous variables
     if(plots) {
         for(i in seq_len(NCOL(x.continuous))) {
-#             getBoxHist(x = x.continuous[, i], na.rm = na.rm, dataObjectName = colnames(x.continuous)[i], plotDensityCurve = plots.plotDensityCurve, plotVerticalLines = plots.plotVerticalLines, plotStatsValues = plots.plotStatsValues, lty = plots.lty, lwd = plots.lwd, col = plots.col, digits = digits)
-            getBoxHist(x = if(class(x.continuous[, i]) %in% c("Date", "POSIXt", "POSIXct", "POSIXlt")) {unclass(x.continuous[, i])} else {x.continuous[, i]}, na.rm = na.rm, dataObjectName = colnames(x.continuous)[i], plotDensityCurve = plots.plotDensityCurve, plotVerticalLines = plots.plotVerticalLines, plotStatsValues = plots.plotStatsValues, lty = plots.lty, lwd = plots.lwd, col = plots.col, digits = digits)
+# #             getBoxHist(x = x.continuous[, i], na.rm = na.rm, dataObjectName = colnames(x.continuous)[i], plotDensityCurve = plots.plotDensityCurve, plotVerticalLines = plots.plotVerticalLines, plotStatsValues = plots.plotStatsValues, lty = plots.lty, lwd = plots.lwd, col = plots.col, digits = digits)
+#             getBoxHist(x = if(class(x.continuous[, i]) %in% c("Date", "POSIXt", "POSIXct", "POSIXlt")) {unclass(x.continuous[, i])} else {x.continuous[, i]}, na.rm = na.rm, dataObjectName = colnames(x.continuous)[i], plotDensityCurve = plots.plotDensityCurve, plotVerticalLines = plots.plotVerticalLines, plotStatsValues = plots.plotStatsValues, lty = plots.lty, lwd = plots.lwd, col = plots.col, digits = digits)
+            getBoxHist(x = if(class(x.continuous[, i]) %in% c("Date", "POSIXt", "POSIXct", "POSIXlt")) {unclass(x.continuous[, i])} else {x.continuous[, i]}, na.rm = na.rm, dataObjectName = colnames(x.continuous)[i], digits = digits, plotDensityCurve = plots.plotDensityCurve, plotVerticalLines = plots.plotVerticalLines, plotStatsValues = plots.plotStatsValues, lty = plots.lty, lwd = plots.lwd, col = plots.col)
         }
     }
     
