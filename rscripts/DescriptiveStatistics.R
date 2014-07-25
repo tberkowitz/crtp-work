@@ -741,13 +741,18 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, digits = 2L, plot
     pars[["col.density"]] <- defaultIfNULL(pars[["col.density"]], pars[["col"]])
     pars[["col.vertical"]] <- defaultIfNULL(pars[["col.vertical"]], pars[["col"]])
     
+    pars[["col.fill.histogram"]] <- defaultIfNULL(pars[["col.fill.histogram"]], pars[["col.fill"]])
+    pars[["col.fill.boxplot"]] <- defaultIfNULL(pars[["col.fill.boxplot"]], pars[["col.fill"]])
+    
     x.boxplot.stats <- boxplot(x, plot = FALSE)$stats
     # Retrieved 2014-07-22: http://stackoverflow.com/a/9122859
     x.hist <- hist(x, plot = FALSE)
-    x.hist$density <- x.hist$counts / sum(x.hist$counts)
+#     x.hist$density <- x.hist$counts / sum(x.hist$counts)
+    x.hist[["density"]] <- x.hist[["counts"]] / sum(x.hist[["counts"]])
     if(plotDensityCurve) {
         x.density <- density(x)
-        x.density$y <- x.density$y * diff(x.hist$breaks)[1L]
+#         x.density$y <- x.density$y * diff(x.hist$breaks)[1L]
+        x.density[["y"]] <- x.density[["y"]] * diff(x.hist[["breaks"]])[1L]
     }
     if(plotVerticalLines || plotStatsValues) {
         x.mean <- mean(x, na.rm = na.rm)
@@ -765,54 +770,62 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, digits = 2L, plot
     nf <- layout(matrix(c(2, 1), nrow = 2, ncol = 1, byrow = TRUE), height = c(1, 3))
     
     par(mar = c(5.1, 4.1, 0, 2.1))
-# #     plot(x.hist, freq = FALSE, main = NULL, xlab = sprintf("Values of %s", sQuote(dataObjectName)), ylab = "Relative Frequency", xlim = extendrange(x = x, r = range(x, na.rm = na.rm), f = 0.05))
-#     plot(x.hist, freq = FALSE, main = NULL, xlab = sprintf("Values of %s", sQuote(dataObjectName)), ylab = "Relative Frequency", xlim = extendrange(x = x, r = range(x, na.rm = na.rm), f = 0.05), pars)
-    plot(x.hist, freq = FALSE, main = NULL, xlab = sprintf("Values of %s", sQuote(dataObjectName)), ylab = "Relative Frequency", xlim = extendrange(x = x, r = range(x, na.rm = na.rm), f = 0.05), ...)
+# # #     plot(x.hist, freq = FALSE, main = NULL, xlab = sprintf("Values of %s", sQuote(dataObjectName)), ylab = "Relative Frequency", xlim = extendrange(x = x, r = range(x, na.rm = na.rm), f = 0.05))
+# #     plot(x.hist, freq = FALSE, main = NULL, xlab = sprintf("Values of %s", sQuote(dataObjectName)), ylab = "Relative Frequency", xlim = extendrange(x = x, r = range(x, na.rm = na.rm), f = 0.05), pars)
+#     plot(x.hist, freq = FALSE, main = NULL, xlab = sprintf("Values of %s", sQuote(dataObjectName)), ylab = "Relative Frequency", xlim = extendrange(x = x, r = range(x, na.rm = na.rm), f = 0.05), ...)
+    plot(x.hist, freq = FALSE, main = NULL, xlab = sprintf("Values of %s", sQuote(dataObjectName)), ylab = "Relative Frequency", xlim = extendrange(x = x, r = range(x, na.rm = na.rm), f = 0.05), col = pars[["col.fill.histogram"]], ...)
     if(plotDensityCurve) {
-# #         lines(x.density$x, x.density$y, lty = lty.density, lwd = lwd.density, col = col.density)
-#         lines(x.density$x, x.density$y, lty = lty.density, lwd = lwd.density, col = col.density, pars)
-        lines(x.density$x, x.density$y, lty = lty.density, lwd = lwd.density, col = col.density, ...)
+# # #         lines(x.density$x, x.density$y, lty = lty.density, lwd = lwd.density, col = col.density)
+# #         lines(x.density$x, x.density$y, lty = lty.density, lwd = lwd.density, col = col.density, pars)
+#         lines(x.density$x, x.density$y, lty = lty.density, lwd = lwd.density, col = col.density, ...)
+        lines(x.density[["x"]], x.density[["y"]], lty = pars[["lty.density"]], lwd = pars[["lwd.density"]], col = pars[["col.density"]], ...)
     }
     if(plotVerticalLines) {
-# # #         abline(v = c(x.mean, x.median, x.lowerhinge, x.upperhinge),
-# # #                lty = lty.vertical,
-# # #                lwd = lwd.vertical,
-# # #                col = col.vertical)
-# #         abline(v = c(x.mean, x.median, x.lowerhinge, x.upperhinge), lty = lty.vertical, lwd = lwd.vertical, col = col.vertical, pars)
+# # # #         abline(v = c(x.mean, x.median, x.lowerhinge, x.upperhinge),
+# # # #                lty = lty.vertical,
+# # # #                lwd = lwd.vertical,
+# # # #                col = col.vertical)
+# # #         abline(v = c(x.mean, x.median, x.lowerhinge, x.upperhinge), lty = lty.vertical, lwd = lwd.vertical, col = col.vertical, pars)
+# #         abline(v = c(x.mean, x.median, x.lowerhinge, x.upperhinge), lty = lty.vertical, lwd = lwd.vertical, col = col.vertical, ...)
 #         abline(v = c(x.mean, x.median, x.lowerhinge, x.upperhinge), lty = lty.vertical, lwd = lwd.vertical, col = col.vertical, ...)
-        abline(v = c(x.mean, x.median, x.lowerhinge, x.upperhinge), lty = lty.vertical, lwd = lwd.vertical, col = col.vertical, ...)
+        abline(v = c(x.mean, x.median, x.lowerhinge, x.upperhinge), lty = pars[["lty.vertical"]], lwd = pars[["lwd.vertical"]], col = pars[["col.vertical"]], ...)
     }
 
     # title(main = sprintf("Plots for %s", sQuote(dataObjectName)), col.main = col.main, cex.main = cex.main, font.main = font.main, line = line.main)
     par(mar = c(0, 4.1, 1.1, 2.1))
-# #     boxplot(x, frame = FALSE, axes = FALSE, horizontal = TRUE, ylim = extendrange(x = x, r = range(x, na.rm = na.rm), f = 0.05))
-#     boxplot(x, frame = FALSE, axes = FALSE, horizontal = TRUE, ylim = extendrange(x = x, r = range(x, na.rm = na.rm), f = 0.05), pars)
-    boxplot(x, frame = FALSE, axes = FALSE, horizontal = TRUE, ylim = extendrange(x = x, r = range(x, na.rm = na.rm), f = 0.05), ...)
+# # #     boxplot(x, frame = FALSE, axes = FALSE, horizontal = TRUE, ylim = extendrange(x = x, r = range(x, na.rm = na.rm), f = 0.05))
+# #     boxplot(x, frame = FALSE, axes = FALSE, horizontal = TRUE, ylim = extendrange(x = x, r = range(x, na.rm = na.rm), f = 0.05), pars)
+#     boxplot(x, frame = FALSE, axes = FALSE, horizontal = TRUE, ylim = extendrange(x = x, r = range(x, na.rm = na.rm), f = 0.05), ...)
+    boxplot(x, frame = FALSE, axes = FALSE, horizontal = TRUE, ylim = extendrange(x = x, r = range(x, na.rm = na.rm), f = 0.05), col = pars[["col.fill.boxplot"]], ...)
     if(plotVerticalLines) {
-# #         segments(x0 = c(x.mean, x.median, x.lowerhinge, x.upperhinge),
-# #                  y0 = rep(0L, length.out = 4L),
-# #                  x1 = c(x.mean, x.median, x.lowerhinge, x.upperhinge),
-# #                  y1 = rep(1L, length.out = 4L),
-# #                  lty = lty.vertical,
-# #                  lwd = lwd.vertical,
-# #                  col = col.vertical)
-#         segments(x0 = c(x.mean, x.median, x.lowerhinge, x.upperhinge), y0 = rep(0L, length.out = 4L), x1 = c(x.mean, x.median, x.lowerhinge, x.upperhinge), y1 = rep(1L, length.out = 4L), lty = lty.vertical, lwd = lwd.vertical, col = col.vertical, pars)
-        segments(x0 = c(x.mean, x.median, x.lowerhinge, x.upperhinge), y0 = rep(0L, length.out = 4L), x1 = c(x.mean, x.median, x.lowerhinge, x.upperhinge), y1 = rep(1L, length.out = 4L), lty = lty.vertical, lwd = lwd.vertical, col = col.vertical, ...)
+# # #         segments(x0 = c(x.mean, x.median, x.lowerhinge, x.upperhinge),
+# # #                  y0 = rep(0L, length.out = 4L),
+# # #                  x1 = c(x.mean, x.median, x.lowerhinge, x.upperhinge),
+# # #                  y1 = rep(1L, length.out = 4L),
+# # #                  lty = lty.vertical,
+# # #                  lwd = lwd.vertical,
+# # #                  col = col.vertical)
+# #         segments(x0 = c(x.mean, x.median, x.lowerhinge, x.upperhinge), y0 = rep(0L, length.out = 4L), x1 = c(x.mean, x.median, x.lowerhinge, x.upperhinge), y1 = rep(1L, length.out = 4L), lty = lty.vertical, lwd = lwd.vertical, col = col.vertical, pars)
+#         segments(x0 = c(x.mean, x.median, x.lowerhinge, x.upperhinge), y0 = rep(0L, length.out = 4L), x1 = c(x.mean, x.median, x.lowerhinge, x.upperhinge), y1 = rep(1L, length.out = 4L), lty = lty.vertical, lwd = lwd.vertical, col = col.vertical, ...)
+        segments(x0 = c(x.mean, x.median, x.lowerhinge, x.upperhinge), y0 = rep(0L, length.out = 4L), x1 = c(x.mean, x.median, x.lowerhinge, x.upperhinge), y1 = rep(1L, length.out = 4L), lty = pars[["lty.vertical"]], lwd = pars[["lwd.vertical"]], col = pars[["col.vertical"]], ...)
         if(plotStatsValues) {
             oldXPD <- par()$xpd
             par(xpd = TRUE)
-# #             text(x = c(x.median, x.lowerhinge, x.upperhinge), y = boxplotBuffer + textLineHeightFactor, labels = formatC(c(x.median, x.lowerhinge, x.upperhinge), format = "f", digits = 1L), col = col.vertical)
-# #             text(x = c(x.median, x.lowerhinge, x.upperhinge), y = boxplotBuffer + textLineHeightFactor + textLineHeightFactor * strheight(x.median), labels = c("Q2", "Q1", "Q3"), col = col.vertical)
-# # #             formattedMean <- formatC(x.mean, format = "f", digits = 1L)
-# # #             formattedSD <- formatC(x.sd, format = "f", digits = 1L)
-# # #             formattedMeanSD <- paste(formattedMean, " (", formattedSD, ")", sep = "")
-# #             text(x = rep(x.upperhinge + 0.5 * (x.whisker.maximum - x.upperhinge), times = 2), y = boxplotBuffer + textLineHeightFactor + c(0, textLineHeightFactor * strheight(x.median)), labels = c(formattedMeanSD, "Mean (SD)"), col = col.vertical)
-#             text(x = c(x.median, x.lowerhinge, x.upperhinge), y = boxplotBuffer + textLineHeightFactor, labels = formatC(c(x.median, x.lowerhinge, x.upperhinge), format = "f", digits = 1L), col = col.vertical, pars)
-#             text(x = c(x.median, x.lowerhinge, x.upperhinge), y = boxplotBuffer + textLineHeightFactor + textLineHeightFactor * strheight(x.median), labels = c("Q2", "Q1", "Q3"), col = col.vertical, pars)
-#             text(x = rep(x.upperhinge + 0.5 * (x.whisker.maximum - x.upperhinge), times = 2), y = boxplotBuffer + textLineHeightFactor + c(0, textLineHeightFactor * strheight(x.median)), labels = c(formattedMeanSD, "Mean (SD)"), col = col.vertical, pars)
-            text(x = c(x.median, x.lowerhinge, x.upperhinge), y = boxplotBuffer + textLineHeightFactor, labels = formatC(c(x.median, x.lowerhinge, x.upperhinge), format = "f", digits = 1L), col = col.vertical, ...)
-            text(x = c(x.median, x.lowerhinge, x.upperhinge), y = boxplotBuffer + textLineHeightFactor + textLineHeightFactor * strheight(x.median), labels = c("Q2", "Q1", "Q3"), col = col.vertical, ...)
-            text(x = rep(x.upperhinge + 0.5 * (x.whisker.maximum - x.upperhinge), times = 2), y = boxplotBuffer + textLineHeightFactor + c(0, textLineHeightFactor * strheight(x.median)), labels = c(formattedMeanSD, "Mean (SD)"), col = col.vertical, ...)
+# # #             text(x = c(x.median, x.lowerhinge, x.upperhinge), y = boxplotBuffer + textLineHeightFactor, labels = formatC(c(x.median, x.lowerhinge, x.upperhinge), format = "f", digits = 1L), col = col.vertical)
+# # #             text(x = c(x.median, x.lowerhinge, x.upperhinge), y = boxplotBuffer + textLineHeightFactor + textLineHeightFactor * strheight(x.median), labels = c("Q2", "Q1", "Q3"), col = col.vertical)
+# # # #             formattedMean <- formatC(x.mean, format = "f", digits = 1L)
+# # # #             formattedSD <- formatC(x.sd, format = "f", digits = 1L)
+# # # #             formattedMeanSD <- paste(formattedMean, " (", formattedSD, ")", sep = "")
+# # #             text(x = rep(x.upperhinge + 0.5 * (x.whisker.maximum - x.upperhinge), times = 2), y = boxplotBuffer + textLineHeightFactor + c(0, textLineHeightFactor * strheight(x.median)), labels = c(formattedMeanSD, "Mean (SD)"), col = col.vertical)
+# #             text(x = c(x.median, x.lowerhinge, x.upperhinge), y = boxplotBuffer + textLineHeightFactor, labels = formatC(c(x.median, x.lowerhinge, x.upperhinge), format = "f", digits = 1L), col = col.vertical, pars)
+# #             text(x = c(x.median, x.lowerhinge, x.upperhinge), y = boxplotBuffer + textLineHeightFactor + textLineHeightFactor * strheight(x.median), labels = c("Q2", "Q1", "Q3"), col = col.vertical, pars)
+# #             text(x = rep(x.upperhinge + 0.5 * (x.whisker.maximum - x.upperhinge), times = 2), y = boxplotBuffer + textLineHeightFactor + c(0, textLineHeightFactor * strheight(x.median)), labels = c(formattedMeanSD, "Mean (SD)"), col = col.vertical, pars)
+#             text(x = c(x.median, x.lowerhinge, x.upperhinge), y = boxplotBuffer + textLineHeightFactor, labels = formatC(c(x.median, x.lowerhinge, x.upperhinge), format = "f", digits = 1L), col = col.vertical, ...)
+#             text(x = c(x.median, x.lowerhinge, x.upperhinge), y = boxplotBuffer + textLineHeightFactor + textLineHeightFactor * strheight(x.median), labels = c("Q2", "Q1", "Q3"), col = col.vertical, ...)
+#             text(x = rep(x.upperhinge + 0.5 * (x.whisker.maximum - x.upperhinge), times = 2), y = boxplotBuffer + textLineHeightFactor + c(0, textLineHeightFactor * strheight(x.median)), labels = c(formattedMeanSD, "Mean (SD)"), col = col.vertical, ...)
+            text(x = c(x.median, x.lowerhinge, x.upperhinge), y = boxplotBuffer + textLineHeightFactor, labels = formatC(c(x.median, x.lowerhinge, x.upperhinge), format = "f", digits = 1L), col = pars[["col.vertical"]], ...)
+            text(x = c(x.median, x.lowerhinge, x.upperhinge), y = boxplotBuffer + textLineHeightFactor + textLineHeightFactor * strheight(x.median), labels = c("Q2", "Q1", "Q3"), col = pars[["col.vertical"]], ...)
+            text(x = rep(x.upperhinge + 0.5 * (x.whisker.maximum - x.upperhinge), times = 2), y = boxplotBuffer + textLineHeightFactor + c(0, textLineHeightFactor * strheight(x.median)), labels = c(formattedMeanSD, "Mean (SD)"), col = pars[["col.vertical"]], ...)
             par(xpd = oldXPD)
         }
     }
