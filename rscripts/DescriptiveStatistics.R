@@ -613,7 +613,8 @@ getResults.byFactors <- function(x, byFactors, x.continuous, requestedStats, na.
 
 
 # Define the getBoxHist() function
-getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, digits = 2L, plotDensityCurve = TRUE, plotVerticalLines = TRUE, plotStatsValues = TRUE, ..., textLineWidthFactor = 0.15, textLineHeightFactor = 1.015, boxplotBuffer = 0.3) {
+# getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, digits = 2L, plotDensityCurve = TRUE, plotVerticalLines = TRUE, plotStatsValues = TRUE, textLineWidthFactor = 0.15, textLineHeightFactor = 1.015, boxplotBuffer = 0.3, ...) {
+getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, digits = 2L, plotDensityCurve = TRUE, plotVerticalLines = TRUE, plotStatsValues = TRUE, textLineWidthFactor = 0.15, textLineHeightFactor = 1.015, boxplotBuffer = 0.3, col.fill = NULL, ...) {
     def.par <- par(no.readonly = TRUE)
     on.exit(layout(1), add = TRUE)
     on.exit(par(def.par), add = TRUE)
@@ -674,22 +675,42 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, digits = 2L, plot
         dataObjectName <- deparse(substitute(x))
     }
     
-    pars[["lty"]] <- defaultIfNULL(pars[["lty"]], par("lty"))
-    pars[["lty.density"]] <- defaultIfNULL(pars[["lty.density"]], pars[["lty"]])
-    pars[["lty.vertical"]] <- defaultIfNULL(pars[["lty.vertical"]], pars[["lty"]])
+#     pars[["lty"]] <- defaultIfNULL(pars[["lty"]], par("lty"))
+#     pars[["lty.density"]] <- defaultIfNULL(pars[["lty.density"]], pars[["lty"]])
+#     pars[["lty.vertical"]] <- defaultIfNULL(pars[["lty.vertical"]], pars[["lty"]])
+#     
+#     pars[["lwd"]] <- defaultIfNULL(pars[["lwd"]], par("lwd"))
+#     pars[["lwd.density"]] <- defaultIfNULL(pars[["lwd.density"]], pars[["lwd"]])
+#     pars[["lwd.vertical"]] <- defaultIfNULL(pars[["lwd.vertical"]], pars[["lwd"]])
+#     
+#     pars[["col"]] <- defaultIfNULL(pars[["col"]], par("col"))
+#     pars[["col.density"]] <- defaultIfNULL(pars[["col.density"]], pars[["col"]])
+#     pars[["col.vertical"]] <- defaultIfNULL(pars[["col.vertical"]], pars[["col"]])
+#     pars[["lty.density"]] <- defaultIfNULL(pars[["lty.density"]], par("lty"))
+#     pars[["lty.vertical"]] <- defaultIfNULL(pars[["lty.vertical"]], par("lty"))
+#     
+#     pars[["lwd.density"]] <- defaultIfNULL(pars[["lwd.density"]], par("lwd"))
+#     pars[["lwd.vertical"]] <- defaultIfNULL(pars[["lwd.vertical"]], par("lwd"))
+#     
+#     pars[["col.density"]] <- defaultIfNULL(pars[["col.density"]], par("col"))
+#     pars[["col.vertical"]] <- defaultIfNULL(pars[["col.vertical"]], par("col"))
+#     
+#     pars[["col.fill.histogram"]] <- defaultIfNULL(pars[["col.fill.histogram"]], pars[["col.fill"]])
+#     pars[["col.fill.boxplot"]] <- defaultIfNULL(pars[["col.fill.boxplot"]], pars[["col.fill"]])
+    lty.density <- defaultIfNULL(pars[["lty.density"]], par("lty"))
+    lty.vertical <- defaultIfNULL(pars[["lty.vertical"]], par("lty"))
     
-    pars[["lwd"]] <- defaultIfNULL(pars[["lwd"]], par("lwd"))
-    pars[["lwd.density"]] <- defaultIfNULL(pars[["lwd.density"]], pars[["lwd"]])
-    pars[["lwd.vertical"]] <- defaultIfNULL(pars[["lwd.vertical"]], pars[["lwd"]])
+    lwd.density <- defaultIfNULL(pars[["lwd.density"]], par("lwd"))
+    lwd.vertical <- defaultIfNULL(pars[["lwd.vertical"]], par("lwd"))
     
-    pars[["col"]] <- defaultIfNULL(pars[["col"]], par("col"))
-    pars[["col.density"]] <- defaultIfNULL(pars[["col.density"]], pars[["col"]])
-    pars[["col.vertical"]] <- defaultIfNULL(pars[["col.vertical"]], pars[["col"]])
+    col.density <- defaultIfNULL(pars[["col.density"]], par("col"))
+    col.vertical <- defaultIfNULL(pars[["col.vertical"]], par("col"))
     
-    pars[["col.fill.histogram"]] <- defaultIfNULL(pars[["col.fill.histogram"]], pars[["col.fill"]])
-    pars[["col.fill.boxplot"]] <- defaultIfNULL(pars[["col.fill.boxplot"]], pars[["col.fill"]])
+    col.fill.histogram <- defaultIfNULL(pars[["col.fill.histogram"]], col.fill)
+    col.fill.boxplot <- defaultIfNULL(pars[["col.fill.boxplot"]], col.fill)
     
-    x.boxplot.stats <- boxplot(x, plot = FALSE)$stats
+#     x.boxplot.stats <- boxplot(x, plot = FALSE)$stats
+    x.boxplot.stats <- boxplot(x, plot = FALSE)[["stats"]]
     # Retrieved 2014-07-22: http://stackoverflow.com/a/9122859
     x.hist <- hist(x, plot = FALSE)
     x.hist[["density"]] <- x.hist[["counts"]] / sum(x.hist[["counts"]])
@@ -713,9 +734,11 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, digits = 2L, plot
     nf <- layout(matrix(c(2, 1), nrow = 2, ncol = 1, byrow = TRUE), height = c(1, 3))
     
     par(mar = c(5.1, 4.1, 0, 2.1))
-    plot(x.hist, freq = FALSE, main = NULL, xlab = sprintf("Values of %s", sQuote(dataObjectName)), ylab = "Relative Frequency", xlim = extendrange(x = x, r = range(x, na.rm = na.rm), f = 0.05), col = pars[["col.fill.histogram"]], ...)
+#     plot(x.hist, freq = FALSE, main = NULL, xlab = sprintf("Values of %s", sQuote(dataObjectName)), ylab = "Relative Frequency", xlim = extendrange(x = x, r = range(x, na.rm = na.rm), f = 0.05), col = pars[["col.fill.histogram"]], ...)
+    plot(x.hist, freq = FALSE, main = NULL, xlab = sprintf("Values of %s", sQuote(dataObjectName)), ylab = "Relative Frequency", xlim = extendrange(x = x, r = range(x, na.rm = na.rm), f = 0.05), col = col.fill.histogram, ...)
     if(plotDensityCurve) {
-        lines(x.density[["x"]], x.density[["y"]], lty = pars[["lty.density"]], lwd = pars[["lwd.density"]], col = pars[["col.density"]], ...)
+#         lines(x.density[["x"]], x.density[["y"]], lty = pars[["lty.density"]], lwd = pars[["lwd.density"]], col = pars[["col.density"]], ...)
+        lines(x.density[["x"]], x.density[["y"]], lty = lty.density, lwd = lwd.density, col = col.density, ...)
     }
     if(plotVerticalLines) {
         abline(v = c(x.mean, x.median, x.lowerhinge, x.upperhinge), lty = pars[["lty.vertical"]], lwd = pars[["lwd.vertical"]], col = pars[["col.vertical"]], ...)
