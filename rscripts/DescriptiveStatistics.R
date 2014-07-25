@@ -704,41 +704,17 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, plotDensityCurve 
         x.mean <- mean(x, na.rm = na.rm)
         x.sd <- sd(x, na.rm = na.rm)
         x.median <- stats::median(x, na.rm = na.rm)
-#         x.lowerhinge <- stats::fivenum(x, na.rm = na.rm)[2L]
-#         x.upperhinge <- stats::fivenum(x, na.rm = na.rm)[4L]
         x.fivenum <- stats::fivenum(x, na.rm = na.rm)
         x.lowerhinge <- x.fivenum[2L]
         x.upperhinge <- x.fivenum[4L]
         x.whisker.maximum <- x.fivenum[5L]
     }
     
-#     nf <- layout(matrix(c(1, 2), nrow = 2, ncol = 1, byrow = TRUE), height = c(1, 3))
     nf <- layout(matrix(c(2, 1), nrow = 2, ncol = 1, byrow = TRUE), height = c(1, 3))
-#     par(mar = c(0, 4.1, 1.1, 2.1))
-# #     boxplot(x, frame = FALSE, axes = FALSE, horizontal = TRUE, ylim = getRounding(x, na.rm = na.rm, adj = TRUE))
-#     boxplot(x, frame = FALSE, axes = FALSE, horizontal = TRUE, ylim = range(x))
-#     if(plotVerticalLines) {
-#         segments(x0 = c(x.mean, x.median, x.lowerhinge, x.upperhinge),
-#                  y0 = rep(0L, length.out = 4L),
-#                  x1 = c(x.mean, x.median, x.lowerhinge, x.upperhinge),
-#                  y1 = rep(1L, length.out = 4L),
-#                  lty = lty.vertical,
-#                  lwd = lwd.vertical,
-#                  col = col.vertical)
-#         if(plotStatsValues) {
-#             oldXPD <- par()$xpd
-#             par(xpd = TRUE)
-#             text(x = c(x.median, x.lowerhinge, x.upperhinge), y = boxplotBuffer + textLineHeightFactor, labels = formatC(c(x.median, x.lowerhinge, x.upperhinge), format = "f", digits = 1L), col = col.vertical)
-#             text(x = c(x.median, x.lowerhinge, x.upperhinge), y = boxplotBuffer + textLineHeightFactor + textLineHeightFactor * strheight(x.median), labels = c("Q2", "Q1", "Q3"), col = col.vertical)
-#             par(xpd = oldXPD)
-#         }
-#     }
     
     # title(main = sprintf("Plots for %s", sQuote(dataObjectName)), col.main = col.main, cex.main = cex.main, font.main = font.main, line = line.main)
     
     par(mar = c(5.1, 4.1, 0, 2.1))
-# #     plot(x.hist, freq = FALSE, main = NULL, xlim = getRounding(x, na.rm = na.rm, adj = TRUE), ylim = getRounding(x.hist$density, na.rm = na.rm, adj = TRUE), xlab = sprintf("Values of %s", sQuote(dataObjectName)), ylab = "Relative Frequency")
-#     plot(x.hist, freq = FALSE, main = NULL, xlab = sprintf("Values of %s", sQuote(dataObjectName)), ylab = "Relative Frequency", xlim = range(x))
     plot(x.hist, freq = FALSE, main = NULL, xlab = sprintf("Values of %s", sQuote(dataObjectName)), ylab = "Relative Frequency", xlim = extendrange(x = x, r = range(x, na.rm = na.rm), f = 0.05))
     if(plotDensityCurve) {
         lines(x.density$x, x.density$y, lty = lty.density, lwd = lwd.density, col = col.density)
@@ -749,13 +725,8 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, plotDensityCurve 
                lwd = lwd.vertical,
                col = col.vertical)
     }
-#     if(plotStatsValues) {
-#         text(x = max(x, na.rm = na.rm) - abs(textLineWidthFactor) * strwidth(paste(formatC(x.mean, format = "f", digits = digits), " (", formatC(sd(x, na.rm = na.rm), format = "f", digits = digits), ")", sep = "")), y = max(x.hist$density, na.rm = na.rm) + c(0, -abs(textLineHeightFactor) * strheight("Mean (SD)")), labels = c("Mean (SD)", paste(formatC(x.mean, format = "f", digits = digits), " (", formatC(sd(x, na.rm = na.rm), format = "f", digits = digits), ")", sep = "")), col = col.vertical)
-#     }
 
     par(mar = c(0, 4.1, 1.1, 2.1))
-# #     boxplot(x, frame = FALSE, axes = FALSE, horizontal = TRUE, ylim = getRounding(x, na.rm = na.rm, adj = TRUE))
-#     boxplot(x, frame = FALSE, axes = FALSE, horizontal = TRUE, ylim = range(x))
     boxplot(x, frame = FALSE, axes = FALSE, horizontal = TRUE, ylim = extendrange(x = x, r = range(x, na.rm = na.rm), f = 0.05))
     if(plotVerticalLines) {
         segments(x0 = c(x.mean, x.median, x.lowerhinge, x.upperhinge),
@@ -773,11 +744,8 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, plotDensityCurve 
             formattedMean <- formatC(x.mean, format = "f", digits = 1L)
             formattedSD <- formatC(x.sd, format = "f", digits = 1L)
             formattedMeanSD <- paste(formattedMean, " (", formattedSD, ")", sep = "")
-#             text(x = x.upperhinge + 0.5 * (x.whisker.maximum - x.upperhinge), y = boxplotBuffer + textLineHeightFactor, labels = formattedMeanSD, col = col.vertical)
-#             text(x = x.upperhinge + 0.5 * (x.whisker.maximum - x.upperhinge), y = boxplotBuffer + textLineHeightFactor + textLineHeightFactor * strheight(x.median), labels = "Mean (SD)", col = col.vertical)
             text(x = rep(x.upperhinge + 0.5 * (x.whisker.maximum - x.upperhinge), times = 2), y = boxplotBuffer + textLineHeightFactor + c(0, textLineHeightFactor * strheight(x.median)), labels = c(formattedMeanSD, "Mean (SD)"), col = col.vertical)
             par(xpd = oldXPD)
-#             text(x = max(x, na.rm = na.rm) - abs(textLineWidthFactor) * strwidth(paste(formatC(x.mean, format = "f", digits = digits), " (", formatC(sd(x, na.rm = na.rm), format = "f", digits = digits), ")", sep = "")), y = boxplotBuffer + textLineHeightFactor + textLineHeightFactor * strheight(x.median), labels = c("Mean (SD)", paste(formatC(x.mean, format = "f", digits = digits), " (", formatC(sd(x, na.rm = na.rm), format = "f", digits = digits), ")", sep = "")), col = col.vertical)
         }
     }
     layout(1)
