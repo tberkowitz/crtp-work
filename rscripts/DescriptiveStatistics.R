@@ -676,11 +676,14 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, digits = 2L, plot
         x.verticalStats <- c(x.mean, x.median, x.lowerhinge, x.upperhinge)
 #         formattedMean <- formatC(x.mean, format = "f", digits = 1L)
 #         formattedSD <- formatC(x.sd, format = "f", digits = 1L)
-        formattedMean <- signif(x.mean, digits = 2L)
-        formattedSD <- signif(x.sd, digits = 2L)
+#         formattedMean <- signif(x.mean, digits = 2L)
+#         formattedSD <- signif(x.sd, digits = 2L)
+        formattedMean <- signif(x.mean, digits = digits)
+        formattedSD <- signif(x.sd, digits = digits)
         formattedMeanSD <- paste(formattedMean, " (", formattedSD, ")", sep = "")
 #         formattedQuartiles <- formatC(c(x.median, x.lowerhinge, x.upperhinge), format = "f", digits = 1L)
-        formattedQuartiles <- signif(c(x.median, x.lowerhinge, x.upperhinge), digits = 2L)
+#         formattedQuartiles <- signif(c(x.median, x.lowerhinge, x.upperhinge), digits = 2L)
+        formattedQuartiles <- signif(c(x.median, x.lowerhinge, x.upperhinge), digits = digits)
         lty.lines.vertical <- defaultIfNULL(lty.lines.vertical, defaultIfNULL(lty.lines[-1L], defaultIfNULL(lty.lines, par("lty"))))
         lwd.lines.vertical <- defaultIfNULL(lwd.lines.vertical, defaultIfNULL(lwd.lines[-1L], defaultIfNULL(lwd.lines, par("lwd"))))
         col.lines.vertical <- defaultIfNULL(col.lines.vertical, defaultIfNULL(col.lines[-1L], defaultIfNULL(col.lines, par("col"))))
@@ -691,7 +694,9 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, digits = 2L, plot
     nf <- layout(matrix(c(2, 1), nrow = 2, ncol = 1, byrow = TRUE), height = c(1, 3))
     
     par(mar = c(5.1, 4.1, 0, 2.1))
-    plot(x.hist, freq = FALSE, main = NULL, xlab = sprintf("Values of %s", sQuote(dataObjectName)), ylab = "Relative Frequency", xlim = extendrange(x = x, r = range(x, na.rm = na.rm), f = 0.05), col = col.fill.histogram)
+#     plot(x.hist, freq = FALSE, main = NULL, xlab = sprintf("Values of %s", sQuote(dataObjectName)), ylab = "Relative Frequency", xlim = extendrange(x = x, r = range(x, na.rm = na.rm), f = 0.05), col = col.fill.histogram)
+#     plot(x.hist, freq = FALSE, main = NULL, xlab = sprintf("Values of %s", sQuote(dataObjectName)), ylab = "Relative Frequency", xlim = extendrange(x = x, r = range(x, na.rm = na.rm), f = 0.05), col = col.fill.histogram)
+    plot(x.hist, freq = FALSE, main = NULL, xlab = sprintf("Values of %s", sQuote(dataObjectName)), ylab = "Relative Frequency", xlim = range(pretty(x)), ylim = range(pretty(x.hist[["density"]])), col = col.fill.histogram)
     if(plotDensityCurve) {
         lines(x.density[["x"]], x.density[["y"]], lty = lty.lines.density, lwd = lwd.lines.density, col = col.lines.density)
     }
@@ -705,7 +710,8 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, digits = 2L, plot
 
     # title(main = sprintf("Plots for %s", sQuote(dataObjectName)), col.main = col.main, cex.main = cex.main, font.main = font.main, line = line.main)
     par(mar = c(0, 4.1, 1.1, 2.1))
-    boxplot(x, frame = FALSE, axes = FALSE, horizontal = TRUE, ylim = extendrange(x = x, r = range(x, na.rm = na.rm), f = 0.05), col = col.fill.boxplot)
+#     boxplot(x, frame = FALSE, axes = FALSE, horizontal = TRUE, ylim = extendrange(x = x, r = range(x, na.rm = na.rm), f = 0.05), col = col.fill.boxplot)
+    boxplot(x, frame = FALSE, axes = FALSE, horizontal = TRUE, ylim = range(pretty(x)), col = col.fill.boxplot)
     if(plotVerticalLines) {
         segments(x0 = x.verticalStats, y0 = rep(0L, length.out = 4L), x1 = x.verticalStats, y1 = rep(1L, length.out = 4L), lty = lty.lines.vertical, lwd = lwd.lines.vertical, col = col.lines.vertical)
     }
@@ -713,11 +719,15 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, digits = 2L, plot
         oldXPD <- par()$xpd
         par(xpd = TRUE)
 #         mtext(text = paste(c("Q2", "Q1", "Q3"), formattedQuartiles, sep = "\n"), at = x.verticalStats[-1L], side = 3, line = mtext.topLabelLine, col = col.lines.vertical)
-        mtext(text = paste(c("Q2", "Q1", "Q3"), formattedQuartiles, sep = "\n"), at = x.verticalStats[-1L], side = 3, line = line.statsLabel.top, col = col.statsLabel.top, font = font.statsLabel.top)
+#         mtext(text = paste(c("Q2", "Q1", "Q3"), formattedQuartiles, sep = "\n"), at = x.verticalStats[-1L], side = 3, line = line.statsLabel.top, col = col.statsLabel.top, font = font.statsLabel.top)
+        mtext(text = paste("Q2", formattedQuartiles[1L], sep = "\n"), at = x.verticalStats[2L], side = 3, line = line.statsLabel.top, col = col.statsLabel.top, font = font.statsLabel.top)
+        mtext(text = paste("Q1", formattedQuartiles[2L], sep = "\n"), at = x.verticalStats[3L], side = 3, line = line.statsLabel.top, col = col.statsLabel.top, font = font.statsLabel.top, adj = 1)
+        mtext(text = paste("Q3", formattedQuartiles[3L], sep = "\n"), at = x.verticalStats[4L], side = 3, line = line.statsLabel.top, col = col.statsLabel.top, font = font.statsLabel.top, adj = 0)
         par(xpd = oldXPD)
     }
     layout(1)
 }
+
 
 
 
@@ -1275,7 +1285,38 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
 
 
 
-
+# # Experiments with coordinate systems and conversions
+# teststring <- "Hello, world!"
+# testnumber <- formatC(pi, format = "f", digits = 5L)
+# plot(1:10)
+# par("usr") # (x1, x2, y1, y2): extremes of user coordinates of plotting region
+# par("plt") # (x1, x2, y1, y2): coordinates of plot region as fractions of current figure region
+# par("pin") # (width, height): current plot dimensions in inches
+# par("fin") # (width, height): current figure region dimensions in inches
+# par("fig") # (x1, x2, y1, y2): NDC coords of figure region in the display region of the device
+# 
+# 
+# # Plotting region measurements in "user" dimensions
+# par("usr")[2L] - par("usr")[1L] # plotting region width
+# par("usr")[4L] - par("usr")[3L] # plotting region height
+# 
+# 
+# # Coordinate systems for grconvertXY
+# # "user"  : user coordinates
+# # "inches": inches
+# # "device": device coordinate system
+# # "ndc"   : normalized device coordinates
+# # "nfc"   : normalized figure coordinates
+# # "npc"   : normalized plot coordinates
+# # "nic"   : normalized inner region coordinates
+# 
+# plot(1:4)
+# for(tp in c("in", "dev", "ndc", "nfc", "npc", "nic"))
+#     print(grconvertX(c(1.0, 4.0), "user", tp))
+# 
+# par(new = TRUE)
+# plot(x = 1, y = 4, pch = 19, col = "blue")
+# xy.coords(x=1,y=4)
 
 
 
