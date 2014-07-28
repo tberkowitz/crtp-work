@@ -613,32 +613,11 @@ getResults.byFactors <- function(x, byFactors, x.continuous, requestedStats, na.
 
 
 # Define the getBoxHist() function
-# getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, digits = 2L, plotDensityCurve = TRUE, plotVerticalLines = TRUE, plotStatsValues = TRUE, col.fill = NULL, col.fill.boxplot = col.fill, col.fill.histogram = col.fill, lty.lines = c("solid", "solid", "dashed", "dashed", "dashed"), lwd.lines = 2L, col.lines = c("red", gray(0.7)), col.lines.density = NULL, col.lines.vertical = NULL, lty.lines.density = NULL, lty.lines.vertical = NULL, lwd.lines.density = NULL, lwd.lines.vertical = NULL, mtext.topLabelLine = -1.5, mtext.bottomLabelLine = 3L) {
 getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, digits = 2L, plotDensityCurve = TRUE, plotVerticalLines = TRUE, plotStatsValues = TRUE, col.fill = NULL, col.fill.boxplot = col.fill, col.fill.histogram = col.fill, lty.lines = c("solid", "solid", "dashed", "dashed", "dashed"), lwd.lines = 2L, col.lines = c("red", gray(0.7)), col.lines.density = NULL, col.lines.vertical = NULL, lty.lines.density = NULL, lty.lines.vertical = NULL, lwd.lines.density = NULL, lwd.lines.vertical = NULL, line.statsLabel.top = -1.5, line.statsLabel.bottom = 3L, col.statsLabel = col.lines.vertical, col.statsLabel.top = col.statsLabel, col.statsLabel.bottom = col.statsLabel, font.statsLabel = 1L, font.statsLabel.top = font.statsLabel, font.statsLabel.bottom = font.statsLabel) {
     def.par <- par(no.readonly = TRUE)
     on.exit(layout(1), add = TRUE)
     on.exit(par(def.par), add = TRUE)
     
-#     getRounding <- function(x, na.rm = TRUE, adj = TRUE) {
-#         fPart <- function(x) abs(x - trunc(x))
-#         minx <- abs(range(x, na.rm = na.rm)[1L])
-#         lminx <- log10(minx)
-#         lminx[!is.finite(lminx) | is.na(lminx)] <- 0L
-#         minpower <- 10^(floor(lminx) - 1L)
-#     #     mindenom <- fPart(minx / minpower) < 0.5 & fPart(minx / minpower) > 0
-# #         mindenom <- fPart(minx / minpower) > 0.5 & fPart(minx / minpower) < 0
-#         mindenom <- fPart(minx / minpower) > 0.5
-#         minadj <- adj * sign(minx) * minpower * mindenom / 2
-#         
-#         maxx <- abs(range(x, na.rm = na.rm)[2L])
-#         lmaxx <- log10(maxx)
-#         lmaxx[!is.finite(lmaxx) | is.na(lmaxx)] <- 0L
-#         maxpower <- 10^(floor(lmaxx) - 1L)
-#         maxdenom <- fPart(maxx / maxpower) < 0.5 & fPart(maxx / maxpower) > 0
-#         maxadj <- adj * sign(maxx) * maxpower * maxdenom / 2
-#         
-#         c(floor(minx / minpower) * minpower - minadj, ceiling(maxx / maxpower) * maxpower - maxadj)
-#     }
     defaultIfNULL <- function(option, default) {
         if(is.null(option) || length(option) == 0L) {
             default
@@ -674,15 +653,12 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, digits = 2L, plot
         x.upperhinge <- x.boxplot.stats[4L]
         x.whisker.maximum <- x.boxplot.stats[5L]
         x.verticalStats <- c(x.mean, x.median, x.lowerhinge, x.upperhinge)
-#         formattedMean <- formatC(x.mean, format = "f", digits = 1L)
-#         formattedSD <- formatC(x.sd, format = "f", digits = 1L)
-#         formattedMean <- signif(x.mean, digits = 2L)
-#         formattedSD <- signif(x.sd, digits = 2L)
+#         formattedMean <- formatC(x.mean, format = "f", digits = digits)
+#         formattedSD <- formatC(x.sd, format = "f", digits = digits)
         formattedMean <- signif(x.mean, digits = digits)
         formattedSD <- signif(x.sd, digits = digits)
         formattedMeanSD <- paste(formattedMean, " (", formattedSD, ")", sep = "")
-#         formattedQuartiles <- formatC(c(x.median, x.lowerhinge, x.upperhinge), format = "f", digits = 1L)
-#         formattedQuartiles <- signif(c(x.median, x.lowerhinge, x.upperhinge), digits = 2L)
+#         formattedQuartiles <- formatC(c(x.median, x.lowerhinge, x.upperhinge), format = "f", digits = digits)
         formattedQuartiles <- signif(c(x.median, x.lowerhinge, x.upperhinge), digits = digits)
         lty.lines.vertical <- defaultIfNULL(lty.lines.vertical, defaultIfNULL(lty.lines[-1L], defaultIfNULL(lty.lines, par("lty"))))
         lwd.lines.vertical <- defaultIfNULL(lwd.lines.vertical, defaultIfNULL(lwd.lines[-1L], defaultIfNULL(lwd.lines, par("lwd"))))
@@ -694,8 +670,6 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, digits = 2L, plot
     nf <- layout(matrix(c(2, 1), nrow = 2, ncol = 1, byrow = TRUE), height = c(1, 3))
     
     par(mar = c(5.1, 4.1, 0, 2.1))
-#     plot(x.hist, freq = FALSE, main = NULL, xlab = sprintf("Values of %s", sQuote(dataObjectName)), ylab = "Relative Frequency", xlim = extendrange(x = x, r = range(x, na.rm = na.rm), f = 0.05), col = col.fill.histogram)
-#     plot(x.hist, freq = FALSE, main = NULL, xlab = sprintf("Values of %s", sQuote(dataObjectName)), ylab = "Relative Frequency", xlim = extendrange(x = x, r = range(x, na.rm = na.rm), f = 0.05), col = col.fill.histogram)
     plot(x.hist, freq = FALSE, main = NULL, xlab = sprintf("Values of %s", sQuote(dataObjectName)), ylab = "Relative Frequency", xlim = range(pretty(x)), ylim = range(pretty(x.hist[["density"]])), col = col.fill.histogram)
     if(plotDensityCurve) {
         lines(x.density[["x"]], x.density[["y"]], lty = lty.lines.density, lwd = lwd.lines.density, col = col.lines.density)
@@ -704,13 +678,11 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, digits = 2L, plot
         abline(v = x.verticalStats, lty = lty.lines.vertical, lwd = lwd.lines.vertical, col = col.lines.vertical)
     }
     if(plotStatsValues) {
-#         mtext(text = paste("Mean (SD)\n", formattedMeanSD, sep = ""), side = 1, line = mtext.bottomLabelLine, at = min(x), col = col.lines.vertical)
         mtext(text = paste("Mean (SD)\n", formattedMeanSD, sep = ""), side = 1, line = line.statsLabel.bottom, at = min(x), col = col.statsLabel.bottom, font = font.statsLabel.bottom)
     }
 
     # title(main = sprintf("Plots for %s", sQuote(dataObjectName)), col.main = col.main, cex.main = cex.main, font.main = font.main, line = line.main)
     par(mar = c(0, 4.1, 1.1, 2.1))
-#     boxplot(x, frame = FALSE, axes = FALSE, horizontal = TRUE, ylim = extendrange(x = x, r = range(x, na.rm = na.rm), f = 0.05), col = col.fill.boxplot)
     boxplot(x, frame = FALSE, axes = FALSE, horizontal = TRUE, ylim = range(pretty(x)), col = col.fill.boxplot)
     if(plotVerticalLines) {
         segments(x0 = x.verticalStats, y0 = rep(0L, length.out = 4L), x1 = x.verticalStats, y1 = rep(1L, length.out = 4L), lty = lty.lines.vertical, lwd = lwd.lines.vertical, col = col.lines.vertical)
@@ -718,8 +690,6 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, digits = 2L, plot
     if(plotStatsValues) {
         oldXPD <- par()$xpd
         par(xpd = TRUE)
-#         mtext(text = paste(c("Q2", "Q1", "Q3"), formattedQuartiles, sep = "\n"), at = x.verticalStats[-1L], side = 3, line = mtext.topLabelLine, col = col.lines.vertical)
-#         mtext(text = paste(c("Q2", "Q1", "Q3"), formattedQuartiles, sep = "\n"), at = x.verticalStats[-1L], side = 3, line = line.statsLabel.top, col = col.statsLabel.top, font = font.statsLabel.top)
         mtext(text = paste("Q2", formattedQuartiles[1L], sep = "\n"), at = x.verticalStats[2L], side = 3, line = line.statsLabel.top, col = col.statsLabel.top, font = font.statsLabel.top)
         mtext(text = paste("Q1", formattedQuartiles[2L], sep = "\n"), at = x.verticalStats[3L], side = 3, line = line.statsLabel.top, col = col.statsLabel.top, font = font.statsLabel.top, adj = 1)
         mtext(text = paste("Q3", formattedQuartiles[3L], sep = "\n"), at = x.verticalStats[4L], side = 3, line = line.statsLabel.top, col = col.statsLabel.top, font = font.statsLabel.top, adj = 0)
