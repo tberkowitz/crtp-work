@@ -1292,10 +1292,67 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
 
 
 
+# # Inserting plots into RTF documents
+# library(rtf)
+# export.file <- paste(getwd(), "test.rtf", sep = "/")
+# results <- descriptiveStatsDF(iris)
+# 
+# rtf <- RTF(file = export.file, width = 8.5, height = 11, font.size = 12)
+# for(i in seq_along(results)) {
+#     if(!is.data.frame(results[i][[1L]]) && is.list(results[i][[1L]])) {
+#         rtf::addText(rtf, names(results[i]), bold = TRUE)
+#         rtf::addNewLine(rtf)
+#         for(j in seq_along(results[i][[1L]])) {
+#             rtf::addText(rtf, names(results[i][[1L]])[j], italic = TRUE)
+#             rtf::addNewLine(rtf)
+#             rtf::addTable(rtf, results[i][[1L]][[j]])
+#             rtf::addNewLine(rtf)
+#         }
+#     } else {
+#         rtf::addText(rtf, names(results)[i], bold = TRUE)
+#         rtf::addNewLine(rtf)
+#         rtf::addTable(rtf, results[[i]], row.names = TRUE)
+#         rtf::addNewLine(rtf)
+#     }
+#     rtf::addNewLine(rtf)
+#     rtf::addNewLine(rtf)
+# }
+# rtf::done(rtf)
+# on.exit(cat(strwrap(gettextf("NOTE: Your results have been exported and saved in the following location:\n%s", export.file), width = 0.95 * getOption("width"), prefix = "\n    ", initial = ""), sep = ""), add = TRUE)
+# 
+# 
+# 
+# for(i in seq_len(NCOL(x.continuous <- iris[,-5L]))) {
+# #     getBoxHist(x = if(class(x.continuous[, i]) %in% c("Date", "POSIXt", "POSIXct", "POSIXlt")) {unclass(x.continuous[, i])} else {x.continuous[, i]}, na.rm = na.rm, dataObjectName = colnames(x.continuous)[i], digits = digits, plotDensityCurve = plots.plotDensityCurve, plotVerticalLines = plots.plotVerticalLines, plotStatsValues = plots.plotStatsValues, col.fill = plots.col.fill, col.fill.boxplot = plots.col.fill, col.fill.histogram = plots.col.fill, lty.lines = plots.lty.lines, lwd.lines = plots.lwd.lines, col.lines = plots.col.lines, col.lines.density = plots.col.lines.density, col.lines.vertical = plots.col.lines.vertical, lty.lines.density = plots.lty.lines.density, lty.lines.vertical = plots.lty.lines.vertical, lwd.lines.density = plots.lwd.lines.density, lwd.lines.vertical = plots.lwd.lines.vertical, line.statsLabel.top = plots.line.statsLabel.top, line.statsLabel.bottom = plots.line.statsLabel.bottom, col.statsLabel = plots.col.lines.vertical, col.statsLabel.top = plots.col.statsLabel, col.statsLabel.bottom = plots.col.statsLabel, font.statsLabel = plots.font.statsLabel, font.statsLabel.top = plots.font.statsLabel, font.statsLabel.bottom = plots.font.statsLabel)
+#     rtf::addPlot(rtf, plot.fun = getBoxHist, x = if(class(x.continuous[, i]) %in% c("Date", "POSIXt", "POSIXct", "POSIXlt")) {unclass(x.continuous[, i])} else {x.continuous[, i]})
+#     rtf::addNewLine(rtf)
+#     rtf::addNewLine(rtf)
+# }
 
 
-
-
+library(rtf)
+export.file <- paste(getwd(), "temp.rtf", sep = "/")
+rtf <- RTF(file = export.file, width = 8.5, height = 11, font.size = 12)
+# filepath <- tempfile(pattern = "Rplot%03d", tmpdir = getwd(), fileext = ".png")
+for(i in seq_len(NCOL(x.continuous <- iris[,-5L]))) {
+#     tmp <- paste(getwd(), "Rplot%03d.png", sep = "/")
+    tmp <- paste(getwd(), "/Rplot", i, ".png", sep = "")
+    file.create(tmp)
+#     png(filename = paste(getwd(), "Rplot%03d.png", sep = "/"), width = 700, height = 700)
+    png(filename = tmp, width = 700, height = 700)
+#     getBoxHist(x = if(class(x.continuous[, i]) %in% c("Date", "POSIXt", "POSIXct", "POSIXlt")) {unclass(x.continuous[, i])} else {x.continuous[, i]}, na.rm = na.rm, dataObjectName = colnames(x.continuous)[i], digits = digits, plotDensityCurve = plots.plotDensityCurve, plotVerticalLines = plots.plotVerticalLines, plotStatsValues = plots.plotStatsValues, col.fill = plots.col.fill, col.fill.boxplot = plots.col.fill, col.fill.histogram = plots.col.fill, lty.lines = plots.lty.lines, lwd.lines = plots.lwd.lines, col.lines = plots.col.lines, col.lines.density = plots.col.lines.density, col.lines.vertical = plots.col.lines.vertical, lty.lines.density = plots.lty.lines.density, lty.lines.vertical = plots.lty.lines.vertical, lwd.lines.density = plots.lwd.lines.density, lwd.lines.vertical = plots.lwd.lines.vertical, line.statsLabel.top = plots.line.statsLabel.top, line.statsLabel.bottom = plots.line.statsLabel.bottom, col.statsLabel = plots.col.lines.vertical, col.statsLabel.top = plots.col.statsLabel, col.statsLabel.bottom = plots.col.statsLabel, font.statsLabel = plots.font.statsLabel, font.statsLabel.top = plots.font.statsLabel, font.statsLabel.bottom = plots.font.statsLabel)
+    getBoxHist(x = if(class(x.continuous[, i]) %in% c("Date", "POSIXt", "POSIXct", "POSIXlt")) {unclass(x.continuous[, i])} else {x.continuous[, i]}, dataObjectName = colnames(x.continuous)[i])
+#     rtf::addPlot(rtf, plot.fun = getBoxHist, x = if(class(x.continuous[, i]) %in% c("Date", "POSIXt", "POSIXct", "POSIXlt")) {unclass(x.continuous[, i])} else {x.continuous[, i]}, dataObjectName = colnames(x.continuous)[i])
+    dev.off()
+    rtf::addPng(rtf, file = tmp)
+#     rtf::addPlot(rtf, plot.fun = getBoxHist, x = if(class(x.continuous[, i]) %in% c("Date", "POSIXt", "POSIXct", "POSIXlt")) {unclass(x.continuous[, i])} else {x.continuous[, i]})
+    rtf::addNewLine(rtf)
+    rtf::addNewLine(rtf)
+#     dev.off()
+#     unlink(tmp)
+}
+# dev.off()
+# rtf::done(rtf)
 
 
 
