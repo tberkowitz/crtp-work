@@ -725,8 +725,8 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, digits = 2L, plot
 # # End debugging values for descriptiveStatsDF()
 
 # Define the descriptiveStatsDF() function
-descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2L, na.rm = TRUE, silent = FALSE, quantile.probs = 0:4/4, quantile.type = 7L, keepColumnNames = TRUE, categorical.emptyCellSymbol = "", categorical.maxLevels = 10L, categorical.na.exclude = na.rm, output.showStats = "all", byFactors = NULL, ignore = NULL, output.statsAreRows = TRUE, export = FALSE, export.file = NULL, export.printToConsole = !export, plots = FALSE, plots.plotDensityCurve = TRUE, plots.plotVerticalLines = TRUE, plots.plotStatsValues = TRUE, plots.lty = c(1, 1, 2, 2, 2), plots.lwd = 2, plots.col = c("red", gray(0.7))) {
-# descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2L, na.rm = TRUE, silent = FALSE, quantile.probs = 0:4/4, quantile.type = 7L, keepColumnNames = TRUE, categorical.emptyCellSymbol = "", categorical.maxLevels = 10L, categorical.na.exclude = na.rm, output.showStats = "all", byFactors = NULL, ignore = NULL, output.statsAreRows = TRUE, export = FALSE, export.file = NULL, export.printToConsole = !export, plots = FALSE, plots.plotDensityCurve = TRUE, plots.plotVerticalLines = TRUE, plots.plotStatsValues = TRUE, plots.lty = c(1, 1, 2, 2, 2), plots.lwd = 2, plots.col = c("red", gray(0.7)), ...) {
+# descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2L, na.rm = TRUE, silent = FALSE, quantile.probs = 0:4/4, quantile.type = 7L, keepColumnNames = TRUE, categorical.emptyCellSymbol = "", categorical.maxLevels = 10L, categorical.na.exclude = na.rm, output.showStats = "all", byFactors = NULL, ignore = NULL, output.statsAreRows = TRUE, export = FALSE, export.file = NULL, export.printToConsole = !export, plots = FALSE, plots.plotDensityCurve = TRUE, plots.plotVerticalLines = TRUE, plots.plotStatsValues = TRUE, plots.lty = c(1, 1, 2, 2, 2), plots.lwd = 2, plots.col = c("red", gray(0.7))) {
+descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2L, na.rm = TRUE, silent = FALSE, quantile.probs = 0:4/4, quantile.type = 7L, keepColumnNames = TRUE, categorical.emptyCellSymbol = "", categorical.maxLevels = 10L, categorical.na.exclude = na.rm, output.showStats = "all", byFactors = NULL, ignore = NULL, output.statsAreRows = TRUE, export = FALSE, export.file = NULL, export.printToConsole = !export, plots = FALSE, plots.plotDensityCurve = TRUE, plots.plotVerticalLines = TRUE, plots.plotStatsValues = TRUE, plots.col.fill = NULL, plots.col.fill.boxplot = plots.col.fill, plots.col.fill.histogram = plots.col.fill, plots.lty.lines = c("solid", "solid", "dashed", "dashed", "dashed"), plots.lwd.lines = 2, plots.col.lines = c("red", gray(0.7)), plots.col.lines.density = NULL, plots.col.lines.vertical = NULL, plots.lty.lines.density = NULL, plots.lty.lines.vertical = NULL, plots.lwd.lines.density = NULL, plots.lwd.lines.vertical = NULL, plots.line.statsLabel.top = -1.5, plots.line.statsLabel.bottom = 3, plots.col.statsLabel = plots.col.lines.vertical, plots.col.statsLabel.top = plots.col.statsLabel, plots.col.statsLabel.bottom = plots.col.statsLabel, plots.font.statsLabel = 1, plots.font.statsLabel.top = plots.font.statsLabel, plots.font.statsLabel.bottom = plots.font.statsLabel) {
     if(silent) {
         oldWarn <- getOption("warn")
         options("warn" = -1L)
@@ -869,6 +869,7 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
 # # #             getBoxHist(x = if(class(x.continuous[, i]) %in% c("Date", "POSIXt", "POSIXct", "POSIXlt")) {unclass(x.continuous[, i])} else {x.continuous[, i]}, na.rm = na.rm, dataObjectName = colnames(x.continuous)[i], plotDensityCurve = plots.plotDensityCurve, plotVerticalLines = plots.plotVerticalLines, plotStatsValues = plots.plotStatsValues, lty = plots.lty, lwd = plots.lwd, col = plots.col, digits = digits)
 # #             getBoxHist(x = if(class(x.continuous[, i]) %in% c("Date", "POSIXt", "POSIXct", "POSIXlt")) {unclass(x.continuous[, i])} else {x.continuous[, i]}, na.rm = na.rm, dataObjectName = colnames(x.continuous)[i], digits = digits, plotDensityCurve = plots.plotDensityCurve, plotVerticalLines = plots.plotVerticalLines, plotStatsValues = plots.plotStatsValues, lty = plots.lty, lwd = plots.lwd, col = plots.col)
 #             getBoxHist(x = if(class(x.continuous[, i]) %in% c("Date", "POSIXt", "POSIXct", "POSIXlt")) {unclass(x.continuous[, i])} else {x.continuous[, i]}, na.rm = na.rm, dataObjectName = colnames(x.continuous)[i], digits = digits, plotDensityCurve = plots.plotDensityCurve, plotVerticalLines = plots.plotVerticalLines, plotStatsValues = plots.plotStatsValues, lty = plots.lty, lwd = plots.lwd, col = plots.col, ...)
+            getBoxHist(x = if(class(x.continuous[, i]) %in% c("Date", "POSIXt", "POSIXct", "POSIXlt")) {unclass(x.continuous[, i])} else {x.continuous[, i]}, na.rm = na.rm, dataObjectName = dataObjectName, digits = digits, plotDensityCurve = plots.plotDensityCurve, plotVerticalLines = plots.plotVerticalLines, plotStatsValues = plots.plotStatsValues, col.fill = plots.col.fill, col.fill.boxplot = plots.col.fill, col.fill.histogram = plots.col.fill, lty.lines = plots.lty.lines, lwd.lines = plots.lwd.lines, col.lines = plots.col.lines, col.lines.density = plots.col.lines.density, col.lines.vertical = plots.col.lines.vertical, lty.lines.density = plots.lty.lines.density, lty.lines.vertical = plots.lty.lines.vertical, lwd.lines.density = plots.lwd.lines.density, lwd.lines.vertical = plots.lwd.lines.vertical, line.statsLabel.top = plots.line.statsLabel.top, line.statsLabel.bottom = plots.line.statsLabel.bottom, col.statsLabel = plots.col.lines.vertical, col.statsLabel.top = plots.col.statsLabel, col.statsLabel.bottom = plots.col.statsLabel, font.statsLabel = plots.font.statsLabel, font.statsLabel.top = plots.font.statsLabel, font.statsLabel.bottom = plots.font.statsLabel)
         }
     }
     
@@ -1287,6 +1288,14 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
 # par(new = TRUE)
 # plot(x = 1, y = 4, pch = 19, col = "blue")
 # xy.coords(x=1,y=4)
+
+
+
+
+
+
+
+
 
 
 
