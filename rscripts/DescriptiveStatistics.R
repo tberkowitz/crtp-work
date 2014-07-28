@@ -613,7 +613,8 @@ getResults.byFactors <- function(x, byFactors, x.continuous, requestedStats, na.
 
 
 # Define the getBoxHist() function
-getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, digits = 2L, plotDensityCurve = TRUE, plotVerticalLines = TRUE, plotStatsValues = TRUE, col.fill = NULL, col.fill.boxplot = col.fill, col.fill.histogram = col.fill, lty.lines = c("solid", "solid", "dashed", "dashed", "dashed"), lwd.lines = 2L, col.lines = c("red", gray(0.7)), col.lines.density = NULL, col.lines.vertical = NULL, lty.lines.density = NULL, lty.lines.vertical = NULL, lwd.lines.density = NULL, lwd.lines.vertical = NULL, mtext.topLabelLine = -1.5, mtext.bottomLabelLine = 3L) {
+# getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, digits = 2L, plotDensityCurve = TRUE, plotVerticalLines = TRUE, plotStatsValues = TRUE, col.fill = NULL, col.fill.boxplot = col.fill, col.fill.histogram = col.fill, lty.lines = c("solid", "solid", "dashed", "dashed", "dashed"), lwd.lines = 2L, col.lines = c("red", gray(0.7)), col.lines.density = NULL, col.lines.vertical = NULL, lty.lines.density = NULL, lty.lines.vertical = NULL, lwd.lines.density = NULL, lwd.lines.vertical = NULL, mtext.topLabelLine = -1.5, mtext.bottomLabelLine = 3L) {
+getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, digits = 2L, plotDensityCurve = TRUE, plotVerticalLines = TRUE, plotStatsValues = TRUE, col.fill = NULL, col.fill.boxplot = col.fill, col.fill.histogram = col.fill, lty.lines = c("solid", "solid", "dashed", "dashed", "dashed"), lwd.lines = 2L, col.lines = c("red", gray(0.7)), col.lines.density = NULL, col.lines.vertical = NULL, lty.lines.density = NULL, lty.lines.vertical = NULL, lwd.lines.density = NULL, lwd.lines.vertical = NULL, line.statsLabel.top = -1.5, line.statsLabel.bottom = 3L, col.statsLabel = col.lines.vertical, col.statsLabel.top = col.statsLabel, col.statsLabel.bottom = col.statsLabel, font.statsLabel = 1L, font.statsLabel.top = font.statsLabel, font.statsLabel.bottom = font.statsLabel) {
     def.par <- par(no.readonly = TRUE)
     on.exit(layout(1), add = TRUE)
     on.exit(par(def.par), add = TRUE)
@@ -683,6 +684,8 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, digits = 2L, plot
         lty.lines.vertical <- defaultIfNULL(lty.lines.vertical, defaultIfNULL(lty.lines[-1L], defaultIfNULL(lty.lines, par("lty"))))
         lwd.lines.vertical <- defaultIfNULL(lwd.lines.vertical, defaultIfNULL(lwd.lines[-1L], defaultIfNULL(lwd.lines, par("lwd"))))
         col.lines.vertical <- defaultIfNULL(col.lines.vertical, defaultIfNULL(col.lines[-1L], defaultIfNULL(col.lines, par("col"))))
+        col.statsLabel.top <- defaultIfNULL(col.statsLabel.top, defaultIfNULL(col.statsLabel, col.lines.vertical))
+        col.statsLabel.bottom <- defaultIfNULL(col.statsLabel.bottom, defaultIfNULL(col.statsLabel, col.lines.vertical))
     }
     
     nf <- layout(matrix(c(2, 1), nrow = 2, ncol = 1, byrow = TRUE), height = c(1, 3))
@@ -696,7 +699,8 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, digits = 2L, plot
         abline(v = x.verticalStats, lty = lty.lines.vertical, lwd = lwd.lines.vertical, col = col.lines.vertical)
     }
     if(plotStatsValues) {
-        mtext(text = paste("Mean (SD)\n", formattedMeanSD, sep = ""), side = 1, line = mtext.bottomLabelLine, at = min(x), col = col.lines.vertical)
+#         mtext(text = paste("Mean (SD)\n", formattedMeanSD, sep = ""), side = 1, line = mtext.bottomLabelLine, at = min(x), col = col.lines.vertical)
+        mtext(text = paste("Mean (SD)\n", formattedMeanSD, sep = ""), side = 1, line = line.statsLabel.bottom, at = min(x), col = col.statsLabel.bottom, font = font.statsLabel.bottom)
     }
 
     # title(main = sprintf("Plots for %s", sQuote(dataObjectName)), col.main = col.main, cex.main = cex.main, font.main = font.main, line = line.main)
@@ -708,7 +712,8 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, digits = 2L, plot
     if(plotStatsValues) {
         oldXPD <- par()$xpd
         par(xpd = TRUE)
-        mtext(text = paste(c("Q2", "Q1", "Q3"), formattedQuartiles, sep = "\n"), at = x.verticalStats[-1L], side = 3, line = mtext.topLabelLine, col = col.lines.vertical)
+#         mtext(text = paste(c("Q2", "Q1", "Q3"), formattedQuartiles, sep = "\n"), at = x.verticalStats[-1L], side = 3, line = mtext.topLabelLine, col = col.lines.vertical)
+        mtext(text = paste(c("Q2", "Q1", "Q3"), formattedQuartiles, sep = "\n"), at = x.verticalStats[-1L], side = 3, line = line.statsLabel.top, col = col.statsLabel.top, font = font.statsLabel.top)
         par(xpd = oldXPD)
     }
     layout(1)
