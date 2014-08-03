@@ -229,7 +229,8 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, digits = 2L, plot
 #             option
 #         }
 #     }
-    pcycle <- function(p, def1, def2 = NULL) rep(if (length(p)) p else if (length(def1)) def1 else def2, length.out = 1L)
+#     pcycle <- function(p, def1, def2 = NULL) rep(if (length(p)) p else if (length(def1)) def1 else def2, length.out = 1L)
+    pcycle <- function(p, def1, def2 = NULL) rep(if (length(p)) p else if (length(def1)) def1 else def2, length.out = max(length(p), length(def1), length(def2)))
     p <- function(sym) pars[[sym, exact = TRUE]]
     
     if(length(dataObjectName) < 1L) {
@@ -261,7 +262,13 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, digits = 2L, plot
     
     x.boxplot.stats <- boxplot.stats(x)[["stats"]]
     # Retrieved 2014-07-22: http://stackoverflow.com/a/9122859
-    x.hist <- hist(x, plot = FALSE)
+#     x.hist <- hist(x, plot = FALSE)
+    args.histogram <- pars[c("breaks", "include.lowest", "right", "nclass")]
+    x.hist <- do.call(what = "hist",
+                      args = c(list(x = x,
+                                    plot = FALSE,
+                                    warn.unused = FALSE),
+                               args.histogram))
     x.hist[["density"]] <- x.hist[["counts"]] / sum(x.hist[["counts"]])
 #     xlim <- pcycle(pars[["xlim"]], p("xlim"), range(pretty(x)))
     xlim <- pcycle(pars[["xlim"]], range(pretty(x)), p("xlim"))
@@ -320,7 +327,8 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, digits = 2L, plot
     }
     
 #     args.histogram <- pars[names(pars) %in% c("cex", "cex.axis", "cex.lab", "xaxt", "yaxt", "xaxp", "yaxp", "las", "col.axis", "col.lab", "format", "font", "font.lab", "font.axis")]
-    args.histogram <- list()
+#     args.histogram <- list()
+    args.plot.histogram <- pars[c("border", "angle", "density", "axes", "labels", "add", "ann", "col.axis", "cex", "cex.axis", "cex.lab", "col.lab", "font.lab", "font.axis")]
     
     nf <- layout(matrix(c(2, 1), nrow = 2, ncol = 1, byrow = TRUE), height = c(1, 3))
     
@@ -340,7 +348,7 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, digits = 2L, plot
                           ylim = ylim.histogram,
                           xlab = xlab,
                           ylab = ylab),
-                     args.histogram))
+                     args.plot.histogram))
     if(plotDensityCurve) {
 #         lines(x.density[["x"]], x.density[["y"]], lty = lty.lines.density, lwd = lwd.lines.density, col = col.lines.density)
         do.call(what = "lines",
@@ -373,14 +381,21 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, digits = 2L, plot
     # title(main = sprintf("Plots for %s", sQuote(dataObjectName)), col.main = col.main, cex.main = cex.main, font.main = font.main, line = line.main)
     par(mar = c(0, 4.1, 1.1, 2.1))
 #     boxplot(x, frame = FALSE, axes = FALSE, horizontal = TRUE, ylim = range(pretty(x)), col = col.fill.boxplot, cex = cex, cex.axis = cex.axis)
+#     do.call(what = "boxplot",
+#             args = list(x = x,
+#                         frame = FALSE,
+#                         axes = FALSE,
+#                         horizontal = TRUE,
+#                         ylim = xlim,
+#                         col = col.fill.boxplot,
+#                         cex = cex))
     do.call(what = "boxplot",
             args = list(x = x,
                         frame = FALSE,
                         axes = FALSE,
                         horizontal = TRUE,
                         ylim = xlim,
-                        col = col.fill.boxplot,
-                        cex = cex))
+                        col = col.fill.boxplot))
     if(plotVerticalLines) {
 #         segments(x0 = x.verticalStats, y0 = rep(0L, length.out = 4L), x1 = x.verticalStats, y1 = rep(1L, length.out = 4L), lty = lty.lines.vertical, lwd = lwd.lines.vertical, col = col.lines.vertical)
         do.call(what = "segments",
