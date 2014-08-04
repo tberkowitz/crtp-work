@@ -157,3 +157,78 @@ layout(1)
 
 
 
+## WORKING WITH THE **GRID** PACKAGE ##
+require(grid)
+
+# Fig. 1 in grid package vignette named "grid"
+grid.show.viewport(viewport(x = 0.5, y = 0.5, width = 0.5, height = 0.25, angle = 45))
+
+# Fig. 2 in grid package vignette named "grid"
+grid.rect(gp <- gpar(lty = "dashed"))
+vp1 <- viewport(x = 0, y = 0.5, w = 0.5, h = 0.5, just = c("left", "bottom"), name = "vp1")
+vp2 <- viewport(x = 0.5, y = 0, w = 0.5, h = 0.5, just = c("left", "bottom"))
+pushViewport(vp1)
+grid.rect(gp = gpar(col = "grey"))
+grid.text("Some drawing in graphics region 1", y = 0.8)
+upViewport()
+pushViewport(vp2)
+grid.rect(gp = gpar(col = "grey"))
+grid.text("Some drawing in graphics region 2", y = 0.8)
+upViewport()
+downViewport("vp1")
+grid.text("MORE drawing in graphics region 1", y = 0.2)
+popViewport()
+
+# Fig. 3 in grid package vignette named "grid"
+grid.rect(gp = gpar(lty = "dashed"))
+vp <- viewport(width = 0.5, height = 0.5)
+pushViewport(vp)
+grid.rect(gp = gpar(col = "grey"))
+grid.text("quarter of the page", y = 0.85)
+pushViewport(vp)
+grid.rect()
+grid.text("quarter of the\nprevious viewport")
+popViewport(2)
+
+
+# set.seed(0804)
+# x <- rnorm(100, sd = 100)
+# x.hist <- hist(x, plot = FALSE)
+# x.hist[["density"]] <- x.hist[["counts"]] / sum(x.hist[["counts"]])
+# 
+# vp.boxplot <- viewport(x = 0, y = 0.75, width = 1, height = 0.25, just = c("left", "bottom"))
+# vp.histogram <- viewport(x = 0, y = 0, width = 1, height = 0.75)
+# 
+# pushViewport(vp.boxplot)
+# grid.rect(gp = gpar(col = "grey"))
+# grid.draw(boxplot(x, frame = FALSE, horizontal = TRUE, axes = FALSE, ylim = range(pretty(x))))
+
+
+grid.rect(gp = gpar(lty = "dashed"))
+x <- y <- 1:10
+pushViewport(plotViewport(c(5.1, 4.1, 4.1, 2.1)))
+pushViewport(dataViewport(x, y))
+grid.rect()
+grid.xaxis()
+grid.yaxis()
+grid.points(x, y)
+grid.text("1:10", x = unit(-3, "lines"), rot = 90)
+popViewport(2)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
