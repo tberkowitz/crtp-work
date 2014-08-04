@@ -232,3 +232,82 @@ popViewport(2)
 
 
 
+
+
+def.par <- par(no.readonly = TRUE)
+set.seed(0724)
+x <- rnorm(500, sd = 100)
+# x <- rnorm(500, sd = 0.01)
+
+x.hist <- hist(x, plot = FALSE)
+x.hist[["density"]] <- x.hist[["counts"]] / sum(x.hist[["counts"]])
+
+x.boxplot.stats <- boxplot.stats(x)[["stats"]]
+
+height.boxplot <- 1
+height.histogram <- 3
+verticalDeviceRatio.boxplot <- height.boxplot / (height.boxplot + height.histogram)
+verticalDeviceRatio.histogram <- 1 - verticalDeviceRatio.boxplot
+
+# nf <- layout(matrix(c(2, 1), nrow = 2, ncol = 1, byrow = TRUE), height = c(1, 3))
+nf <- layout(matrix(c(2, 1), nrow = 2, ncol = 1, byrow = TRUE), height = c(height.boxplot, height.histogram))
+par(mar = c(5.1, 4.1, 0, 2.1))
+plot(x.hist, freq = FALSE, ylab = "Relative Frequency", xlim = range(pretty(x)), ylim = range(pretty(x.hist[["density"]])), main = NULL)
+# box("plot")
+par.hist <- par()
+min.hist <- grconvertY(par.hist$usr[3L], from = "user", to = "ndc")
+
+par(mar = c(0, 4.1, 0, 2.1))
+boxplot(x, frame = FALSE, axes = FALSE, horizontal = TRUE, ylim = range(pretty(x)), xaxt = "n", yaxt = "n")
+# box("plot")
+par.box <- par()
+max.box <- grconvertY(1.2, from = "user", to = "ndc")
+par(xpd = NA)
+segments(x0=20,x1=20,y0=grconvertY(min.hist,from="ndc",to="user"),y1=grconvertY(max.box,from="ndc",to="user"),col="blue",lwd=2,lty="dashed")
+lines(x = x.boxplot.stats[2L] + c(0, 0),
+      y = c(-2, 1.2),
+      lwd = 3,
+      col = "green3",
+      lty = 2)
+
+layout(1)
+dev.off()
+
+
+xy.mean <- xy.coords(x = list(mean(x)), y = list(0))[c("x", "y")]
+points(xy.mean, col = "blue", pch = 19, cex = 1.5)
+par("fig")
+par("plt")
+# par("pin") / par("fin") == c(par("plt")[2L] - par("plt")[1L], par("plt")[4L] - par("plt")[3L])
+zapsmall(c(par("pin") / par("fin") - c(par("plt")[2L] - par("plt")[1L], par("plt")[4L] - par("plt")[3L]), par("pin") / par("fin")))[1L:2L] == c(0L, 0L)
+
+layout1.fig <- par("fig")
+par(fig = c(0, 1, 0.75, 1))
+
+# # For the histogram, the bottom of the line (on the actual axis,
+# # not the bottoms of the bars) should be at y = par("mai")[1L] inches.
+# lines(x = c(10,10), y = grconvertY(par("mai")[1L], from="in", to="user") + c(0, 0.2), lwd = 2, col = "green3")
+
+lines(x = c(20,20), y = par("usr")[3L:4L], lwd = 2, col = "red")
+lines(x = c(20,20), y = par("usr")[3L:4L], lwd = 2, col = "red", lty="dashed")
+
+
+
+lines(x = c(10, 10), y = par("usr")[3L:4L], lwd = 2, col = "red")
+lines(x = c(20, 20), y = c(par("usr")[3L],1.2), lwd = 2, col = "blue", lty = "dashed")
+lines(x = c(20, 20), y = c(1.2, par("usr")[3L]), lwd = 2, col = "blue", lty = "dashed")
+
+par(xpd = NA)
+lines(x = c(30, 30), y = c(1.2, -10), lwd = 2, col = "blue", lty = "dashed")
+lines()
+
+
+
+linelength <- (diff(par.hist$plt[3L:4L])*verticalDeviceRatio.histogram) + ((1.2 - par.box$usr[3L])*verticalDeviceRatio.boxplot)
+
+
+
+
+
+
+
