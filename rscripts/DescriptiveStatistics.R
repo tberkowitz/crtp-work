@@ -719,6 +719,7 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, digits = 2L, plot
                           xlab = xlab,
                           ylab = ylab),
                      args.plot.histogram))
+    userCoords.plotRegion.histogram <- par("usr")
     if(plotDensityCurve) {
         do.call(what = "lines",
                 args = list(x = x.density[["x"]],
@@ -748,14 +749,18 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, digits = 2L, plot
     # title(main = sprintf("Plots for %s", sQuote(dataObjectName)), col.main = col.main, cex.main = cex.main, font.main = font.main, line = line.main)
     par(mar = c(0, 4.1, 1.1, 2.1))
     args.plot.boxplot <- pars[c("border", "width", "varwidth", "outline")]
+    args.plot.boxplot[["width"]] <- NULL
+    args.plot.boxplot[["varwidth"]] <- FALSE
     do.call(what = "boxplot",
             args = c(list(x = x,
                           frame = FALSE,
                           axes = FALSE,
                           horizontal = TRUE,
                           ylim = xlim,
-                          col = col.fill.boxplot),
+                          col = col.fill.boxplot,
+                          boxwex = 0.8),
                      args.plot.boxplot))
+    userCoords.plotRegion.boxplot <- par("usr")
     if(plotVerticalLines) {
         do.call(what = "segments",
                 args = list(x0 = x.verticalStats,
