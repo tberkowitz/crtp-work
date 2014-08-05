@@ -217,15 +217,178 @@ popViewport(2)
 
 
 
+grid.rect(gp = gpar(lty = "dashed"))
+vp.boxplot <- viewport(x = 0, y = 0.75, width = 1, height = 1, just = c("left", "bottom"))
+vp.histogram <- viewport(x = 0, y = 0, width = 1, height = 0.75, just = c("left", "bottom"))
+pushViewport(vp.boxplot)
+grid.rect(gp = gpar(col = "grey"))
+upViewport()
+pushViewport(vp.histogram)
+grid.rect(gp = gpar(col = "blue"))
+pushViewport(plotViewport(c(5.1, 4.1, 0, 2.1)))
+pushViewport(dataViewport(xData = x.hist[["mids"]], yData = x.hist[["density"]]))
+grid.rect(gp = gpar(lty = "dotted"))
+grid.xaxis(at = pretty(x.hist[["breaks"]]))
+grid.yaxis(at = pretty(x.hist[["density"]]))
+
+
+nB <- length(x.hist[["breaks"]])
+rect(xleft = x.hist[["breaks"]][-nB], ybottom = 0, xright = x.hist[["breaks"]][-1L], ytop = x.hist[["density"]], col = NULL, border = par("fg"), lty = "solid")
+histplot <- rectGrob(x = unit(x.hist[["breaks"]][-nB], "native"), y = unit(x.hist[["density"]], "native"), width = unit(diff(x.hist[["breaks"]]), "native"), height = unit(x.hist[["density"]], "native"), hjust = 0, name = "x.histogram")
+grid.draw(gTree(name = "x.histogram"))
+grid.get(gPath("x.histogram"))
 
 
 
+set.seed(0805)
+barData <- matrix(sample(1:4, 16, replace = TRUE), ncol = 4)
+boxColors <- 1:4
+
+bp <- function(barData) {
+    nbars <- dim(barData)[2L]
+    nmeasures <- dim(barData)[1L]
+    barTotals <- rbind(rep(0, nbars), apply(barData, 2, cumsum))
+    barYscale <- c(0, max(barTotals)*1.05)
+    pushViewport(plotViewport(c(5, 4, 4, 1),
+                              yscale = barYscale,
+                              layout = grid.layout(1, nbars)))
+    grid.rect()
+    grid.yaxis()
+    for (i in seq_len(nbars)) {
+        pushViewport(viewport(layout.pos.col = i, yscale = barYscale))
+        grid.rect(x = rep(0.5, nmeasures),
+                  y = unit(barTotals[seq_len(nmeasures), i], "native"),
+                  height = unit(diff(barTotals[, i]), "native"),
+                  width = 0.8,
+                  just = "bottom",
+                  gp = gpar(fill = boxColors))
+        popViewport()
+    }
+    popViewport()
+}
+
+legLabels <- c("Group A", "Group B", "Group C", "Something Longer")
+boxSize <- unit(0.5, "inches")
+
+leg <- function(legLabels) {
+    nlabels <- length(legLabels)
+    pushViewport(viewport(layout = grid.layout(nlabels, 1)))
+    for (i in seq_len(nlabels)) {
+        pushViewport(viewport(layout.pos.row = i))
+        grid.rect(width = boxSize,
+                  height = boxSize,
+                  just = "bottom",
+                  gp = gpar(fill = boxColors[i]))
+        grid.text(legLabels[i], y = unit(0.5, "npc") - unit(1, "lines"))
+        popViewport()
+    }
+    popViewport()
+}
+
+grid.rect(gp = gpar(lty = "dashed"))
+legend.width <- max(unit(rep(1, length(legLabels)), "strwidth", as.list(legLabels)) + unit(2, "lines"),
+                    unit(0.5, "inches") + unit(2, "lines"))
+pushViewport(viewport(layout = grid.layout(1, 2, widths = unit.c(unit(1, "null"), legend.width))))
+pushViewport(viewport(layout.pos.col = 1))
+bp(barData)
+popViewport()
+pushViewport(viewport(layout.pos.col = 2))
+pushViewport(plotViewport(c(5, 0, 4, 0)))
+leg(legLabels)
+popViewport(3)
 
 
+# hg <- function(x) {
+#     x.hist <- hist(x, plot = FALSE)
+#     x.hist[["density"]] <- x.hist[["counts"]] / sum(x.hist[["counts"]])
+#     nBars <- length(x.hist[["density"]])
+#     # nMeasures <- 1L
+#     # barHeights <- x.hist[["density"]]
+#     # barYScale <- range(pretty(x.hist[["density"]])) + c(0, 0.1)
+#     barYScale <- extendrange(range(pretty(x.hist[["density"]])), f = 0.04) + c(0, 0.1)
+#     barXScale <- extendrange(range(pretty(x.hist[["breaks"]])), f = 0.04)
+#     # pushViewport(plotViewport(c(5, 4, 0, 2),
+#     #                           xscale = barXScale,
+#     #                           yscale = barYScale,
+#     #                           layout = grid.layout(1, nBars)))
+#     pushViewport(plotViewport(c(5, 4, 0, 2),
+#                               xscale = barXScale,
+#                               yscale = barYScale))
+#     grid.xaxis(at = pretty(range(x.hist[["breaks"]])))
+#     grid.yaxis(at = pretty(range(x.hist[["density"]])))
+#     grid.rect(x = unit(x.hist[["breaks"]][-length(x.hist[["breaks"]])], "native"),
+#               y = unit(0, "native"),
+#               height = unit(x.hist[["density"]], "native"),
+#               width = unit(diff(x.hist[["breaks"]]), "native"),
+#               just = c("left", "bottom"))
+#     popViewport()
+# }
 
+plots <- function(x, boxHeight = 0.05) {
+    x.hist <- hist(x, plot = FALSE)
+    x.hist[["density"]] <- x.hist[["counts"]] / sum(x.hist[["counts"]])
+    nBars <- length(x.hist[["density"]])
+    barYScale <- extendrange(range(pretty(x.hist[["density"]])), f = 0.04) + c(0, 2 * boxHeight)
+    barXScale <- extendrange(range(pretty(x.hist[["breaks"]])), f = 0.04)
+    
+    x.box <- boxplot.stats(x)
+    boxYValue <- max(barYScale) - (1.1 * boxHeight)
+    
+    pushViewport(plotViewport(c(5, 4, 0, 2),
+                              xscale = barXScale,
+                              yscale = barYScale))
+    grid.xaxis(at = pretty(range(x.hist[["breaks"]])))
+    grid.yaxis(at = pretty(range(x.hist[["density"]])))
+    grid.rect(x = unit(x.hist[["breaks"]][-length(x.hist[["breaks"]])], "native"),
+              y = unit(0, "native"),
+              height = unit(x.hist[["density"]], "native"),
+              width = unit(diff(x.hist[["breaks"]]), "native"),
+              just = c("left", "bottom"))
+    
+    grid.rect(x = unit(x.box[["stats"]][2L], "native"),
+              y = unit(boxYValue - (boxHeight / 2), "native"),
+              height = unit(boxHeight, "native"),
+              width = unit(x.box[["stats"]][4L] - x.box[["stats"]][2L], "native"),
+              just = c("left", "bottom"),
+              gp = gpar(lty = "solid", lwd = 1))
+    grid.segments(x0 = x.box[["stats"]][c(1L, 5L)],
+                  y0 = c(0, 0) + boxYValue - (boxHeight / 2),
+                  x1 = x.box[["stats"]][c(1L, 5L)],
+                  y1 = c(0, 0) + boxYValue + (boxHeight / 2),
+                  default.units = "native",
+                  gp = gpar(lty = "solid", lwd = 1))
+    grid.segments(x0 = x.box[["stats"]][3L],
+                  y0 = boxYValue - (boxHeight / 2),
+                  x1 = x.box[["stats"]][3L],
+                  y1 = boxYValue + (boxHeight / 2),
+                  default.units = "native",
+                  gp = gpar(lty = "solid", lwd = 3))
+    grid.segments(x0 = x.box[["stats"]][c(1L, 5L)],
+                  y0 = c(0, 0) + boxYValue,
+                  x1 = x.box[["stats"]][c(2L, 4L)],
+                  y1 = c(0, 0) + boxYValue,
+                  default.units = "native",
+                  gp = gpar(lty = "dashed", lwd = 1))
+    grid.points(x = x.box[["out"]],
+                y = rep(boxYValue, length(x.box[["out"]])),
+                pch = 1)
+    popViewport()
+}
 
-
-
+set.seed(0805)
+x <- rnorm(100, sd = 100)
+# x.hist <- hist(x, plot = FALSE)
+# x.hist[["density"]] <- x.hist[["counts"]] / sum(x.hist[["counts"]])
+# hg(x)
+# histvp <- viewport(x = 0,
+#                    y = 0,
+#                    width = 1,
+#                    height = 0.75,
+#                    just = c("left", "bottom"),
+#                    xscale = range(pretty(x)),
+#                    yscale = range(pretty(x.hist[["density"]])))
+# x.boxplot.stats <- boxplot.stats(x)
+plots(x)
 
 
 
@@ -254,15 +417,27 @@ nf <- layout(matrix(c(2, 1), nrow = 2, ncol = 1, byrow = TRUE), height = c(heigh
 par(mar = c(5.1, 4.1, 0, 2.1))
 plot(x.hist, freq = FALSE, ylab = "Relative Frequency", xlim = range(pretty(x)), ylim = range(pretty(x.hist[["density"]])), main = NULL)
 # box("plot")
-par.hist <- par()
+par.hist <- par(no.readonly = TRUE)
+# par.hist <- par()
 min.hist <- grconvertY(par.hist$usr[3L], from = "user", to = "ndc")
 
 par(mar = c(0, 4.1, 0, 2.1))
 boxplot(x, frame = FALSE, axes = FALSE, horizontal = TRUE, ylim = range(pretty(x)), xaxt = "n", yaxt = "n")
 # box("plot")
-par.box <- par()
-max.box <- grconvertY(1.2, from = "user", to = "ndc")
+par.box <- par(no.readonly = TRUE)
+# par.box <- par()
+# max.box <- grconvertY(1.2, from = "user", to = "ndc")
 par(xpd = NA)
+clip(x1 = par("usr")[1L], x2 = par("usr")[2L], y1 = grconvertY(min.hist, from = "ndc", to = "user"), y2 = par("usr")[4L])
+lines(x = x.boxplot.stats[2L] + c(0, 0), y = c(1.2, -10), lwd = 2, col = "green3", lty = "dashed")
+# segments(x0 = x.boxplot.stats[2L], x1 = x.boxplot.stats[2L], y0 = grconvertY(min.hist, from = "ndc", to = "user"),y1 = grconvertY(max.box,from="ndc",to="user"),col="blue",lwd=2,lty="dashed")
+# segments(x0 = x.boxplot.stats[2L], x1 = x.boxplot.stats[2L], y0 = grconvertY(min.hist, from = "ndc", to = "user"),y1 = -20, col = par("bg"), lwd = 2, lty = "solid")
+# par(par.hist)
+# par(fig = par.hist$fig)
+# par(xpd = NA)
+# lines(x = x.boxplot.stats[2L] + c(0, 0), y = c(par("usr")[3L], -10), lwd = 2, col = par("bg"), lty = "solid")
+
+
 segments(x0=20,x1=20,y0=grconvertY(min.hist,from="ndc",to="user"),y1=grconvertY(max.box,from="ndc",to="user"),col="blue",lwd=2,lty="dashed")
 lines(x = x.boxplot.stats[2L] + c(0, 0),
       y = c(-2, 1.2),
@@ -301,9 +476,24 @@ par(xpd = NA)
 lines(x = c(30, 30), y = c(1.2, -10), lwd = 2, col = "blue", lty = "dashed")
 lines()
 
-
-
 linelength <- (diff(par.hist$plt[3L:4L])*verticalDeviceRatio.histogram) + ((1.2 - par.box$usr[3L])*verticalDeviceRatio.boxplot)
+
+
+
+
+
+
+
+
+
+
+
+
+
+split.screen
+
+
+
 
 
 
