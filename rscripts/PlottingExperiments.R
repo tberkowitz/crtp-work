@@ -483,15 +483,110 @@ linelength <- (diff(par.hist$plt[3L:4L])*verticalDeviceRatio.histogram) + ((1.2 
 
 
 
+# Solution: Plot a histogram with extra space above it, then draw your
+# own boxplot in pieces
 
+def.par <- par(no.readonly = TRUE)
+set.seed(0724)
+x <- rnorm(500, sd = 100)
+x <- rnorm(500, sd = 0.01)
 
+x.hist <- hist(x, plot = FALSE)
+x.hist[["density"]] <- x.hist[["counts"]] / sum(x.hist[["counts"]])
+yAxisTicks <- pretty(range(x.hist[["density"]]))
+yAxisTicksStep <- max(abs(diff(yAxisTicks)))
 
+x.boxplot.stats <- boxplot.stats(x)
 
+plot(x.hist,
+     freq = FALSE,
+     axes = FALSE,
+     xlim = range(pretty(range(x))),
+#      ylim = range(pretty(range(x.hist[["density"]]))) + c(0, min(0.05, 0.75*abs(diff(pretty(range(x.hist[["density"]])))))),
+#      ylim = range(yAxisTicks) + c(0, min(0.05, 0.75*yAxisTicksStep)),
+     ylim = range(yAxisTicks) + c(0, 0.75*yAxisTicksStep),
+     xlab = paste("Values of ", sQuote("x"), sep = ""),
+     ylab = "Relative Frequency",
+     main = NULL)
+# axis(side = 1,
+#      at = pretty(range(x)))
+# axis(side = 1,
+#      at = pretty(range(x)),
+#      pos = par("usr")[3L])
+axis(side = 1,
+     at = pretty(range(x)),
+     pos = extendrange(range(yAxisTicks), f = 0.04))
+axis(side = 2,
+     at = yAxisTicks)
+par(xpd = NA)
+# boxHeight <- 0.8 * max(abs(diff(pretty(range(x.hist[["density"]])))))
+boxHeight <- 0.8 * yAxisTicksStep
+# boxYValue <- max(range(pretty(x.hist[["density"]]))) + (boxHeight)
+# boxYValue <- par("usr")[4L]
+# boxYValue <- max(x.hist[["density"]]) + max(abs(diff(pretty(range(x.hist[["density"]])))))
+# boxYValue <- max(pretty(range(x.hist[["density"]]))) + max(abs(diff(pretty(range(x.hist[["density"]])))))
+# boxYValue <- max(yAxisTicks) + yAxisTicksStep
+boxYValue <- max(yAxisTicks) + boxHeight
+rect(xleft = x.boxplot.stats[["stats"]][2L],
+     ybottom = boxYValue - (boxHeight / 2),
+     xright = x.boxplot.stats[["stats"]][4L],
+     ytop = boxYValue + (boxHeight / 2),
+     col = NA,
+     border = par("fg"),
+     lty = "solid",
+     lwd = 1)
+segments(x0 = x.boxplot.stats[["stats"]][c(1L, 3L, 5L)],
+         y0 = boxYValue - (boxHeight / 2),
+         x1 = x.boxplot.stats[["stats"]][c(1L, 3L, 5L)],
+         y1 = boxYValue + (boxHeight / 2),
+         col = par("fg"),
+         lty = "solid",
+         lwd = c(1, 3, 1))
+segments(x0 = x.boxplot.stats[["stats"]][c(1L, 5L)],
+         y0 = boxYValue,
+         x1 = x.boxplot.stats[["stats"]][c(2L, 4L)],
+         y1 = boxYValue,
+         col = par("fg"),
+         lty = "dashed",
+         lwd = 1)
+points(x = x.boxplot.stats[["out"]],
+       y = rep(boxYValue, times = length(x.boxplot.stats[["out"]])))
 
+mtext(text = paste("Mean (SD)\n", signif(mean(x), digits = 2L), " (", signif(sd(x), digits = 2L), ")", sep = ""), side = 1, line = 3, at = min(x))
+# mtext(text = c(paste("Q1\n", signif(x.boxplot.stats[["stats"]][2L], digits = 2L), sep = ""), paste("Q2\n", signif(x.boxplot.stats[["stats"]][3L], digits = 2L), sep = ""), paste("Q3\n", signif(x.boxplot.stats[["stats"]][4L], digits = 2L), sep = "")),
+#       side = 3,
+#       line = 0,
+#       adj = c(1, 0.5, 0))
+mtext(text = paste("Q1\n", signif(x.boxplot.stats[["stats"]][2L], digits = 2L), sep = ""),
+      side = 3,
+      at = x.boxplot.stats[["stats"]][2L],
+      line = 1.5,
+      adj = 1)
+mtext(text = paste("Q2\n", signif(x.boxplot.stats[["stats"]][3L], digits = 2L), sep = ""),
+      side = 3,
+      at = x.boxplot.stats[["stats"]][3L],
+      line = 1.5)
+mtext(text = paste("Q3\n", signif(x.boxplot.stats[["stats"]][4L], digits = 2L), sep = ""),
+      side = 3,
+      at = x.boxplot.stats[["stats"]][4L],
+      line = 1.5,
+      adj = 0)
 
-
-split.screen
-
+# segments(x0 = x.boxplot.stats[["stats"]][2L:4L],
+#          y0 = boxYValue + (boxHeight / 2),
+#          x1 = x.boxplot.stats[["stats"]][2L:4L],
+#          y1 = min(extendrange(range(yAxisTicks), f = 0.04)),
+#          col = "green3",
+#          lty = "solid",
+#          lwd = 2)
+clip(x1 = min(pretty(range(x))),
+     x2 = max(pretty(range(x))),
+     y1 = extendrange(range(yAxisTicks), f = 0.04)[1L],
+     y2 = boxYValue + (boxHeight / 2))
+abline(v = c(mean(x), x.boxplot.stats[["stats"]][2L:4L]),
+         col = "green3",
+         lty = c("solid", "dashed", "dashed", "dashed"),
+         lwd = 3)
 
 
 
