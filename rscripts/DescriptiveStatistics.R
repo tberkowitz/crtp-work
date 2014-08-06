@@ -846,7 +846,8 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, digits = 2L, plot
 
 # Define the descriptiveStatsDF() function
 # descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2L, na.rm = TRUE, silent = FALSE, quantile.probs = 0:4/4, quantile.type = 7L, keepColumnNames = TRUE, categorical.emptyCellSymbol = "", categorical.maxLevels = 10L, categorical.na.exclude = na.rm, output.showStats = "all", byFactors = NULL, ignore = NULL, output.statsAreRows = TRUE, export = FALSE, export.file = NULL, export.printToConsole = !export, export.plots = export && plots, plots = FALSE, plots.savePNG = FALSE, plotDensityCurve = TRUE, plotVerticalLines = TRUE, plotStatsValues = TRUE, line.statsValues.top = -1.5, line.statsValues.bottom = 3L, ...) {
-descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2L, na.rm = TRUE, silent = FALSE, quantile.probs = 0:4/4, quantile.type = 7L, keepColumnNames = TRUE, categorical.emptyCellSymbol = "", categorical.maxLevels = 10L, categorical.na.exclude = na.rm, output.showStats = "all", byFactors = NULL, ignore = NULL, output.statsAreRows = TRUE, export = FALSE, export.file = NULL, export.printToConsole = !export, export.plots = export && plots, plots = FALSE, plots.savePNG = FALSE, plotData = c("all", "continuous", "byfactors", "bylevels"), plotDensityCurve = TRUE, plotVerticalLines = TRUE, plotStatsValues = TRUE, line.statsValues.top = -1.5, line.statsValues.bottom = 3L, ...) {
+# descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2L, na.rm = TRUE, silent = FALSE, quantile.probs = 0:4/4, quantile.type = 7L, keepColumnNames = TRUE, categorical.emptyCellSymbol = "", categorical.maxLevels = 10L, categorical.na.exclude = na.rm, output.showStats = "all", byFactors = NULL, ignore = NULL, output.statsAreRows = TRUE, export = FALSE, export.file = NULL, export.printToConsole = !export, export.plots = export && plots, plots = FALSE, plots.savePNG = FALSE, plotData = c("all", "continuous", "byfactors", "bylevels"), plotDensityCurve = TRUE, plotVerticalLines = TRUE, plotStatsValues = TRUE, line.statsValues.top = -1.5, line.statsValues.bottom = 3L, ...) {
+descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2L, na.rm = TRUE, silent = FALSE, quantile.probs = 0:4/4, quantile.type = 7L, keepColumnNames = TRUE, categorical.emptyCellSymbol = "", categorical.maxLevels = 10L, categorical.na.exclude = na.rm, output.showStats = "all", byFactors = NULL, ignore = NULL, output.statsAreRows = TRUE, export = FALSE, export.file = NULL, export.printToConsole = !export, export.plots = export && plots, plots = FALSE, plots.savePNG = FALSE, plots.pngWidth = 700, plots.pngHeight = 600, plots.pngUnits = "px", plotData = c("all", "continuous", "byfactors", "bylevels"), plotDensityCurve = TRUE, plotVerticalLines = TRUE, plotStatsValues = TRUE, line.statsValues.top = -1.5, line.statsValues.bottom = 3L, ...) {
     if(silent) {
         oldWarn <- getOption("warn")
         options("warn" = -1L)
@@ -989,11 +990,13 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
     # Get plot results for continuous variables
     if(plots) {
         if(plots.savePNG || export.plots) {
+    #             # TRY base::dirname() #
     #             extractFilePath <- function(fullpath) {
     #                 splitpath <- strsplit(x = path.expand(fullpath), split = "/|\\\\")
     #                 splitpath <- lapply(X = splitpath, FUN = function(x) {x[-length(x)]})
     #                 sapply(X = splitpath, FUN = paste, collapse = .Platform$file.sep)
     #             }
+    #             # TRY base::basename() #
     #             removeFilePath <- function(fullpath) {
     #                 splitpath <- strsplit(x = path.expand(fullpath), split = "/|\\\\")
     #                 sapply(X = splitpath, FUN = function(x) {x[length(x)]})
@@ -1012,37 +1015,43 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
     #             plots.files.parentDirs <- extractFilePath(plots.files)
     #             plots.files.names <- removeFilePath(plots.files)
             plots.files <- paste(getwd(), "dsdf_plot%03d.png", sep = .Platform$file.sep)
-            png(filename = plots.files, width = 700, height = 600)
-            if (any(plotData %in% c("all", "continuous"))) {
-                for (i in seq_len(NCOL(x.continuous))) {
+#             png(filename = plots.files, width = 700, height = 600)
+#             if (plots.pngWidth < 10) plots.pngWidth <- 72 * plots.pngWidth
+#             if (plots.pngHeight < 10) plots.pngHeight <- 72 * plots.pngHeight
+            png(filename = plots.files, width = plots.pngWidth, height = plots.pngHeight, units = plots.pngUnits)
+        }
+        if (any(plotData %in% c("all", "continuous"))) {
+            for (i in seq_len(NCOL(x.continuous))) {
 #                     getBoxHist(x = if(class(x.continuous[, i]) %in% c("Date", "POSIXt", "POSIXct", "POSIXlt")) {unclass(x.continuous[, i])} else {x.continuous[, i]}, na.rm = na.rm, dataObjectName = colnames(x.continuous)[i], digits = digits, plotDensityCurve = plotDensityCurve, plotVerticalLines = plotVerticalLines, plotStatsValues = plotStatsValues, pars = list(line.statsValues.top = line.statsValues.top, line.statsValues.bottom = line.statsValues.bottom), ...)
-                    getBoxHist(x = x.continuous[, i], na.rm = na.rm, dataObjectName = colnames(x.continuous)[i], digits = digits, plotDensityCurve = plotDensityCurve, plotVerticalLines = plotVerticalLines, plotStatsValues = plotStatsValues, pars = list(line.statsValues.top = line.statsValues.top, line.statsValues.bottom = line.statsValues.bottom), ...)
-                }
+                getBoxHist(x = x.continuous[, i], na.rm = na.rm, dataObjectName = colnames(x.continuous)[i], digits = digits, plotDensityCurve = plotDensityCurve, plotVerticalLines = plotVerticalLines, plotStatsValues = plotStatsValues, pars = list(line.statsValues.top = line.statsValues.top, line.statsValues.bottom = line.statsValues.bottom), ...)
             }
-            if (any(plotData %in% c("all", "byfactors", "bylevels")) && length(results[["ByFactors"]]) > 0L) {
-                for (j in seq_along(x.byFactors)) {
-                    for (i in seq_len(NCOL(x.byFactors[[j]]))) {
-                        getBoxHist(x = x.byFactors[[j]][, i], na.rm = na.rm, dataObjectName = colnames(x.byFactors[[j]])[i], digits = digits, plotDensityCurve = plotDensityCurve, plotVerticalLines = plotVerticalLines, plotStatsValues = plotStatsValues, pars = list(line.statsValues.top = line.statsValues.top, line.statsValues.bottom = line.statsValues.bottom), ...)
-                    }
-                }
-            }
-            dev.off()
-            plots.files <- list.files(path = getwd(), pattern = "dsdf_plot[0-9][0-9][0-9]\\.png")
-        } else {
-            if (any(plotData %in% c("all", "continuous"))) {
-                for (i in seq_len(NCOL(x.continuous))) {
-    #                 getBoxHist(x = if(class(x.continuous[, i]) %in% c("Date", "POSIXt", "POSIXct", "POSIXlt")) {unclass(x.continuous[, i])} else {x.continuous[, i]}, na.rm = na.rm, dataObjectName = colnames(x.continuous)[i], digits = digits, plotDensityCurve = plotDensityCurve, plotVerticalLines = plotVerticalLines, plotStatsValues = plotStatsValues, pars = list(line.statsValues.top = line.statsValues.top, line.statsValues.bottom = line.statsValues.bottom), ...)
-                    getBoxHist(x = x.continuous[, i], na.rm = na.rm, dataObjectName = colnames(x.continuous)[i], digits = digits, plotDensityCurve = plotDensityCurve, plotVerticalLines = plotVerticalLines, plotStatsValues = plotStatsValues, pars = list(line.statsValues.top = line.statsValues.top, line.statsValues.bottom = line.statsValues.bottom), ...)
-                }
-            }
-            if (any(plotData %in% c("all", "byfactors", "bylevels")) && length(results[["ByFactors"]]) > 0L) {
-                for (j in seq_along(x.byFactors)) {
-                    for (i in seq_len(NCOL(x.byFactors[[j]]))) {
-                        getBoxHist(x = x.byFactors[[j]][, i], na.rm = na.rm, dataObjectName = colnames(x.byFactors[[j]])[i], digits = digits, plotDensityCurve = plotDensityCurve, plotVerticalLines = plotVerticalLines, plotStatsValues = plotStatsValues, pars = list(line.statsValues.top = line.statsValues.top, line.statsValues.bottom = line.statsValues.bottom), ...)
-                    }
+        }
+        if (any(plotData %in% c("all", "byfactors", "bylevels")) && length(results[["ByFactors"]]) > 0L) {
+            for (j in seq_along(x.byFactors)) {
+                for (i in seq_len(NCOL(x.byFactors[[j]]))) {
+                    getBoxHist(x = x.byFactors[[j]][, i], na.rm = na.rm, dataObjectName = colnames(x.byFactors[[j]])[i], digits = digits, plotDensityCurve = plotDensityCurve, plotVerticalLines = plotVerticalLines, plotStatsValues = plotStatsValues, pars = list(line.statsValues.top = line.statsValues.top, line.statsValues.bottom = line.statsValues.bottom), ...)
                 }
             }
         }
+        if (plots.savePNG || export.plots) {
+            dev.off()
+            plots.files <- list.files(path = getwd(), pattern = "dsdf_plot[0-9][0-9][0-9]\\.png")
+        }
+#         } else {
+#             if (any(plotData %in% c("all", "continuous"))) {
+#                 for (i in seq_len(NCOL(x.continuous))) {
+#     #                 getBoxHist(x = if(class(x.continuous[, i]) %in% c("Date", "POSIXt", "POSIXct", "POSIXlt")) {unclass(x.continuous[, i])} else {x.continuous[, i]}, na.rm = na.rm, dataObjectName = colnames(x.continuous)[i], digits = digits, plotDensityCurve = plotDensityCurve, plotVerticalLines = plotVerticalLines, plotStatsValues = plotStatsValues, pars = list(line.statsValues.top = line.statsValues.top, line.statsValues.bottom = line.statsValues.bottom), ...)
+#                     getBoxHist(x = x.continuous[, i], na.rm = na.rm, dataObjectName = colnames(x.continuous)[i], digits = digits, plotDensityCurve = plotDensityCurve, plotVerticalLines = plotVerticalLines, plotStatsValues = plotStatsValues, pars = list(line.statsValues.top = line.statsValues.top, line.statsValues.bottom = line.statsValues.bottom), ...)
+#                 }
+#             }
+#             if (any(plotData %in% c("all", "byfactors", "bylevels")) && length(results[["ByFactors"]]) > 0L) {
+#                 for (j in seq_along(x.byFactors)) {
+#                     for (i in seq_len(NCOL(x.byFactors[[j]]))) {
+#                         getBoxHist(x = x.byFactors[[j]][, i], na.rm = na.rm, dataObjectName = colnames(x.byFactors[[j]])[i], digits = digits, plotDensityCurve = plotDensityCurve, plotVerticalLines = plotVerticalLines, plotStatsValues = plotStatsValues, pars = list(line.statsValues.top = line.statsValues.top, line.statsValues.bottom = line.statsValues.bottom), ...)
+#                     }
+#                 }
+#             }
+#         }
     }
     
     # Export 'results'?
