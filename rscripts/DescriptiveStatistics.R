@@ -700,14 +700,24 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, digits = 2L, plot
         font.statsValues <- pcycle(pars[["font.statsValues"]], p("font"), par("font"))
         font.statsValues.top <- pcycle(pars[["font.statsValues.top"]], if (length(font.statsValues) > 1L) font.statsValues[1L] else font.statsValues, 1)
         font.statsValues.bottom <- pcycle(pars[["font.statsValues.bottom"]], if (length(font.statsValues) > 1L) font.statsValues[-1L] else font.statsValues, 1)
+        
+        bg <- pcycle(pars[["bg"]], par("bg"))
+        fg <- pcycle(pars[["fg"]], par("fg"))
+        pars[["font.axis"]] <- pcycle(pars[["font.axis"]], p("font"), par("font.axis"))
+        pars[["font.lab"]] <- pcycle(pars[["font.lab"]], p("font"), par("font.lab"))
+        pars[["col.axis"]] <- pcycle(pars[["col.axis"]], p("col.axis"), par("col.axis"))
+        pars[["col.lab"]] <- pcycle(pars[["col.lab"]], p("col.lab"), par("col.lab"))
+        pars[["cex"]] <- pcycle(pars[["cex"]], par("cex"))
+        pars[["cex.axis"]] <- pcycle(pars[["cex.axis"]], p("cex.axis"), par("cex.axis"))
+        pars[["cex.lab"]] <- pcycle(pars[["cex.lab"]], p("cex.lab"), par("cex.lab"))
     }
     
     args.plot.histogram <- pars[c("border", "angle", "density", "axes", "labels", "add", "ann", "col.axis", "cex", "cex.axis", "cex.lab", "col.lab", "font.lab", "font.axis")]
     
     nf <- layout(matrix(c(2, 1), nrow = 2, ncol = 1, byrow = TRUE), height = c(1, 3))
     
-    bg <- pcycle(pars[["bg"]], par("bg"))
-    fg <- pcycle(pars[["fg"]], par("fg"))
+#     bg <- pcycle(pars[["bg"]], par("bg"))
+#     fg <- pcycle(pars[["fg"]], par("fg"))
     par(mar = c(5.1, 4.1, 0, 2.1), bg = bg, fg = fg)
     do.call(what = "plot",
             args = c(list(x = x.hist,
