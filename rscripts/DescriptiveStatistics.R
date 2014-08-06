@@ -983,6 +983,7 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
     # Get subset results
     if(length(byFactors) > 0L && any(output.showStats %in% c("all", "byfactors", "bylevels"))) {
         results[["ByFactors"]] <- getResults.byFactors(x = x, byFactors = byFactors, x.continuous = x.continuous, requestedStats = requestedStats, na.rm = na.rm, silent = silent, digits = digits, quantile.probs = quantile.probs, quantile.type = quantile.type, statsAreRows = output.statsAreRows)
+        x.byFactors <- split(x = x.continuous, f = levels(interaction(x[, byFactors, drop = FALSE], sep = ", ")))
     }
     
     # Get plot results for continuous variables
@@ -1013,23 +1014,33 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
             plots.files <- paste(getwd(), "dsdf_plot%03d.png", sep = .Platform$file.sep)
             png(filename = plots.files, width = 700, height = 600)
             if (any(plotData %in% c("all", "continuous"))) {
-                for(i in seq_len(NCOL(x.continuous))) {
-                    getBoxHist(x = if(class(x.continuous[, i]) %in% c("Date", "POSIXt", "POSIXct", "POSIXlt")) {unclass(x.continuous[, i])} else {x.continuous[, i]}, na.rm = na.rm, dataObjectName = colnames(x.continuous)[i], digits = digits, plotDensityCurve = plotDensityCurve, plotVerticalLines = plotVerticalLines, plotStatsValues = plotStatsValues, pars = list(line.statsValues.top = line.statsValues.top, line.statsValues.bottom = line.statsValues.bottom), ...)
+                for (i in seq_len(NCOL(x.continuous))) {
+#                     getBoxHist(x = if(class(x.continuous[, i]) %in% c("Date", "POSIXt", "POSIXct", "POSIXlt")) {unclass(x.continuous[, i])} else {x.continuous[, i]}, na.rm = na.rm, dataObjectName = colnames(x.continuous)[i], digits = digits, plotDensityCurve = plotDensityCurve, plotVerticalLines = plotVerticalLines, plotStatsValues = plotStatsValues, pars = list(line.statsValues.top = line.statsValues.top, line.statsValues.bottom = line.statsValues.bottom), ...)
+                    getBoxHist(x = x.continuous[, i], na.rm = na.rm, dataObjectName = colnames(x.continuous)[i], digits = digits, plotDensityCurve = plotDensityCurve, plotVerticalLines = plotVerticalLines, plotStatsValues = plotStatsValues, pars = list(line.statsValues.top = line.statsValues.top, line.statsValues.bottom = line.statsValues.bottom), ...)
                 }
             }
-#             if (any(plotData %in% c("all", "byfactors", "bylevels")) && length(results[["ByFactors"]]) > 0L) {
-#                 x.byFactors <- results[["ByFactors"]]
-#                 for (j in seq_along(x.byFactors)) {
-#                     for(i in seq_len(NCOL(x.byFactors[[j]]))) {
-#                         getBoxHist(x = if(class(x.continuous[, i]) %in% c("Date", "POSIXt", "POSIXct", "POSIXlt")) {unclass(x.continuous[, i])} else {x.continuous[, i]}, na.rm = na.rm, dataObjectName = colnames(x.continuous)[i], digits = digits, plotDensityCurve = plotDensityCurve, plotVerticalLines = plotVerticalLines, plotStatsValues = plotStatsValues, pars = list(line.statsValues.top = line.statsValues.top, line.statsValues.bottom = line.statsValues.bottom), ...)
-#                     }
-#                 }
-#             }
+            if (any(plotData %in% c("all", "byfactors", "bylevels")) && length(results[["ByFactors"]]) > 0L) {
+                for (j in seq_along(x.byFactors)) {
+                    for (i in seq_len(NCOL(x.byFactors[[j]]))) {
+                        getBoxHist(x = x.byFactors[[j]][, i], na.rm = na.rm, dataObjectName = colnames(x.byFactors[[j]])[i], digits = digits, plotDensityCurve = plotDensityCurve, plotVerticalLines = plotVerticalLines, plotStatsValues = plotStatsValues, pars = list(line.statsValues.top = line.statsValues.top, line.statsValues.bottom = line.statsValues.bottom), ...)
+                    }
+                }
+            }
             dev.off()
             plots.files <- list.files(path = getwd(), pattern = "dsdf_plot[0-9][0-9][0-9]\\.png")
         } else {
-            for(i in seq_len(NCOL(x.continuous))) {
-                getBoxHist(x = if(class(x.continuous[, i]) %in% c("Date", "POSIXt", "POSIXct", "POSIXlt")) {unclass(x.continuous[, i])} else {x.continuous[, i]}, na.rm = na.rm, dataObjectName = colnames(x.continuous)[i], digits = digits, plotDensityCurve = plotDensityCurve, plotVerticalLines = plotVerticalLines, plotStatsValues = plotStatsValues, pars = list(line.statsValues.top = line.statsValues.top, line.statsValues.bottom = line.statsValues.bottom), ...)
+            if (any(plotData %in% c("all", "continuous"))) {
+                for (i in seq_len(NCOL(x.continuous))) {
+    #                 getBoxHist(x = if(class(x.continuous[, i]) %in% c("Date", "POSIXt", "POSIXct", "POSIXlt")) {unclass(x.continuous[, i])} else {x.continuous[, i]}, na.rm = na.rm, dataObjectName = colnames(x.continuous)[i], digits = digits, plotDensityCurve = plotDensityCurve, plotVerticalLines = plotVerticalLines, plotStatsValues = plotStatsValues, pars = list(line.statsValues.top = line.statsValues.top, line.statsValues.bottom = line.statsValues.bottom), ...)
+                    getBoxHist(x = x.continuous[, i], na.rm = na.rm, dataObjectName = colnames(x.continuous)[i], digits = digits, plotDensityCurve = plotDensityCurve, plotVerticalLines = plotVerticalLines, plotStatsValues = plotStatsValues, pars = list(line.statsValues.top = line.statsValues.top, line.statsValues.bottom = line.statsValues.bottom), ...)
+                }
+            }
+            if (any(plotData %in% c("all", "byfactors", "bylevels")) && length(results[["ByFactors"]]) > 0L) {
+                for (j in seq_along(x.byFactors)) {
+                    for (i in seq_len(NCOL(x.byFactors[[j]]))) {
+                        getBoxHist(x = x.byFactors[[j]][, i], na.rm = na.rm, dataObjectName = colnames(x.byFactors[[j]])[i], digits = digits, plotDensityCurve = plotDensityCurve, plotVerticalLines = plotVerticalLines, plotStatsValues = plotStatsValues, pars = list(line.statsValues.top = line.statsValues.top, line.statsValues.bottom = line.statsValues.bottom), ...)
+                    }
+                }
             }
         }
     }
