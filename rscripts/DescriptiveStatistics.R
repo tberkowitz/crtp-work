@@ -621,6 +621,11 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, digits = 2L, plot
     pars <- c(list(...), pars)
     pars <- uniquePars <- pars[unique(names(pars))]
     
+    # Currently not accepting dates for plotting
+    if (class(x) %in% c("Date", "POSIXt", "POSIXct", "POSIXlt")) {
+        x <- unclass(x)
+    }
+    
     # Currently not accepting any titles for any plots
     if (any(grepl(pattern = "main$", x = names(pars)))) {
         pars[grep(pattern = "main$", x = names(pars))] <- NULL
@@ -694,6 +699,7 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, digits = 2L, plot
         col.statsValues.top <- pcycle(pars[["col.statsValues.top"]], col.statsValues, col.lines.vertical)
         col.statsValues.bottom <- pcycle(pars[["col.statsValues.bottom"]], col.statsValues, col.lines.vertical)
         
+        pars[["cex"]] <- pcycle(pars[["cex"]], par("cex"))
         cex.statsValues <- pcycle(pars[["cex.statsValues"]], p("cex"), par("cex"))
         cex.statsValues.top <- pcycle(pars[["cex.statsValues.top"]], cex.statsValues, 1)
         cex.statsValues.bottom <- pcycle(pars[["cex.statsValues.bottom"]], cex.statsValues, 1)
@@ -707,7 +713,6 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, digits = 2L, plot
         pars[["font.lab"]] <- pcycle(pars[["font.lab"]], p("font"), par("font.lab"))
         pars[["col.axis"]] <- pcycle(pars[["col.axis"]], p("col.axis"), par("col.axis"))
         pars[["col.lab"]] <- pcycle(pars[["col.lab"]], p("col.lab"), par("col.lab"))
-        pars[["cex"]] <- pcycle(pars[["cex"]], par("cex"))
         pars[["cex.axis"]] <- pcycle(pars[["cex.axis"]], p("cex.axis"), par("cex.axis"))
         pars[["cex.lab"]] <- pcycle(pars[["cex.lab"]], p("cex.lab"), par("cex.lab"))
     }
@@ -716,8 +721,6 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, digits = 2L, plot
     
     nf <- layout(matrix(c(2, 1), nrow = 2, ncol = 1, byrow = TRUE), height = c(1, 3))
     
-#     bg <- pcycle(pars[["bg"]], par("bg"))
-#     fg <- pcycle(pars[["fg"]], par("fg"))
     par(mar = c(5.1, 4.1, 0, 2.1), bg = bg, fg = fg)
     do.call(what = "plot",
             args = c(list(x = x.hist,
@@ -729,7 +732,7 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, digits = 2L, plot
                           xlab = xlab,
                           ylab = ylab),
                      args.plot.histogram))
-    userCoords.plotRegion.histogram <- par("usr")
+#     userCoords.plotRegion.histogram <- par("usr")
     if(plotDensityCurve) {
         do.call(what = "lines",
                 args = list(x = x.density[["x"]],
@@ -770,7 +773,7 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, digits = 2L, plot
                           col = col.fill.boxplot,
                           boxwex = 0.8),
                      args.plot.boxplot))
-    userCoords.plotRegion.boxplot <- par("usr")
+#     userCoords.plotRegion.boxplot <- par("usr")
     if(plotVerticalLines) {
         do.call(what = "segments",
                 args = list(x0 = x.verticalStats,
@@ -842,8 +845,8 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, digits = 2L, plot
 # # End debugging values for descriptiveStatsDF()
 
 # Define the descriptiveStatsDF() function
-# descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2L, na.rm = TRUE, silent = FALSE, quantile.probs = 0:4/4, quantile.type = 7L, keepColumnNames = TRUE, categorical.emptyCellSymbol = "", categorical.maxLevels = 10L, categorical.na.exclude = na.rm, output.showStats = "all", byFactors = NULL, ignore = NULL, output.statsAreRows = TRUE, export = FALSE, export.file = NULL, export.printToConsole = !export, export.plots = export && plots, plots = FALSE, plots.savePNG = FALSE, plots.plotDensityCurve = TRUE, plots.plotVerticalLines = TRUE, plots.plotStatsValues = TRUE, plots.col.fill = NULL, plots.col.fill.boxplot = plots.col.fill, plots.col.fill.histogram = plots.col.fill, plots.lty.lines = c("solid", "solid", "dashed", "dashed", "dashed"), plots.lwd.lines = 2, plots.col.lines = c("red", gray(0.7)), plots.col.lines.density = NULL, plots.col.lines.vertical = NULL, plots.lty.lines.density = NULL, plots.lty.lines.vertical = NULL, plots.lwd.lines.density = NULL, plots.lwd.lines.vertical = NULL, plots.line.statsLabel.top = -2.5, plots.line.statsLabel.bottom = 3, plots.col.statsLabel = plots.col.lines.vertical, plots.col.statsLabel.top = plots.col.statsLabel, plots.col.statsLabel.bottom = plots.col.statsLabel, plots.font.statsLabel = 1, plots.font.statsLabel.top = plots.font.statsLabel, plots.font.statsLabel.bottom = plots.font.statsLabel, plots.cex = par("cex"), plots.cex.axis = par("cex.axis"), plots.cex.statsLabel = plots.cex, plots.cex.statsLabel.top = plots.cex.statsLabel, plots.cex.statsLabel.bottom = plots.cex.statsLabel, plots.bg = par("bg"), plots.fg = par("fg")) {
-descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2L, na.rm = TRUE, silent = FALSE, quantile.probs = 0:4/4, quantile.type = 7L, keepColumnNames = TRUE, categorical.emptyCellSymbol = "", categorical.maxLevels = 10L, categorical.na.exclude = na.rm, output.showStats = "all", byFactors = NULL, ignore = NULL, output.statsAreRows = TRUE, export = FALSE, export.file = NULL, export.printToConsole = !export, export.plots = export && plots, plots = FALSE, plots.savePNG = FALSE, plotDensityCurve = TRUE, plotVerticalLines = TRUE, plotStatsValues = TRUE, line.statsValues.top = -1.5, line.statsValues.bottom = 3L, ...) {
+# descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2L, na.rm = TRUE, silent = FALSE, quantile.probs = 0:4/4, quantile.type = 7L, keepColumnNames = TRUE, categorical.emptyCellSymbol = "", categorical.maxLevels = 10L, categorical.na.exclude = na.rm, output.showStats = "all", byFactors = NULL, ignore = NULL, output.statsAreRows = TRUE, export = FALSE, export.file = NULL, export.printToConsole = !export, export.plots = export && plots, plots = FALSE, plots.savePNG = FALSE, plotDensityCurve = TRUE, plotVerticalLines = TRUE, plotStatsValues = TRUE, line.statsValues.top = -1.5, line.statsValues.bottom = 3L, ...) {
+descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2L, na.rm = TRUE, silent = FALSE, quantile.probs = 0:4/4, quantile.type = 7L, keepColumnNames = TRUE, categorical.emptyCellSymbol = "", categorical.maxLevels = 10L, categorical.na.exclude = na.rm, output.showStats = "all", byFactors = NULL, ignore = NULL, output.statsAreRows = TRUE, export = FALSE, export.file = NULL, export.printToConsole = !export, export.plots = export && plots, plots = FALSE, plots.savePNG = FALSE, plotData = c("all", "continuous", "byfactors", "bylevels"), plotDensityCurve = TRUE, plotVerticalLines = TRUE, plotStatsValues = TRUE, line.statsValues.top = -1.5, line.statsValues.bottom = 3L, ...) {
     if(silent) {
         oldWarn <- getOption("warn")
         options("warn" = -1L)
@@ -885,6 +888,9 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
     output.showStats <- unique(match.arg(arg = tolower(output.showStats), choices = c("all", "categorical", "continuous", "byfactors", "bylevels", "none"), several.ok = TRUE))
     if(!export.printToConsole && export) {
         output.showStats <- c(output.showStats, "none")
+    }
+    if (plots) {
+        plotData <- match.arg(arg = tolower(plotData), choices = c("all", "continuous", "byfactors", "bylevels"), several.ok = TRUE)
     }
     
     if(is.data.frame(x)) {
@@ -1006,15 +1012,23 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
     #             plots.files.names <- removeFilePath(plots.files)
             plots.files <- paste(getwd(), "dsdf_plot%03d.png", sep = .Platform$file.sep)
             png(filename = plots.files, width = 700, height = 600)
-            for(i in seq_len(NCOL(x.continuous))) {
-#                 getBoxHist(x = if(class(x.continuous[, i]) %in% c("Date", "POSIXt", "POSIXct", "POSIXlt")) {unclass(x.continuous[, i])} else {x.continuous[, i]}, na.rm = na.rm, dataObjectName = colnames(x.continuous)[i], digits = digits, plotDensityCurve = plots.plotDensityCurve, plotVerticalLines = plots.plotVerticalLines, plotStatsValues = plots.plotStatsValues, col.fill = plots.col.fill, col.fill.boxplot = plots.col.fill, col.fill.histogram = plots.col.fill, lty.lines = plots.lty.lines, lwd.lines = plots.lwd.lines, col.lines = plots.col.lines, col.lines.density = plots.col.lines.density, col.lines.vertical = plots.col.lines.vertical, lty.lines.density = plots.lty.lines.density, lty.lines.vertical = plots.lty.lines.vertical, lwd.lines.density = plots.lwd.lines.density, lwd.lines.vertical = plots.lwd.lines.vertical, line.statsLabel.top = plots.line.statsLabel.top, line.statsLabel.bottom = plots.line.statsLabel.bottom, col.statsLabel = plots.col.lines.vertical, col.statsLabel.top = plots.col.statsLabel, col.statsLabel.bottom = plots.col.statsLabel, font.statsLabel = plots.font.statsLabel, font.statsLabel.top = plots.font.statsLabel, font.statsLabel.bottom = plots.font.statsLabel, cex = plots.cex, cex.axis = plots.cex.axis, cex.statsLabel = plots.cex.statsLabel, cex.statsLabel.top = plots.cex.statsLabel.top, cex.statsLabel.bottom = plots.cex.statsLabel.bottom, bg = plots.bg, fg = plots.fg)
-                getBoxHist(x = if(class(x.continuous[, i]) %in% c("Date", "POSIXt", "POSIXct", "POSIXlt")) {unclass(x.continuous[, i])} else {x.continuous[, i]}, na.rm = na.rm, dataObjectName = colnames(x.continuous)[i], digits = digits, plotDensityCurve = plotDensityCurve, plotVerticalLines = plotVerticalLines, plotStatsValues = plotStatsValues, pars = list(line.statsValues.top = line.statsValues.top, line.statsValues.bottom = line.statsValues.bottom), ...)
+            if (any(plotData %in% c("all", "continuous"))) {
+                for(i in seq_len(NCOL(x.continuous))) {
+                    getBoxHist(x = if(class(x.continuous[, i]) %in% c("Date", "POSIXt", "POSIXct", "POSIXlt")) {unclass(x.continuous[, i])} else {x.continuous[, i]}, na.rm = na.rm, dataObjectName = colnames(x.continuous)[i], digits = digits, plotDensityCurve = plotDensityCurve, plotVerticalLines = plotVerticalLines, plotStatsValues = plotStatsValues, pars = list(line.statsValues.top = line.statsValues.top, line.statsValues.bottom = line.statsValues.bottom), ...)
+                }
             }
+#             if (any(plotData %in% c("all", "byfactors", "bylevels")) && length(results[["ByFactors"]]) > 0L) {
+#                 x.byFactors <- results[["ByFactors"]]
+#                 for (j in seq_along(x.byFactors)) {
+#                     for(i in seq_len(NCOL(x.byFactors[[j]]))) {
+#                         getBoxHist(x = if(class(x.continuous[, i]) %in% c("Date", "POSIXt", "POSIXct", "POSIXlt")) {unclass(x.continuous[, i])} else {x.continuous[, i]}, na.rm = na.rm, dataObjectName = colnames(x.continuous)[i], digits = digits, plotDensityCurve = plotDensityCurve, plotVerticalLines = plotVerticalLines, plotStatsValues = plotStatsValues, pars = list(line.statsValues.top = line.statsValues.top, line.statsValues.bottom = line.statsValues.bottom), ...)
+#                     }
+#                 }
+#             }
             dev.off()
             plots.files <- list.files(path = getwd(), pattern = "dsdf_plot[0-9][0-9][0-9]\\.png")
         } else {
             for(i in seq_len(NCOL(x.continuous))) {
-#                 getBoxHist(x = if(class(x.continuous[, i]) %in% c("Date", "POSIXt", "POSIXct", "POSIXlt")) {unclass(x.continuous[, i])} else {x.continuous[, i]}, na.rm = na.rm, dataObjectName = colnames(x.continuous)[i], digits = digits, plotDensityCurve = plots.plotDensityCurve, plotVerticalLines = plots.plotVerticalLines, plotStatsValues = plots.plotStatsValues, col.fill = plots.col.fill, col.fill.boxplot = plots.col.fill, col.fill.histogram = plots.col.fill, lty.lines = plots.lty.lines, lwd.lines = plots.lwd.lines, col.lines = plots.col.lines, col.lines.density = plots.col.lines.density, col.lines.vertical = plots.col.lines.vertical, lty.lines.density = plots.lty.lines.density, lty.lines.vertical = plots.lty.lines.vertical, lwd.lines.density = plots.lwd.lines.density, lwd.lines.vertical = plots.lwd.lines.vertical, line.statsLabel.top = plots.line.statsLabel.top, line.statsLabel.bottom = plots.line.statsLabel.bottom, col.statsLabel = plots.col.lines.vertical, col.statsLabel.top = plots.col.statsLabel, col.statsLabel.bottom = plots.col.statsLabel, font.statsLabel = plots.font.statsLabel, font.statsLabel.top = plots.font.statsLabel, font.statsLabel.bottom = plots.font.statsLabel, cex = plots.cex, cex.axis = plots.cex.axis, cex.statsLabel = plots.cex.statsLabel, cex.statsLabel.top = plots.cex.statsLabel.top, cex.statsLabel.bottom = plots.cex.statsLabel.bottom, bg = plots.bg, fg = plots.fg)
                 getBoxHist(x = if(class(x.continuous[, i]) %in% c("Date", "POSIXt", "POSIXct", "POSIXlt")) {unclass(x.continuous[, i])} else {x.continuous[, i]}, na.rm = na.rm, dataObjectName = colnames(x.continuous)[i], digits = digits, plotDensityCurve = plotDensityCurve, plotVerticalLines = plotVerticalLines, plotStatsValues = plotStatsValues, pars = list(line.statsValues.top = line.statsValues.top, line.statsValues.bottom = line.statsValues.bottom), ...)
             }
         }
