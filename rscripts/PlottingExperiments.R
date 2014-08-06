@@ -552,7 +552,8 @@ segments(x0 = x.boxplot.stats[["stats"]][c(1L, 5L)],
 points(x = x.boxplot.stats[["out"]],
        y = rep(boxYValue, times = length(x.boxplot.stats[["out"]])))
 
-mtext(text = paste("Mean (SD)\n", signif(mean(x), digits = 2L), " (", signif(sd(x), digits = 2L), ")", sep = ""), side = 1, line = 3, at = min(x))
+# mtext(text = paste("Mean (SD)\n", signif(mean(x), digits = 2L), " (", signif(sd(x), digits = 2L), ")", sep = ""), side = 1, line = 3, at = min(x))
+mtext(text = paste("Mean (SD)\n", signif(mean(x), digits = 2L), " (", signif(sd(x), digits = 2L), ")", sep = ""), side = 1, line = 3, at = min(pretty(range(x))))
 # mtext(text = c(paste("Q1\n", signif(x.boxplot.stats[["stats"]][2L], digits = 2L), sep = ""), paste("Q2\n", signif(x.boxplot.stats[["stats"]][3L], digits = 2L), sep = ""), paste("Q3\n", signif(x.boxplot.stats[["stats"]][4L], digits = 2L), sep = "")),
 #       side = 3,
 #       line = 0,
