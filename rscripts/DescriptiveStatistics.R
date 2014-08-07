@@ -615,6 +615,7 @@ getResults.byFactors <- function(x, byFactors, x.continuous, requestedStats, na.
 # Define the getBoxHist() function
 getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, digits = 2L, plotDensityCurve = TRUE, plotVerticalLines = TRUE, plotStatsValues = TRUE, pars = list(line.statsValues.top = -1.5, line.statsValues.bottom = 3L), ...) {
     def.par <- par(no.readonly = TRUE)
+    oldXPD <- par("xpd")
     on.exit(layout(1), add = TRUE)
     on.exit(par(def.par), add = TRUE)
     
@@ -721,7 +722,8 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, digits = 2L, plot
     
     nf <- layout(matrix(c(2, 1), nrow = 2, ncol = 1, byrow = TRUE), height = c(1, 3))
     
-    par(mar = c(5.1, 4.1, 0, 2.1), bg = bg, fg = fg)
+#     par(mar = c(5.1, 4.1, 0, 2.1), bg = bg, fg = fg)
+    par(mar = c(5.1, 4.1, 0, 2.1), bg = bg, fg = fg, xpd = FALSE)
     do.call(what = "plot",
             args = c(list(x = x.hist,
                           freq = FALSE,
@@ -760,7 +762,7 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, digits = 2L, plot
     }
 
     # title(main = sprintf("Plots for %s", sQuote(dataObjectName)), col.main = col.main, cex.main = cex.main, font.main = font.main, line = line.main)
-    par(mar = c(0, 4.1, 1.1, 2.1))
+    par(mar = c(0, 4.1, 1.1, 2.1), xpd = FALSE)
     args.plot.boxplot <- pars[c("border", "width", "varwidth", "outline")]
     args.plot.boxplot[["width"]] <- NULL
     args.plot.boxplot[["varwidth"]] <- FALSE
@@ -785,7 +787,7 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, digits = 2L, plot
                             col = col.lines.vertical))
     }
     if(plotStatsValues) {
-        oldXPD <- par()$xpd
+#         oldXPD <- par()$xpd
         par(xpd = TRUE)
         do.call(what = "mtext",
                 args = list(text = paste("Q1", formattedQuartiles[1L], sep = "\n"),
@@ -813,7 +815,8 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, digits = 2L, plot
                             font = font.statsValues.top,
                             cex = cex.statsValues,
                             adj = 0))
-        par(xpd = oldXPD)
+#         par(xpd = oldXPD)
+        par(xpd = FALSE)
     }
     layout(1)
 }
