@@ -614,13 +614,19 @@ getResults.byFactors <- function(x, byFactors, x.continuous, requestedStats, na.
 
 
 # Define the getBoxHist() function
+# getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, digits = 2L, plotDensityCurve = TRUE, plotVerticalLines = TRUE, plotStatsValues = TRUE, pars = list(line.statsValues.top = -1.5, line.statsValues.bottom = 3L), ...) {
+# getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, digits = 2L, plotDensityCurve = TRUE, plotVerticalLines = TRUE, plotStatsValues = TRUE, pars = list(line.statsValues.top = -1.5, line.statsValues.bottom = 3L), col.lines = c("red", "grey"), lwd.lines = 2, lty.lines = c("solid", "solid", "dashed", "dashed", "dashed"), col.fill = "light blue", ...) {
 getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, digits = 2L, plotDensityCurve = TRUE, plotVerticalLines = TRUE, plotStatsValues = TRUE, pars = list(line.statsValues.top = -1.5, line.statsValues.bottom = 3L), ...) {
     def.par <- par(no.readonly = TRUE)
     oldXPD <- par("xpd")
     on.exit(layout(1), add = TRUE)
     on.exit(par(def.par), add = TRUE)
     
-    pars <- c(list(...), pars)
+    backupPars <- list(col.lines = c("red", grey(0.5)),
+                       lwd.lines = 2,
+                       lty.lines = c("solid", "solid", "dashed", "dashed", "dashed"),
+                       col.fill = "light blue")
+    pars <- c(list(...), pars, backupPars)
     pars <- uniquePars <- pars[unique(names(pars))]
     
     # Currently not accepting dates for plotting
