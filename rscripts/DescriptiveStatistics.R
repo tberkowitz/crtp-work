@@ -604,7 +604,8 @@ getResults.continuous <- function(x, requestedStats, na.rm = getOption("na.rm", 
 
 # Define the getResults.byFactors() function
 getResults.byFactors <- function(x, byFactors, x.continuous, requestedStats, na.rm = TRUE, silent = FALSE, digits = 2L, quantile.probs = 0:4/4, quantile.type = 7L, MFV.outputValue = "minimum", statsAreRows = TRUE) {
-    splitList <- byFactorsList <- split(x = x.continuous, f = levels(interaction(x[, byFactors, drop = FALSE], sep = ", ")))
+#     splitList <- byFactorsList <- split(x = x.continuous, f = levels(interaction(x[, byFactors, drop = FALSE], sep = ", ")))
+    splitList <- byFactorsList <- split(x = x.continuous, f = interaction(x[, byFactors, drop = FALSE], sep = ", "))
     for (i in seq_along(splitList)) {
         byFactorsList[[i]] <- getResults.continuous(x = splitList[[i]], requestedStats = requestedStats, na.rm = na.rm, silent = silent, digits = digits, quantile.probs = quantile.probs, quantile.type = quantile.type, MFV.outputValue = MFV.outputValue, statsAreRows = statsAreRows)
     }
@@ -663,11 +664,13 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, digits = 2L, plot
     xlim <- pcycle(pars[["xlim"]], p("xlim"), range(pretty(x)))
     xlab <- pcycle(pars[["xlab"]], p("xlab.hist"), sprintf("Values of %s", sQuote(dataObjectName)))
     ylim.histogram <- pcycle(pars[["ylim.histogram"]], range(pretty(x.hist[["density"]])))
+    if (ylim.histogram[1L] != 0L) ylim.histogram[1L] <- 0L
     ylim.boxplot   <- pcycle(pars[["ylim.boxplot"]], extendrange(range(1), f = 0.04))
     ylab <- pcycle(pars[["ylab"]], p("ylab.hist"), "Relative Frequency")
     if(plotDensityCurve) {
         x.density <- density(x)
         x.density[["y"]] <- x.density[["y"]] * diff(x.hist[["breaks"]])[1L]
+        ylim.histogram[2L] <- max(ylim.histogram[2L], max(x.density[["y"]]))
         lty.lines.density <- pcycle(pars[["lty.lines.density"]], lty.lines[1L], par("lty"))
         lwd.lines.density <- pcycle(pars[["lwd.lines.density"]], lwd.lines[1L], par("lwd"))
         col.lines.density <- pcycle(pars[["col.lines.density"]], col.lines[1L], par("col"))
@@ -799,7 +802,7 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, digits = 2L, plot
                             cex = cex.statsValues,
                             adj = 1))
         do.call(what = "mtext",
-                args = list(text = paste("Q2", formattedQuartiles[1L], sep = "\n"),
+                args = list(text = paste("Q2", formattedQuartiles[2L], sep = "\n"),
                             at = x.verticalStats[2L],
                             side = 3,
                             line = line.statsValues.top,
@@ -987,7 +990,8 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
     # Get subset results
     if(length(byFactors) > 0L && any(output.showStats %in% c("all", "byfactors", "bylevels"))) {
         results[["ByFactors"]] <- getResults.byFactors(x = x, byFactors = byFactors, x.continuous = x.continuous, requestedStats = requestedStats, na.rm = na.rm, silent = silent, digits = digits, quantile.probs = quantile.probs, quantile.type = quantile.type, statsAreRows = output.statsAreRows)
-        x.byFactors <- split(x = x.continuous, f = levels(interaction(x[, byFactors, drop = FALSE], sep = ", ")))
+#         x.byFactors <- split(x = x.continuous, f = levels(interaction(x[, byFactors, drop = FALSE], sep = ", ")))
+        x.byFactors <- split(x = x.continuous, f = interaction(x[, byFactors, drop = FALSE], sep = ", "))
     }
     
     # Get plot results for continuous variables
