@@ -596,4 +596,146 @@ abline(v = c(mean(x), x.boxplot.stats[["stats"]][2L:4L]),
 
 
 
+def.par <- par(no.readonly = TRUE)
+set.seed(0807)
+x <- rnorm(500, sd = 100)
+x <- rnorm(500, sd = 0.01)
+
+x.hist <- hist(x, plot = FALSE)
+x.hist[["density"]] <- x.hist[["counts"]] / sum(x.hist[["counts"]])
+yAxisTicks <- pretty(range(x.hist[["density"]]))
+yAxisTicksStep <- max(abs(diff(yAxisTicks)))
+
+x.boxplot.stats <- boxplot.stats(x)
+
+plot(x.hist,
+     freq = FALSE,
+     axes = FALSE,
+     xlim = range(pretty(range(x))),
+     ylim = range(yAxisTicks) + c(0, 0.75*yAxisTicksStep),
+     xlab = paste("Values of ", sQuote("x"), sep = ""),
+     ylab = "Relative Frequency",
+     main = NULL)
+axis(side = 1,
+     at = pretty(range(x)),
+     pos = extendrange(range(yAxisTicks), f = 0.04))
+axis(side = 2,
+     at = yAxisTicks)
+usr <- par("usr")
+par(xpd = NA)
+
+boxHeight <- 0.8 * yAxisTicksStep
+boxYValue <- max(yAxisTicks) + boxHeight
+
+rect(xleft = x.boxplot.stats[["stats"]][2L],
+     ybottom = boxYValue - (boxHeight / 2),
+     xright = x.boxplot.stats[["stats"]][4L],
+     ytop = boxYValue + (boxHeight / 2),
+     col = NA,
+     border = par("fg"),
+     lty = "solid",
+     lwd = 1)
+# segments(x0 = x.boxplot.stats[["stats"]][c(1L, 3L, 5L)],
+#          y0 = boxYValue - (boxHeight / 2),
+#          x1 = x.boxplot.stats[["stats"]][c(1L, 3L, 5L)],
+#          y1 = boxYValue + (boxHeight / 2),
+#          col = par("fg"),
+#          lty = "solid",
+#          lwd = c(1, 3, 1))
+# segments(x0 = x.boxplot.stats[["stats"]][c(1L, 5L)],
+#          y0 = boxYValue,
+#          x1 = x.boxplot.stats[["stats"]][c(2L, 4L)],
+#          y1 = boxYValue,
+#          col = par("fg"),
+#          lty = "dashed",
+#          lwd = 1)
+segments(x0 = x.boxplot.stats[["stats"]][c(1L, 1L, 3L, 5L, 5L)],
+         y0 = boxYValue - c(boxHeight/2, 0, boxHeight/2, 0, boxHeight/2),
+         x1 = x.boxplot.stats[["stats"]],
+         y1 = boxYValue + c(boxHeight/2, 0, boxHeight/2, 0, boxHeight/2),
+         col = par("fg"),
+         lty = c("solid", "dashed", "solid", "dashed", "solid"),
+         lwd = c(1, 1, 3, 1, 1))
+points(x = x.boxplot.stats[["out"]],
+       y = rep(boxYValue, times = length(x.boxplot.stats[["out"]])))
+
+# mtext(text = paste("Mean (SD)\n", signif(mean(x), digits = 2L), " (", signif(sd(x), digits = 2L), ")", sep = ""), side = 1, line = 3, at = min(pretty(range(x))))
+# mtext(text = paste("Q1\n", signif(x.boxplot.stats[["stats"]][2L], digits = 2L), sep = ""),
+#       side = 3,
+#       at = x.boxplot.stats[["stats"]][2L],
+#       line = 1.5,
+#       adj = 1)
+# mtext(text = paste("Q2\n", signif(x.boxplot.stats[["stats"]][3L], digits = 2L), sep = ""),
+#       side = 3,
+#       at = x.boxplot.stats[["stats"]][3L],
+#       line = 1.5)
+# mtext(text = paste("Q3\n", signif(x.boxplot.stats[["stats"]][4L], digits = 2L), sep = ""),
+#       side = 3,
+#       at = x.boxplot.stats[["stats"]][4L],
+#       line = 1.5,
+#       adj = 0)
+label.meansd <- paste("Mean (SD)\n", signif(mean(x), digits = 2L), " (", signif(sd(x), digits = 2L), ")", sep = "")
+label.q1 <- paste("Q1\n", signif(x.boxplot.stats[["stats"]][2L], digits = 2L), sep = "")
+label.q2 <- paste("Q2\n", signif(x.boxplot.stats[["stats"]][3L], digits = 2L), sep = "")
+label.q3 <- paste("Q3\n", signif(x.boxplot.stats[["stats"]][4L], digits = 2L), sep = "")
+
+# checkOverlap <- function(str1, align1, x1, y1, str2, align2, x2, y2, units = "user", ...) {
+#     swidth1 <- strwidth(str1, units = units, ...)
+#     sheight1 <- strheight(str1, units = units, ...)
+#     swidth2 <- strwidth(str2, units = units, ...)
+#     sheight2 <- strheight(str2, units = units, ...)
+#     
+#     align1 <- match.arg(arg = tolower(align1), choices = c("center", "centre", "left", "right"), several.ok = FALSE)
+#     LR1 <- switch(align1,
+#                   center = x1 + c(-0.5, 0.5) * swidth1,
+#                   centre = x1 + c(-0.5, 0.5) * swidth1,
+#                   left = x1 + c(0, 1) * swidth1,
+#                   right = x1 + c(-1, 0) * swidth1)
+#     BLTR1 <- c(y1 - sheight1/2, LR1[1L], y1 + sheight1/2, LR1[2L])
+#     
+#     align2 <- match.arg(arg = tolower(align2), choices = c("center", "centre", "left", "right"), several.ok = FALSE)
+#     LR2 <- switch(align2,
+#                   center = x2 + c(-0.5, 0.5),
+#                   centre = x2 + c(-0.5, 0.5),
+#                   left = x2 + c(0, 1),
+#                   right = x2 + c(-1, 0))
+#     BLTR2 <- c(y2 - sheight/2, LR2[1L], y2 + sheight/2, LR2[2L])
+# }
+
+checkQuartileOverlap <- function(x, str1, str2, str3, units = "user", ...) {
+    quartiles <- fivenum(x, na.rm = TRUE)[2L:4L]
+    swidths <- strwidth(c(str1, str2, str3), units = units, ...)
+    sheights <- strheight(c(str1, str2, str3), units = units, ...)
+    q1q2 <- quartiles[1L] < quartiles[2L] - 0.5*swidths[2L]
+    q2q3 <- quartiles[2L] + 0.5*swidths[2L] < quartiles[3L]
+}
+
+
+mtext(text = paste("Mean (SD)\n", signif(mean(x), digits = 2L), " (", signif(sd(x), digits = 2L), ")", sep = ""), side = 1, line = 3, at = min(pretty(range(x))))
+mtext(text = paste("Q1\n", signif(x.boxplot.stats[["stats"]][2L], digits = 2L), sep = ""),
+      side = 3,
+      at = x.boxplot.stats[["stats"]][2L],
+      line = 1.5,
+      adj = 1)
+mtext(text = paste("Q2\n", signif(x.boxplot.stats[["stats"]][3L], digits = 2L), sep = ""),
+      side = 3,
+      at = x.boxplot.stats[["stats"]][3L],
+      line = 1.5)
+mtext(text = paste("Q3\n", signif(x.boxplot.stats[["stats"]][4L], digits = 2L), sep = ""),
+      side = 3,
+      at = x.boxplot.stats[["stats"]][4L],
+      line = 1.5,
+      adj = 0)
+
+clip(x1 = min(pretty(range(x))),
+     x2 = max(pretty(range(x))),
+     y1 = extendrange(range(yAxisTicks), f = 0.04)[1L],
+     y2 = boxYValue + (boxHeight / 2))
+abline(v = c(mean(x), x.boxplot.stats[["stats"]][2L:4L]),
+         col = "green3",
+         lty = c("solid", "dashed", "dashed", "dashed"),
+         lwd = 3)
+
+
+
 
