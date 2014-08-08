@@ -819,6 +819,7 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, digits = 2L, plot
         par(xpd = FALSE)
     }
     layout(1)
+    invisible()
 }
 
 
@@ -1151,16 +1152,6 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
 # dev.off()
 
 
-
-
-
-# set.seed(0724)
-# x <- rnorm(100, sd = 100)
-# plot(x)
-# 
-# lucky5 <- sample(seq_along(x), size = 5, replace = FALSE)
-# lucky5pairs <- cbind(x=lucky5,y=x[lucky5])
-# identify(x=lucky5pairs[,1], y=lucky5pairs[,2])
 
 
 
