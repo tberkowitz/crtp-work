@@ -702,12 +702,132 @@ label.q3 <- paste("Q3\n", signif(x.boxplot.stats[["stats"]][4L], digits = 2L), s
 #     BLTR2 <- c(y2 - sheight/2, LR2[1L], y2 + sheight/2, LR2[2L])
 # }
 
-checkQuartileOverlap <- function(x, str1, str2, str3, units = "user", ...) {
+# checkQuartileOverlap <- function(x, str1, str2, str3, units = "user", ...) {
+checkQuartilesOverlap <- function(x, str1, str2, str3, units = "user", ...) {
     quartiles <- fivenum(x, na.rm = TRUE)[2L:4L]
-    swidths <- strwidth(c(str1, str2, str3), units = units, ...)
-    sheights <- strheight(c(str1, str2, str3), units = units, ...)
-    q1q2 <- quartiles[1L] < quartiles[2L] - 0.5*swidths[2L]
-    q2q3 <- quartiles[2L] + 0.5*swidths[2L] < quartiles[3L]
+#     swidths <- strwidth(c(str1, str2, str3), units = units, ...)
+#     sheights <- strheight(c(str1, str2, str3), units = units, ...)
+    swidth2 <- strwidth(str2, units = units, ...)
+    sheight2 <- strheight(str2, units = units, ...)
+#     q1q2 <- quartiles[1L] < quartiles[2L] - 0.5*swidths[2L]
+#     q2q3 <- quartiles[2L] + 0.5*swidths[2L] < quartiles[3L]
+    overlapsQ1 <- !(quartiles[1L] < quartiles[2L] - 0.5*swidth2)
+    overlapsQ3 <- !(quartiles[2L] + 0.5*swidth2 < quartiles[3L])
+#     return(list("overlapsQ1" = overlapsQ1, "overlapsQ3" = overlapsQ3))
+    return(c("overlapsQ1" = overlapsQ1, "overlapsQ3" = overlapsQ3))
+}
+quartilesOverlap <- checkQuartilesOverlap(x = x, str1 = label.q1, str2 = label.q2, str3 = label.q3)
+
+# at.q1 <- x.boxplot.stats[["stats"]][2L]
+# adj.q1 <- 1
+# at.q2 <- x.boxplot.stats[["stats"]][3L]
+# adj.q2 <- 0.5
+# at.q3 <- x.boxplot.stats[["stats"]][4L]
+# adj.q3 <- 0
+# if (any(quartilesOverlap)) {
+#     if (all(quartilesOverlap)) {
+#         at.q1 <- 
+#     }
+#     if (quartilesOverlap[["overlapsQ1"]]) {
+#         adj.q2 <- 0
+#     }
+#     if (quartilesOverlap[["overlapsQ3"]]) {
+#         
+#     }
+# }
+
+# checkQuartilesOverlap <- function(x, str1, str2, str3, at = fivenum(x, na.rm = TRUE)[2L:4L], adj = rep(0.5, times = 3), units = "user", ...) {
+anyOverlap <- function(x, str1, str2, str3, at, adj = rep(0.5, times = 3), cex = par("cex"), digits = 2L) {
+    if (length(dev.list()) < 1L) plot.new()
+#     plotEdges.inches <- par("plt") * rep(par("fin"), each = 2L) # c(x1, x2, y1, y2); NB: diff(plotEdges.inches)[-2L] == par("pin")
+#     plotEdges <- c(grconvertX(plotEdges.inches[1L:2L], from = "inches", to = "user"), grconvertY(plotEdges.inches[3L:4L], from = "inches", to = "user"))
+    plotEdges.inches <- par("plt")[1L:2L] * par("fin")[1L]
+    plotEdges <- grconvertX(plotEdges.inches, from = "inches", to = "user")
+    
+    quartileValues <- fivenum(x, na.rm = TRUE)[2L:4L]
+    if (missing(at)) at <- quartileValues
+    if (missing(str1) || !nzchar(str1) || !is.character(str1)) {
+        str1 <- paste("Q1\n", signif(quartileValues[1L], digits = digits), sep = "")
+    }
+    if (missing(str2) || !nzchar(str2) || !is.character(str2)) {
+        str2 <- paste("Q2\n", signif(quartileValues[2L], digits = digits), sep = "")
+    }
+    if (missing(str3) || !nzchar(str3) || !is.character(str3)) {
+        str3 <- paste("Q3\n", signif(quartileValues[3L], digits = digits), sep = "")
+    }
+    strings <- c(str1, str2, str3)
+#     stringWidths <- grconvertX(strwidth(strings, units = units, ...), from = units, to = "user")
+    stringWidths <- strwidth(strings, units = "user", cex = cex)
+    stringEdges.left <- at - (adj * stringWidths)
+    stringEdges.right <- at + ((1 - adj) * stringWidths)
+#     stringEdges.extremes.inches <- grconvertX(c(stringEdges.left[1L], stringEdges.right[3L]), from = "user", to = "inches")
+    
+#     anyOverlap <- any(stringEdges.left[-1L] <= stringEdges.right[-3L])
+#     anyOverhang <- any(plotEdges.inches[1L] > stringEdges.extremes.inches[1L], plotEdges.inches[2L] < stringEdges.extremes.inches[2L])
+#     any(c(stringEdges.left, plotEdges[2L]) <= c(plotEdges[1L], stringEdges.right))
+    c(stringEdges.left, plotEdges[2L]) <= c(plotEdges[1L], stringEdges.right)
+}
+
+handleQuartilesPlacement <- function(x, str1, str2, str3, line = 1.5, units = "user", digits = 2L, cex = par("cex"), ...) {
+    quartileValues <- fivenum(x, na.rm = TRUE)[2L:4L]
+    if (missing(str1) || !nzchar(str1) || !is.character(str1)) {
+        str1 <- paste("Q1\n", signif(quartileValues[1L], digits = digits), sep = "")
+    }
+    if (missing(str2) || !nzchar(str2) || !is.character(str2)) {
+        str2 <- paste("Q2\n", signif(quartileValues[2L], digits = digits), sep = "")
+    }
+    if (missing(str3) || !nzchar(str3) || !is.character(str3)) {
+        str3 <- paste("Q3\n", signif(quartileValues[3L], digits = digits), sep = "")
+    }
+    strings <- c(str1, str2, str3)
+    stringWidths <- grconvertX(strwidth(strings, units = units, ...), from = units, to = "user")
+#     stringWidths.inches <- grconvertX(stringWidths, from = "user", to = "inches")
+#     side <- rep(3, length.out = length(strings))
+#     line <- rep(line, length.out = length(strings))
+    side <- rep(3, length.out = 3L)
+    line <- rep(line, length.out = 3L)
+    at <- quartileValues
+    adj <- c(1, 0.5, 0)
+#     stringEdges <- list()
+#     stringEdges[["Left"]] <- quartileValues - (adj * stringWidths)
+#     stringEdges[["Right"]] <- quartileValues + (abs(1 - adj) * stringWidths)
+#     if (all(stringEdges[["Left"]][-1L] >= stringEdges[["Right"]][-3L])) {
+    stringEdges.left <- quartileValues - (adj * stringWidths)
+    stringEdges.right <- quartileValues + (abs(1 - adj) * stringWidths)
+    anyOverlap <- any(stringEdges.left[-1L] <= stringEdges.right[-3L])
+#     stringEdges.extremes <- c(stringEdges.left[1L], stringEdges.right[3L])
+#     stringEdges.extremes.inches <- grconvertX(stringEdges.extremes, from = units, to = "inches")
+    stringEdges.extremes.inches <- grconvertX(c(stringEdges.left[1L], stringEdges.right[3L]), from = "user", to = "inches")
+    plotLocation.inches <- par("plt") * rep(par("fin"), each = 2L) # c(x1, x2, y1, y2); NB: diff(plotLocation.inches)[-2L] == par("pin")
+    anyOverhang <- any(plotLocation.inches[1L] > stringEdges.extremes.inches[1L], plotLocation.inches[2L] < stringEdges.extremes.inches[2L])
+#     if (all(stringEdges.left[-1L] >= stringEdges.right[-3L])) {
+    if (!anyOverlap && !anyOverhang) {
+        return(list(side = side, line = line, at = at, adj = adj))
+    }
+    if (anyOverlap && anyOverhang) {
+        stop("I have no clue how to handle this request.")
+    }
+    diffBreaks <- diff(hist(x, plot = FALSE)[["breaks"]])[1L]
+    
+    overlapsQ1 <- quartileValues[1L] >= quartileValues[2L] - (stringWidths[2L] / 2)
+    overlapsQ3 <- quartileValues[3L] <= quartileValues[2L] + (stringWidths[2L] / 2)
+#     outOfBoundsQ1 <- grconvertquartileValues[1L]
+#     usr <- par("usr")
+    outOfBoundsQ1 <- quartileValues.inches[1L] - stringWidths.inches[1L] < 0L
+    
+    if (any(overlapsQ1, overlapsQ3)) {
+        if (all(overlapsQ1, overlapsQ3)) {
+            at <- quartileValues + c(-diffBreaks/2, 0, diffBreaks/2)
+            adj <- rep(0.5, times = 3L)
+        } else {
+            if (overlapsQ1) {
+                
+            }
+            if (overlapsQ3) {
+                
+            }
+        }
+    }
 }
 
 
@@ -735,6 +855,18 @@ abline(v = c(mean(x), x.boxplot.stats[["stats"]][2L:4L]),
          col = "green3",
          lty = c("solid", "dashed", "dashed", "dashed"),
          lwd = 3)
+
+
+
+# For making my own boxplot, the boxplot region using the layout method
+# goes from y = 0.46 to y = 1.54, with the boxplot on the line y = 1.
+# This is the whole y-dimension of the plot if par(mar=c(0,4.1,0,2.1)).
+# 
+# 
+
+
+
+
 
 
 
