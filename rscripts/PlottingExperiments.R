@@ -765,7 +765,10 @@ anyOverlap <- function(x, str1, str2, str3, at, adj = rep(0.5, times = 3), cex =
 #     anyOverlap <- any(stringEdges.left[-1L] <= stringEdges.right[-3L])
 #     anyOverhang <- any(plotEdges.inches[1L] > stringEdges.extremes.inches[1L], plotEdges.inches[2L] < stringEdges.extremes.inches[2L])
 #     any(c(stringEdges.left, plotEdges[2L]) <= c(plotEdges[1L], stringEdges.right))
-    c(stringEdges.left, plotEdges[2L]) <= c(plotEdges[1L], stringEdges.right)
+#     c(stringEdges.left, plotEdges[2L]) <= c(plotEdges[1L], stringEdges.right)
+    results <- c(stringEdges.left, plotEdges[2L]) <= c(plotEdges[1L], stringEdges.right)
+    names(results) <- c("Q1<L", "Q2<Q1", "Q3<Q2", "R<Q3")
+    return(results)
 }
 
 handleQuartilesPlacement <- function(x, str1, str2, str3, line = 1.5, units = "user", digits = 2L, cex = par("cex"), ...) {
