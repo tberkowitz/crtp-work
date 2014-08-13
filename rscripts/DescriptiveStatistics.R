@@ -212,7 +212,7 @@ fivenum.datesOK <- function(x, na.rm = TRUE) {
 
 # Define the checkColumns() function
 checkColumns <- function(x, columns = "all", dataObjectName = NULL, keepColumnNames = TRUE, ignore = NULL){
-    # Define the function pasteWrap(), custom-made function meant
+    # Define the function pasteWrap(), a custom-made function meant
     # only for use inide this (checkColumns()) function to faciliate
     # readable error and warning printing to the console
     pasteWrap <- function(msg, dataObjectName, what, width = 0.95 * getOption("width")) {
@@ -984,7 +984,8 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
     }
     
     # Get subset results
-    if(length(byFactors) > 0L && any(output.showStats %in% c("all", "byfactors", "bylevels"))) {
+#     if(length(byFactors) > 0L && any(output.showStats %in% c("all", "byfactors", "bylevels"))) {
+    if(length(byFactors) > 0L && ((any(output.showStats %in% c("all", "byfactors", "bylevels"))) || (plots && length(plotData) > 0L && any(plotData %in% c("all", "byfactors", "bylevels"))))) {
         results[["ByFactors"]] <- getResults.byFactors(x = x, byFactors = byFactors, x.continuous = x.continuous, requestedStats = requestedStats, na.rm = na.rm, silent = silent, digits = digits, quantile.probs = quantile.probs, quantile.type = quantile.type, statsAreRows = output.statsAreRows)
         x.byFactors <- split(x = x.continuous, f = interaction(x[, byFactors, drop = FALSE], sep = ", "))
     }
