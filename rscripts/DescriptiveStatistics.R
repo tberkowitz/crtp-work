@@ -365,7 +365,15 @@ getResults.categorical <- function(x, na.rm = FALSE, emptyCellSymbol = "", maxLe
     x <- data.frame(x, check.names = FALSE, stringsAsFactors = TRUE)
     
     # Check if each factor has missing values
-    hasNA <- sapply(X = x, FUN = anyNA)
+    ## NB: anyNA() was added as a new function in R 3.1.0
+    # hasNA <- sapply(X = x, FUN = anyNA)
+    # hasNA <- if (exists("anyNA")) { # <- this could be dangerous (if user has defined a function named 'anyNA')
+    userVersion <- utils::type.convert(unlist(strsplit(x = paste(R.Version()[["major"]], R.version()[["minor"]], sep = "."))))
+    hasNA <- if (userVersion[1L] >= 3 && userVersion[2L] >= 1 && userVersion[3L] >= 0) {
+        sapply(X = x, FUN = anyNA)
+    } else {
+        sapply(X = x, FUN = function(y) {any(is.na(y))})
+    }
     
     # If there are no missing values for any of the factors, then
     # don't bother worrying about including information about them
