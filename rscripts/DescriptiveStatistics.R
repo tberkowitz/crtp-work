@@ -628,7 +628,9 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, digits = 2L, plot
     on.exit(layout(1), add = TRUE)
     on.exit(par(def.par), add = TRUE)
     
-    backupPars <- list(col.lines = c("red", grey(0.5)),
+#     backupPars <- list(col.lines = c("red", grey(0.5)),
+    ## Change of line color on recommendation of SCG implemented on 2014-08-18
+    backupPars <- list(col.lines = c("red", "black"),
                        lwd.lines = 2,
                        lty.lines = c("solid", "solid", "dashed", "dashed", "dashed"),
                        col.fill = "light blue")
@@ -1069,7 +1071,8 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
                 for(j in seq_along(results[i][[1L]])) {
                     rtf::addText(rtf, names(results[i][[1L]])[j], italic = TRUE)
                     rtf::addNewLine(rtf)
-                    rtf::addTable(rtf, results[i][[1L]][[j]])
+#                     rtf::addTable(rtf, results[i][[1L]][[j]]) ## Bug reported by SCG on 2014-08-18
+                    rtf::addTable(rtf, results[i][[1L]][[j]], row.names = TRUE)
                     rtf::addNewLine(rtf)
                 }
             } else {
