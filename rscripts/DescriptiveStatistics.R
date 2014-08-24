@@ -613,10 +613,14 @@ getResults.continuous <- function(x, requestedStats, na.rm = getOption("na.rm", 
 
 # Define the getResults.byFactors() function
 getResults.byFactors <- function(x, byFactors, x.continuous, requestedStats, na.rm = TRUE, silent = FALSE, digits = 2L, quantile.probs = 0:4/4, quantile.type = 7L, MFV.outputValue = "minimum", statsAreRows = TRUE) {
-    splitList <- byFactorsList <- split(x = x.continuous, f = interaction(x[, byFactors, drop = FALSE], sep = ", "))
+#     splitList <- byFactorsList <- split(x = x.continuous, f = interaction(x[, byFactors, drop = FALSE], sep = ", "))
+    factorInteractions <- interaction(x[, byFactors, drop = FALSE], sep = ".")
+    splitList <- byFactorsList <- split(x = x.continuous, f = factorInteractions)
     for (i in seq_along(splitList)) {
         byFactorsList[[i]] <- getResults.continuous(x = splitList[[i]], requestedStats = requestedStats, na.rm = na.rm, silent = silent, digits = digits, quantile.probs = quantile.probs, quantile.type = quantile.type, MFV.outputValue = MFV.outputValue, statsAreRows = statsAreRows)
     }
+    # sapply(X=strsplit(x=levels(interaction(warpbreaks[,c("tension","wool")])),split="\\."),FUN=function(x){paste(c("tension","wool"),x,sep="=", collapse=", ")})
+    names(byFactorsList) <- sapply(X = strsplit(x = levels(factorInteractions), split = "\\."), FUN = function(x) {paste(byFactors, x, sep = "=", collapse = ", ")})
     return(byFactorsList)
 }
 
