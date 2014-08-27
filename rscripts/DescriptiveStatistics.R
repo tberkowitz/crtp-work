@@ -626,7 +626,8 @@ getResults.byFactors <- function(x, byFactors, x.continuous, requestedStats, na.
 
 
 # Define the getBoxHist() function
-getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, byFactorsLevels = NULL, digits = 2L, plotDensityCurve = TRUE, plotVerticalLines = TRUE, plotStatsValues = TRUE, pars = list(line.statsValues.top = -1.5, line.statsValues.bottom = 3L), ...) {
+# getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, byFactorsLevels = NULL, digits = 2L, plotDensityCurve = TRUE, plotVerticalLines = TRUE, plotStatsValues = TRUE, pars = list(line.statsValues.top = -1.5, line.statsValues.bottom = 3L), ...) {
+getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, byFactorsLevels = NULL, digits = 2L, plotDensityCurve = TRUE, plotVerticalLines = TRUE, plotStatsValues = TRUE, pars = list(line.statsValues.top = -1.5, line.statsValues.bottom = 3L), qlegendx=1, ...) {
     def.par <- par(no.readonly = TRUE)
     oldXPD <- par("xpd")
     on.exit(layout(1), add = TRUE)
@@ -793,6 +794,15 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, byFactorsLevels =
     args.plot.boxplot <- pars[c("border", "width", "varwidth", "outline")]
     args.plot.boxplot[["width"]] <- NULL
     args.plot.boxplot[["varwidth"]] <- FALSE
+#     do.call(what = "boxplot",
+#             args = c(list(x = x,
+#                           frame = FALSE,
+#                           axes = FALSE,
+#                           horizontal = TRUE,
+#                           ylim = xlim,
+#                           col = col.fill.boxplot,
+#                           boxwex = 0.8),
+#                      args.plot.boxplot))
     do.call(what = "boxplot",
             args = c(list(x = x,
                           frame = FALSE,
@@ -800,7 +810,8 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, byFactorsLevels =
                           horizontal = TRUE,
                           ylim = xlim,
                           col = col.fill.boxplot,
-                          boxwex = 0.8),
+                          boxwex = 0.8,
+                          xlim = extendrange(r = c(0.5, 1.5), f = 0.04) + 0.2),
                      args.plot.boxplot))
     if(plotVerticalLines) {
         do.call(what = "segments",
@@ -831,16 +842,34 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, byFactorsLevels =
                             col = col.statsValues.top,
                             font = font.statsValues.top,
                             cex = cex.statsValues))
-        do.call(what = "mtext",
-                args = list(text = paste("Q3", formattedQuartiles[3L], sep = "\n"),
-                            at = x.verticalStats[4L],
-                            side = 3,
-                            line = line.statsValues.top,
-                            col = col.statsValues.top,
-                            font = font.statsValues.top,
-                            cex = cex.statsValues,
-                            adj = 0))
+#         do.call(what = "mtext",
+#                 args = list(text = paste("Q3", formattedQuartiles[3L], sep = "\n"),
+#                             at = x.verticalStats[4L],
+#                             side = 3,
+#                             line = line.statsValues.top,
+#                             col = col.statsValues.top,
+#                             font = font.statsValues.top,
+#                             cex = cex.statsValues,
+#                             adj = 0))
         par(xpd = FALSE)
+        do.call(what = "legend",
+                args = list(x = "topright",
+                            legend = c("Mean (SD)", formattedMeanSD),
+                            bty = "n",
+                            y.intersp = 0.7,
+                            text.col = col.statsValues.bottom,
+                            text.font = font.statsValues.bottom,
+                            cex = cex.statsValues.bottom))
+        do.call(what = "legend",
+                args = list(x = qlegendx,
+                            legend = c("Q3", formattedQuartiles[3L]),
+                            bty = "n",
+                            xpd = TRUE,
+                            text.col = col.statsValues.top,
+                            text.font = font.statsValues.top,
+                            cex = cex.statsValues,
+                            adj = 0,
+                            y.intersp = 0.75))
     }
     layout(1)
     invisible()
