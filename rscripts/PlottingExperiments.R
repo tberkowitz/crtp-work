@@ -874,3 +874,81 @@ abline(v = c(mean(x), x.boxplot.stats[["stats"]][2L:4L]),
 
 
 
+def.par <- par(no.readonly = TRUE)
+set.seed(0724)
+x <- rnorm(500, sd = 100)
+# x <- rnorm(500, sd = 0.01)
+
+na.rm <- TRUE
+digits <- 2L
+
+x.hist <- hist(x, plot = FALSE)
+x.hist[["density"]] <- x.hist[["counts"]] / sum(x.hist[["counts"]])
+
+x.boxplot.stats <- boxplot.stats(x)[["stats"]]
+
+height.boxplot <- 1
+height.histogram <- 3
+verticalDeviceRatio.boxplot <- height.boxplot / (height.boxplot + height.histogram)
+verticalDeviceRatio.histogram <- 1 - verticalDeviceRatio.boxplot
+
+nf <- layout(matrix(c(2, 1), nrow = 2, ncol = 1, byrow = TRUE), height = c(height.boxplot, height.histogram))
+par(mar = c(5.1, 4.1, 0, 2.1))
+plot(x.hist, freq = FALSE, ylab = "Relative Frequency", xlim = range(pretty(x)), ylim = range(pretty(x.hist[["density"]])), main = NULL)
+
+par(mar = c(0, 4.1, 0, 2.1))
+boxplot(x, frame = FALSE, axes = FALSE, horizontal = TRUE, ylim = range(pretty(x)), xaxt = "n", yaxt = "n", xlim = c(0.6, 1.8))
+
+x.mean <- mean(x, na.rm = na.rm)
+x.sd <- sd(x, na.rm = na.rm)
+x.lowerhinge <- x.boxplot.stats[2L]
+x.median <- x.boxplot.stats[3L]
+x.upperhinge <- x.boxplot.stats[4L]
+x.verticalStats <- c(x.mean, x.median, x.lowerhinge, x.upperhinge)
+formattedMean <- signif(x.mean, digits = digits)
+formattedSD <- signif(x.sd, digits = digits)
+formattedMeanSD <- paste(formattedMean, " (", formattedSD, ")", sep = "")
+formattedQ1 <- paste(signif(x.lowerhinge, digits = digits), sep = "")
+formattedQ2 <- paste(signif(x.median, digits = digits), sep = "")
+formattedQ3 <- paste(signif(x.upperhinge, digits = digits), sep = "")
+formattedQuartiles <- c(formattedQ1, formattedQ2, formattedQ3)
+
+par(xpd = TRUE)
+do.call(what = "mtext",
+        args = list(text = paste("Q1", formattedQuartiles[1L], sep = "\n"),
+                    at = x.verticalStats[3L],
+                    side = 3,
+                    line = -2,
+                    col = "black",
+                    font = 1,
+                    cex = 1,
+                    adj = 1))
+do.call(what = "mtext",
+        args = list(text = paste("Q2", formattedQuartiles[2L], sep = "\n"),
+                    at = x.verticalStats[2L],
+                    side = 3,
+                    line = -2,
+                    col = "black",
+                    font = 1,
+                    cex = 1))
+do.call(what = "mtext",
+        args = list(text = paste("Q3", formattedQuartiles[3L], sep = "\n"),
+                    at = x.verticalStats[4L],
+                    side = 3,
+                    line = -2,
+                    col = "black",
+                    font = 1,
+                    cex = 1,
+                    adj = 0))
+par(xpd = FALSE)
+
+legend("topright", legend = c("Mean (SD)", formattedMeanSD), bty = "n")
+
+layout(1)
+dev.off()
+
+
+
+
+
+
