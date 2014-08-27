@@ -614,7 +614,6 @@ getResults.continuous <- function(x, requestedStats, na.rm = getOption("na.rm", 
 
 # Define the getResults.byFactors() function
 getResults.byFactors <- function(x, byFactors, x.continuous, requestedStats, na.rm = TRUE, silent = FALSE, digits = 2L, quantile.probs = 0:4/4, quantile.type = 7L, MFV.outputValue = "minimum", statsAreRows = TRUE) {
-#     splitList <- byFactorsList <- split(x = x.continuous, f = interaction(x[, byFactors, drop = FALSE], sep = ", "))
     factorInteractions <- interaction(x[, byFactors, drop = FALSE], sep = ".")
     splitList <- byFactorsList <- split(x = x.continuous, f = factorInteractions)
     for (i in seq_along(splitList)) {
@@ -627,14 +626,12 @@ getResults.byFactors <- function(x, byFactors, x.continuous, requestedStats, na.
 
 
 # Define the getBoxHist() function
-# getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, digits = 2L, plotDensityCurve = TRUE, plotVerticalLines = TRUE, plotStatsValues = TRUE, pars = list(line.statsValues.top = -1.5, line.statsValues.bottom = 3L), ...) {
 getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, byFactorsLevels = NULL, digits = 2L, plotDensityCurve = TRUE, plotVerticalLines = TRUE, plotStatsValues = TRUE, pars = list(line.statsValues.top = -1.5, line.statsValues.bottom = 3L), ...) {
     def.par <- par(no.readonly = TRUE)
     oldXPD <- par("xpd")
     on.exit(layout(1), add = TRUE)
     on.exit(par(def.par), add = TRUE)
     
-#     backupPars <- list(col.lines = c("red", grey(0.5)),
     ## Change of line color on recommendation of SCG implemented on 2014-08-18
     backupPars <- list(col.lines = c("red", "black"),
                        lwd.lines = 2,
@@ -692,10 +689,10 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, byFactorsLevels =
     # Retrieved 2014-07-22 (slight modification): http://stackoverflow.com/a/9122859
     x.hist[["density"]] <- x.hist[["counts"]] / sum(x.hist[["counts"]])
     xlim <- pcycle(pars[["xlim"]], p("xlim"), range(pretty(x)))
-#     xlab <- pcycle(pars[["xlab"]], p("xlab.hist"), sprintf("Values of %s", sQuote(dataObjectName)))
     xlab <- paste(pcycle(pars[["xlab"]], p("xlab.hist"), gettextf("Values of %s", sQuote(dataObjectName))), xlab.byFactorsMessage, sep = "")
     ylim.histogram <- pcycle(pars[["ylim.histogram"]], range(pretty(x.hist[["density"]])))
-    if (ylim.histogram[1L] != 0L) ylim.histogram[1L] <- 0L
+#     if (ylim.histogram[1L] != 0L) ylim.histogram[1L] <- 0L
+    ylim.histogram[1L] <- 0L
     ylim.boxplot <- pcycle(pars[["ylim.boxplot"]], extendrange(range(1), f = 0.04))
     ylab <- pcycle(pars[["ylab"]], p("ylab.hist"), "Relative Frequency")
     if(plotDensityCurve) {
@@ -721,7 +718,6 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, byFactorsLevels =
         formattedSD <- signif(x.sd, digits = digits)
         formattedMeanSD <- paste(formattedMean, " (", formattedSD, ")", sep = "")
         # formattedQuartiles <- formatC(c(x.median, x.lowerhinge, x.upperhinge), format = "f", digits = digits)
-        # formattedQuartiles <- signif(c(x.median, x.lowerhinge, x.upperhinge), digits = digits)
         formattedQ1 <- paste(signif(x.lowerhinge, digits = digits), sep = "")
         formattedQ2 <- paste(signif(x.median, digits = digits), sep = "")
         formattedQ3 <- paste(signif(x.upperhinge, digits = digits), sep = "")
@@ -1012,10 +1008,8 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
     }
     
     # Get subset results
-#     if(length(byFactors) > 0L && any(output.showStats %in% c("all", "byfactors", "bylevels"))) {
     if(length(byFactors) > 0L && ((any(output.showStats %in% c("all", "byfactors", "bylevels"))) || (plots && length(plotData) > 0L && any(plotData %in% c("all", "byfactors", "bylevels"))))) {
         results[["ByFactors"]] <- getResults.byFactors(x = x, byFactors = byFactors, x.continuous = x.continuous, requestedStats = requestedStats, na.rm = na.rm, silent = silent, digits = digits, quantile.probs = quantile.probs, quantile.type = quantile.type, statsAreRows = output.statsAreRows)
-        # x.byFactors <- split(x = x.continuous, f = interaction(x[, byFactors, drop = FALSE], sep = ", "))
         factorInteractions <- interaction(x[, byFactors, drop = FALSE], sep = ".")
         x.byFactors <- split(x = x.continuous, f = factorInteractions)
         names(x.byFactors) <- sapply(X = strsplit(x = levels(factorInteractions), split = "\\."), FUN = function(x) {paste(byFactors, x, sep = "=", collapse = ", ")})
@@ -1059,7 +1053,6 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
         if (any(plotData %in% c("all", "byfactors", "bylevels")) && length(results[["ByFactors"]]) > 0L) {
             for (j in seq_along(x.byFactors)) {
                 for (i in seq_len(NCOL(x.byFactors[[j]]))) {
-#                     getBoxHist(x = x.byFactors[[j]][, i], na.rm = na.rm, dataObjectName = colnames(x.byFactors[[j]])[i], digits = digits, plotDensityCurve = plotDensityCurve, plotVerticalLines = plotVerticalLines, plotStatsValues = plotStatsValues, pars = list(line.statsValues.top = line.statsValues.top, line.statsValues.bottom = line.statsValues.bottom), ...)
                     getBoxHist(x = x.byFactors[[j]][, i], na.rm = na.rm, dataObjectName = colnames(x.byFactors[[j]])[i], byFactorsLevels = names(x.byFactors)[j], digits = digits, plotDensityCurve = plotDensityCurve, plotVerticalLines = plotVerticalLines, plotStatsValues = plotStatsValues, pars = list(line.statsValues.top = line.statsValues.top, line.statsValues.bottom = line.statsValues.bottom), ...)
                 }
             }
