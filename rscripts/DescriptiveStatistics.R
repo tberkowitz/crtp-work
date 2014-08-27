@@ -370,7 +370,8 @@ getResults.categorical <- function(x, na.rm = FALSE, emptyCellSymbol = "", maxLe
     # hasNA <- if (exists("anyNA")) { # <- this could be dangerous (if user has defined a function named 'anyNA')
     userVersion <- utils::type.convert(unlist(strsplit(x = paste(R.Version()[["major"]], R.Version()[["minor"]], sep = "."), split = "\\.")))
     # hasNA <- if (userVersion[1L] >= 3 && userVersion[2L] >= 1 && userVersion[3L] >= 0) {
-    hasNA <- if (all(userVersion >= c(3, 1, 0))) {
+    # hasNA <- if (all(userVersion >= c(3, 1, 0))) {
+    hasNA <- if ((userVersion[1L] > 3L) || (all(userVersion >= c(3L, 1L, 0L)))) {
         sapply(X = x, FUN = anyNA)
     } else {
         sapply(X = x, FUN = function(y) {any(is.na(y))})
