@@ -627,10 +627,12 @@ getResults.byFactors <- function(x, byFactors, x.continuous, requestedStats, na.
 
 # Define the getBoxHist() function
 # getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, byFactorsLevels = NULL, digits = 2L, plotDensityCurve = TRUE, plotVerticalLines = TRUE, plotStatsValues = TRUE, pars = list(line.statsValues.top = -1.5, line.statsValues.bottom = 3L), ...) {
-getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, byFactorsLevels = NULL, digits = 2L, plotDensityCurve = TRUE, plotVerticalLines = TRUE, plotStatsValues = TRUE, pars = list(line.statsValues.top = -1.5, line.statsValues.bottom = 3L), qlegendx=1, ...) {
+# getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, byFactorsLevels = NULL, digits = 2L, plotDensityCurve = TRUE, plotVerticalLines = TRUE, plotStatsValues = TRUE, pars = list(line.statsValues.top = -1.5, line.statsValues.bottom = 3L), qlegendx=1, ...) {
+# getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, byFactorsLevels = NULL, digits = 2L, plotDensityCurve = TRUE, plotVerticalLines = TRUE, plotStatsValues = TRUE, pars = list(line.statsValues.top = -1.5, line.statsValues.bottom = 3L), legend.adj = c(0, 0.5), vline = FALSE, hline = FALSE, legend.xjust = 0, legend.yjust = 1, ...) {
+getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, byFactorsLevels = NULL, digits = 2L, plotDensityCurve = TRUE, plotVerticalLines = TRUE, plotStatsValues = TRUE, pars = list(line.statsValues.quartiles = -1.5, line.statsValues.meanSD = 3L), ...) {
     def.par <- par(no.readonly = TRUE)
     oldXPD <- par("xpd")
-    on.exit(layout(1), add = TRUE)
+    on.exit(layout(1, heights = 1, widths = 1), add = TRUE)
     on.exit(par(def.par), add = TRUE)
     
     ## Change of line color on recommendation of SCG implemented on 2014-08-18
@@ -669,8 +671,10 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, byFactorsLevels =
         xlab.byFactorsMessage <- NULL
     }
     
-    line.statsValues.top <- pcycle(pars[["line.statsValues.top"]], p("line.statsValues")[1L], -1.5)
-    line.statsValues.bottom <- pcycle(pars[["line.statsValues.bottom"]], if (length(p("line.statsValues"))) p("line.statsValues")[2L] else p("line.statsValues"), 3L)
+#     line.statsValues.top <- pcycle(pars[["line.statsValues.top"]], p("line.statsValues")[1L], -1.5)
+#     line.statsValues.bottom <- pcycle(pars[["line.statsValues.bottom"]], if (length(p("line.statsValues"))) p("line.statsValues")[2L] else p("line.statsValues"), 3L)
+    line.statsValues.quartiles <- pcycle(pars[["line.statsValues.quartiles"]], p("line.statsValues")[1L], -1.5)
+    line.statsValues.meanSD <- pcycle(pars[["line.statsValues.meanSD"]], if (length(p("line.statsValues"))) p("line.statsValues")[2L] else p("line.statsValues"), 3L)
     
     col.fill <- pcycle(pars[["col.fill"]], p("fill"))
     col.fill.histogram <- pcycle(pars[["col.fill.histogram"]], col.fill)
@@ -694,7 +698,8 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, byFactorsLevels =
     ylim.histogram <- pcycle(pars[["ylim.histogram"]], range(pretty(x.hist[["density"]])))
 #     if (ylim.histogram[1L] != 0L) ylim.histogram[1L] <- 0L
     ylim.histogram[1L] <- 0L
-    ylim.boxplot <- pcycle(pars[["ylim.boxplot"]], extendrange(range(1), f = 0.04))
+#     ylim.boxplot <- pcycle(pars[["ylim.boxplot"]], extendrange(range(1), f = 0.04))
+    ylim.boxplot <- pcycle(pars[["ylim.boxplot"]], extendrange(r = range(1 + c(-0.5, 0.5)), f = 0.04))
     ylab <- pcycle(pars[["ylab"]], p("ylab.hist"), "Relative Frequency")
     if(plotDensityCurve) {
         x.density <- density(x)
@@ -707,37 +712,62 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, byFactorsLevels =
     if(plotVerticalLines || plotStatsValues) {
         x.mean <- mean(x, na.rm = na.rm)
         x.sd <- sd(x, na.rm = na.rm)
+        ## NB: The boxplot stats that are returned are: minimum, lower
+        ## hinge, median, upper hinge, maximum. No quartiles are
+        ## returned at any point; however, for labeling purposes and
+        ## so that the output is easier to explain in an introductory
+        ## statistics course setting, the lower and upper hinges will
+        ## be referred to as the first and third quartiles,
+        ## respectively. Since they aren't usually *too* different in
+        ## value from each other, this should not be a problem very
+        ## often, if at all.
+        ## The reason I'm not simply using the actual quartile values
+        ## is because the boxplot is drawn using the hinge values, not
+        ## the quartiles, and I want the labels to properly line up
+        ## with the box boundaries.
         x.whisker.minimum <- x.boxplot.stats[1L]
-        x.lowerhinge <- x.boxplot.stats[2L]
+#         x.lowerhinge <- x.boxplot.stats[2L]
+        x.quartile1 <- x.boxplot.stats[2L]
         x.median <- x.boxplot.stats[3L]
-        x.upperhinge <- x.boxplot.stats[4L]
+#         x.upperhinge <- x.boxplot.stats[4L]
+        x.quartile3 <- x.boxplot.stats[4L]
         x.whisker.maximum <- x.boxplot.stats[5L]
-        x.verticalStats <- c(x.mean, x.median, x.lowerhinge, x.upperhinge)
+#         x.verticalStats <- c(x.mean, x.median, x.lowerhinge, x.upperhinge)
+        x.verticalStats <- c("Mean" = x.mean, "Median" = x.median, "Quartile1" = x.quartile1, "Quartile3" = x.quartile3)
         # formattedMean <- formatC(x.mean, format = "f", digits = digits)
         # formattedSD <- formatC(x.sd, format = "f", digits = digits)
         formattedMean <- signif(x.mean, digits = digits)
         formattedSD <- signif(x.sd, digits = digits)
         formattedMeanSD <- paste(formattedMean, " (", formattedSD, ")", sep = "")
         # formattedQuartiles <- formatC(c(x.median, x.lowerhinge, x.upperhinge), format = "f", digits = digits)
-        formattedQ1 <- paste(signif(x.lowerhinge, digits = digits), sep = "")
-        formattedQ2 <- paste(signif(x.median, digits = digits), sep = "")
-        formattedQ3 <- paste(signif(x.upperhinge, digits = digits), sep = "")
-        formattedQuartiles <- c(formattedQ1, formattedQ2, formattedQ3)
+#         formattedQ1 <- paste(signif(x.lowerhinge, digits = digits), sep = "")
+#         formattedQ2 <- paste(signif(x.median, digits = digits), sep = "")
+#         formattedQ3 <- paste(signif(x.upperhinge, digits = digits), sep = "")
+        formattedQuartile1 <- paste(signif(x.quartile1, digits = digits), sep = "")
+        formattedMedian <- paste(signif(x.median, digits = digits), sep = "")
+        formattedQuartile3 <- paste(signif(x.quartile3, digits = digits), sep = "")
+        formattedQuartiles <- c("Quartile1" = formattedQuartile1, "Median" = formattedMedian, "Quartile3" = formattedQuartile3)
         
         lty.lines.vertical <- pcycle(pars[["lty.lines.vertical"]], if (length(lty.lines) > 1L) lty.lines[-1L] else lty.lines, par("lty"))
         lwd.lines.vertical <- pcycle(pars[["lwd.lines.vertical"]], if (length(lwd.lines) > 1L) lwd.lines[-1L] else lwd.lines, par("lwd"))
         col.lines.vertical <- pcycle(pars[["col.lines.vertical"]], if (length(col.lines) > 1L) col.lines[-1L] else col.lines, par("col"))
         col.statsValues <- pcycle(pars[["col.statsValues"]], col.lines.vertical, par("col"))
-        col.statsValues.top <- pcycle(pars[["col.statsValues.top"]], col.statsValues, col.lines.vertical)
-        col.statsValues.bottom <- pcycle(pars[["col.statsValues.bottom"]], col.statsValues, col.lines.vertical)
+#         col.statsValues.top <- pcycle(pars[["col.statsValues.top"]], col.statsValues, col.lines.vertical)
+#         col.statsValues.bottom <- pcycle(pars[["col.statsValues.bottom"]], col.statsValues, col.lines.vertical)
+        col.statsValues.quartiles <- pcycle(pars[["col.statsValues.quartiles"]], col.statsValues, col.lines.vertical)
+        col.statsValues.meanSD <- pcycle(pars[["col.statsValues.meanSD"]], col.statsValues, col.lines.vertical)
         
         pars[["cex"]] <- pcycle(pars[["cex"]], par("cex"))
         cex.statsValues <- pcycle(pars[["cex.statsValues"]], p("cex"), par("cex"))
-        cex.statsValues.top <- pcycle(pars[["cex.statsValues.top"]], cex.statsValues, 1)
-        cex.statsValues.bottom <- pcycle(pars[["cex.statsValues.bottom"]], cex.statsValues, 1)
+#         cex.statsValues.top <- pcycle(pars[["cex.statsValues.top"]], cex.statsValues, 1)
+#         cex.statsValues.bottom <- pcycle(pars[["cex.statsValues.bottom"]], cex.statsValues, 1)
+        cex.statsValues.quartiles <- pcycle(pars[["cex.statsValues.quartiles"]], cex.statsValues, 1)
+        cex.statsValues.meanSD <- pcycle(pars[["cex.statsValues.meanSD"]], cex.statsValues, 1)
         font.statsValues <- pcycle(pars[["font.statsValues"]], p("font"), par("font"))
-        font.statsValues.top <- pcycle(pars[["font.statsValues.top"]], if (length(font.statsValues) > 1L) font.statsValues[1L] else font.statsValues, 1)
-        font.statsValues.bottom <- pcycle(pars[["font.statsValues.bottom"]], if (length(font.statsValues) > 1L) font.statsValues[-1L] else font.statsValues, 1)
+#         font.statsValues.top <- pcycle(pars[["font.statsValues.top"]], if (length(font.statsValues) > 1L) font.statsValues[1L] else font.statsValues, 1)
+#         font.statsValues.bottom <- pcycle(pars[["font.statsValues.bottom"]], if (length(font.statsValues) > 1L) font.statsValues[-1L] else font.statsValues, 1)
+        font.statsValues.quartiles <- pcycle(pars[["font.statsValues.quartiles"]], if (length(font.statsValues) > 1L) font.statsValues[1L] else font.statsValues, 1)
+        font.statsValues.meanSD <- pcycle(pars[["font.statsValues.meanSD"]], if (length(font.statsValues) > 1L) font.statsValues[-1L] else font.statsValues, 1)
         
         bg <- pcycle(pars[["bg"]], par("bg"))
         fg <- pcycle(pars[["fg"]], par("fg"))
@@ -751,7 +781,7 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, byFactorsLevels =
     
     args.plot.histogram <- pars[c("border", "angle", "density", "axes", "labels", "add", "ann", "col.axis", "cex", "cex.axis", "cex.lab", "col.lab", "font.lab", "font.axis")]
     
-    nf <- layout(matrix(c(2, 1), nrow = 2, ncol = 1, byrow = TRUE), height = c(1, 3))
+    nf <- layout(matrix(c(2, 1), nrow = 2, ncol = 1, byrow = TRUE), heights = c(1, 3))
     
     par(mar = c(5.1, 4.1, 0, 2.1), bg = bg, fg = fg, xpd = FALSE)
     do.call(what = "plot",
@@ -779,19 +809,23 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, byFactorsLevels =
                             lwd = lwd.lines.vertical,
                             col = col.lines.vertical))
     }
-    if(plotStatsValues) {
-        do.call(what = "mtext",
-                args = list(text = paste("Mean (SD)\n", formattedMeanSD, sep = ""),
-                            side = 1,
-                            line = line.statsValues.bottom,
-                            at = min(xlim),
-                            col = col.statsValues.bottom,
-                            font = font.statsValues.bottom,
-                            cex = cex.statsValues.bottom))
-    }
+#     if(plotStatsValues) {
+#         do.call(what = "mtext",
+#                 args = list(text = paste("Mean (SD)\n", formattedMeanSD, sep = ""),
+#                             side = 1,
+#                             line = line.statsValues.bottom,
+#                             at = min(xlim),
+#                             col = col.statsValues.bottom,
+#                             font = font.statsValues.bottom,
+#                             cex = cex.statsValues.bottom))
+#     }
 
     par(mar = c(0, 4.1, 1.1, 2.1), xpd = FALSE)
     args.plot.boxplot <- pars[c("border", "width", "varwidth", "outline")]
+    
+    # Not currently accepting any changes to the default values of
+    # these arguments (which affect the appearance of the actual box
+    # part of the boxplot).
     args.plot.boxplot[["width"]] <- NULL
     args.plot.boxplot[["varwidth"]] <- FALSE
 #     do.call(what = "boxplot",
@@ -811,37 +845,39 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, byFactorsLevels =
                           ylim = xlim,
                           col = col.fill.boxplot,
                           boxwex = 0.8,
-                          xlim = extendrange(r = c(0.5, 1.5), f = 0.04) + 0.2),
+                          xlim = extendrange(r = c(0.5, 1.5), f = 0.04) + 0.2), # shift the boxplot down to make room for the stats labels
                      args.plot.boxplot))
     if(plotVerticalLines) {
         do.call(what = "segments",
                 args = list(x0 = x.verticalStats,
-                            y0 = c(0L, 0L, 0L, 0L),
+#                             y0 = c(0L, 0L, 0L, 0L),
+                            y0 = rep.int(0L, times = length(x.verticalStats)),
                             x1 = x.verticalStats,
-                            y1 = c(1L, 1L, 1L, 1L),
+#                             y1 = c(1L, 1L, 1L, 1L),
+                            y1 = rep.int(1L, times = length(x.verticalStats)),
                             lty = lty.lines.vertical,
                             lwd = lwd.lines.vertical,
                             col = col.lines.vertical))
     }
     if(plotStatsValues) {
-        par(xpd = TRUE)
-        do.call(what = "mtext",
-                args = list(text = paste("Q1", formattedQuartiles[1L], sep = "\n"),
-                            at = x.verticalStats[3L],
-                            side = 3,
-                            line = line.statsValues.top,
-                            col = col.statsValues.top,
-                            font = font.statsValues.top,
-                            cex = cex.statsValues,
-                            adj = 1))
-        do.call(what = "mtext",
-                args = list(text = paste("Q2", formattedQuartiles[2L], sep = "\n"),
-                            at = x.verticalStats[2L],
-                            side = 3,
-                            line = line.statsValues.top,
-                            col = col.statsValues.top,
-                            font = font.statsValues.top,
-                            cex = cex.statsValues))
+#         par(xpd = TRUE)
+#         do.call(what = "mtext",
+#                 args = list(text = paste("Q1", formattedQuartiles[1L], sep = "\n"),
+#                             at = x.verticalStats[3L],
+#                             side = 3,
+#                             line = line.statsValues.top,
+#                             col = col.statsValues.top,
+#                             font = font.statsValues.top,
+#                             cex = cex.statsValues,
+#                             adj = 1))
+#         do.call(what = "mtext",
+#                 args = list(text = paste("Q2", formattedQuartiles[2L], sep = "\n"),
+#                             at = x.verticalStats[2L],
+#                             side = 3,
+#                             line = line.statsValues.top,
+#                             col = col.statsValues.top,
+#                             font = font.statsValues.top,
+#                             cex = cex.statsValues))
 #         do.call(what = "mtext",
 #                 args = list(text = paste("Q3", formattedQuartiles[3L], sep = "\n"),
 #                             at = x.verticalStats[4L],
@@ -851,27 +887,135 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, byFactorsLevels =
 #                             font = font.statsValues.top,
 #                             cex = cex.statsValues,
 #                             adj = 0))
-        par(xpd = FALSE)
-        do.call(what = "legend",
-                args = list(x = "topright",
-                            legend = c("Mean (SD)", formattedMeanSD),
-                            bty = "n",
-                            y.intersp = 0.7,
-                            text.col = col.statsValues.bottom,
-                            text.font = font.statsValues.bottom,
-                            cex = cex.statsValues.bottom))
-        do.call(what = "legend",
-                args = list(x = qlegendx,
-                            legend = c("Q3", formattedQuartiles[3L]),
-                            bty = "n",
-                            xpd = TRUE,
-                            text.col = col.statsValues.top,
-                            text.font = font.statsValues.top,
-                            cex = cex.statsValues,
-                            adj = 0,
-                            y.intersp = 0.75))
+#         par(xpd = FALSE)
+#         do.call(what = "legend",
+#                 args = list(x = "topright",
+#                             legend = c("Mean (SD)", formattedMeanSD),
+#                             bty = "n",
+#                             y.intersp = 0.7,
+#                             text.col = col.statsValues.bottom,
+#                             text.font = font.statsValues.bottom,
+#                             cex = cex.statsValues.bottom))
+#         legendaryValues <- do.call(what = "legend",
+#                                    args = list(x = "topright",
+#                                                legend = c("Mean (SD)", formattedMeanSD),
+#                                                bty = "n",
+#                                                y.intersp = 0.7,
+#                                                text.col = col.statsValues.bottom,
+#                                                text.font = font.statsValues.bottom,
+#                                                cex = cex.statsValues.bottom))
+#         do.call(what = "legend",
+#                 args = list(x = qlegendx,
+#                             legend = c("Q3", formattedQuartiles[3L]),
+#                             bty = "n",
+#                             xpd = TRUE,
+#                             text.col = col.statsValues.top,
+#                             text.font = font.statsValues.top,
+#                             cex = cex.statsValues,
+#                             adj = 0,
+#                             y.intersp = 0.75))
+#         legendValues.meanSD <- do.call(what = "legend",
+#                                        args = list(x = "topright",
+#                                                    legend = c("Mean (SD)", formattedMeanSD),
+#                                                    bty = "n",
+#                                                    y.intersp = 0.75,
+#                                                    text.col = col.statsValues.meanSD,
+#                                                    text.font = font.statsValues.meanSD,
+#                                                    cex = cex.statsValues.meanSD,
+#                                                    adj = legend.adj,
+#                                                    xjust = legend.xjust,
+#                                                    yjust = legend.yjust))
+#         print(legendValues.meanSD)
+        legendValues.meanSD.topright <- do.call(what = "legend",
+                                                args = list(x = "topright",
+                                                            legend = c("Mean (SD)", formattedMeanSD),
+                                                            bty = "n",
+                                                            y.intersp = 0.75,
+                                                            text.col = col.statsValues.meanSD,
+                                                            text.font = font.statsValues.meanSD,
+                                                            cex = cex.statsValues.meanSD,
+                                                            plot = FALSE))
+        # print(legendValues.meanSD.topright)
+        legendValues.meanSD.topleft <- do.call(what = "legend",
+                                               args = list(x = "topleft",
+                                                           legend = c("Mean (SD)", formattedMeanSD),
+                                                           bty = "n",
+                                                           y.intersp = 0.75,
+                                                           text.col = col.statsValues.meanSD,
+                                                           text.font = font.statsValues.meanSD,
+                                                           cex = cex.statsValues.meanSD,
+                                                           plot = FALSE))
+        # print(legendValues.meanSD.topleft)
+        # print(par("usr"))
+        # print(par("plt"))
+        
+        meanSDmaxwidth <- max(strwidth(s = c("Mean (SD)", formattedMeanSD), units = "user", cex = cex.statsValues.meanSD, font = font.statsValues.meanSD))
+        q3maxwidth <- max(strwidth(s = c("Q3", formattedQuartiles["Quartile3"]), units = "user", cex = cex.statsValues.quartiles, font = font.statsValues.quartiles))
+        if (x.verticalStats["Quartile3"] + 0.51 * q3maxwidth > legendValues.meanSD.topright[["rect"]][["left"]]) {
+            legendValues.meanSD <- legendValues.meanSD.topleft
+#             legendValues.meanSD[["text"]][["x"]] <- legendValues.meanSD[["text"]][["x"]] + 0.5 * legendValues.meanSD[["rect"]][["w"]]
+            legendValues.meanSD[["text"]][["x"]] <- legendValues.meanSD[["text"]][["x"]] +  (meanSDmaxwidth / 2)
+        } else {
+            legendValues.meanSD <- legendValues.meanSD.topright
+        }
+#         do.call(what = "text",
+#                 args = list(x = x.verticalStats["Quartile1"] + c(0L, 0L),
+#                             y = legendValues.meanSD[["text"]][["y"]],
+#                             labels = c("Q1", formattedQuartiles["Quartile1"]),
+#                             col = col.statsValues.quartiles,
+#                             font = font.statsValues.quartiles,
+#                             cex = cex.statsValues.quartiles,
+#                             adj = 1))
+#         do.call(what = "text",
+#                 args = list(x = x.verticalStats[rep(names(formattedQuartiles), each = 2L)],
+#                             y = legendValues.meanSD[["text"]][["y"]],
+#                             labels = c("Q1", formattedQuartiles["Quartile1"], "Q2", formattedQuartiles["Median"], "Q3", formattedQuartiles["Quartile3"]),
+#                             col = col.statsValues.quartiles,
+#                             font = font.statsValues.quartiles,
+#                             cex = cex.statsValues.quartiles))
+        do.call(what = "text",
+#                 args = list(x = legendValues.meanSD[["text"]][["x"]] + (1 - adj) * legendValues.meanSD[["rect"]][["w"]],
+#                 args = list(x = legendValues.meanSD[["text"]][["x"]] + (1 - 0.5) * legendValues.meanSD[["rect"]][["w"]],
+                args = list(x = legendValues.meanSD[["text"]][["x"]],
+                            y = legendValues.meanSD[["text"]][["y"]],
+                            labels = c("Mean (SD)", formattedMeanSD),
+                            col = col.statsValues.meanSD,
+                            font = font.statsValues.meanSD,
+                            cex = cex.statsValues.meanSD,
+                            adj = 0.5))
+        do.call(what = "text",
+                args = list(x = x.verticalStats["Quartile1"] + c(0L, 0L),
+                            y = legendValues.meanSD[["text"]][["y"]],
+                            labels = c("Q1", formattedQuartiles["Quartile1"]),
+                            col = col.statsValues.quartiles,
+                            font = font.statsValues.quartiles,
+                            cex = cex.statsValues.quartiles,
+                            adj = 0.5))
+        do.call(what = "text",
+                args = list(x = x.verticalStats["Median"] + c(0L, 0L),
+                            y = legendValues.meanSD[["text"]][["y"]],
+                            labels = c("Q2", formattedQuartiles["Median"]),
+                            col = col.statsValues.quartiles,
+                            font = font.statsValues.quartiles,
+                            cex = cex.statsValues.quartiles,
+                            adj = 0.5))
+        do.call(what = "text",
+                args = list(x = x.verticalStats["Quartile3"] + c(0L, 0L),
+                            y = legendValues.meanSD[["text"]][["y"]],
+                            labels = c("Q3", formattedQuartiles["Quartile3"]),
+                            col = col.statsValues.quartiles,
+                            font = font.statsValues.quartiles,
+                            cex = cex.statsValues.quartiles,
+                            adj = 0.5))
+#         if (hline) {
+#             abline(h = legendValues.meanSD[["text"]][["y"]], col = "blue", lwd = 2, lty = "solid")
+#         }
+#         if (vline) {
+#             abline(v = legendValues.meanSD[["text"]][["x"]], col = "green3", lwd = 2, lty = "solid")
+#         }
     }
-    layout(1)
+    layout(1, widths = 1, heights = 1)
+    par(def.par)
     invisible()
 }
 
@@ -902,7 +1046,8 @@ getBoxHist <- function(x, na.rm = TRUE, dataObjectName = NULL, byFactorsLevels =
 # # End debugging values for descriptiveStatsDF()
 
 # Define the descriptiveStatsDF() function
-descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2L, na.rm = TRUE, silent = FALSE, quantile.probs = 0:4/4, quantile.type = 7L, keepColumnNames = TRUE, categorical.emptyCellSymbol = "", categorical.maxLevels = 10L, categorical.na.exclude = na.rm, output.showStats = "all", byFactors = NULL, ignore = NULL, output.statsAreRows = TRUE, export = FALSE, export.file = NULL, export.printToConsole = !export, export.plots = export && plots, plots = FALSE, plots.savePNG = FALSE, plots.pngWidth = 700, plots.pngHeight = 600, plots.pngUnits = "px", plotData = c("all", "continuous", "byfactors", "bylevels"), plotDensityCurve = TRUE, plotVerticalLines = TRUE, plotStatsValues = TRUE, line.statsValues.top = -1.5, line.statsValues.bottom = 3L, ...) {
+# descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2L, na.rm = TRUE, silent = FALSE, quantile.probs = 0:4/4, quantile.type = 7L, keepColumnNames = TRUE, categorical.emptyCellSymbol = "", categorical.maxLevels = 10L, categorical.na.exclude = na.rm, output.showStats = "all", byFactors = NULL, ignore = NULL, output.statsAreRows = TRUE, export = FALSE, export.file = NULL, export.printToConsole = !export, export.plots = export && plots, plots = FALSE, plots.savePNG = FALSE, plots.pngWidth = 700, plots.pngHeight = 600, plots.pngUnits = "px", plotData = c("all", "continuous", "byfactors", "bylevels"), plotDensityCurve = TRUE, plotVerticalLines = TRUE, plotStatsValues = TRUE, line.statsValues.top = -1.5, line.statsValues.bottom = 3L, ...) {
+descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2L, na.rm = TRUE, silent = FALSE, quantile.probs = 0:4/4, quantile.type = 7L, keepColumnNames = TRUE, categorical.emptyCellSymbol = "", categorical.maxLevels = 10L, categorical.na.exclude = na.rm, output.showStats = "all", byFactors = NULL, ignore = NULL, output.statsAreRows = TRUE, export = FALSE, export.file = NULL, export.printToConsole = !export, export.plots = export && plots, plots = FALSE, plots.savePNG = FALSE, plots.pngWidth = 700, plots.pngHeight = 600, plots.pngUnits = "px", plotData = c("all", "continuous", "byfactors", "bylevels"), plotDensityCurve = TRUE, plotVerticalLines = TRUE, plotStatsValues = TRUE, ...) {
     if(silent) {
         oldWarn <- getOption("warn")
         options("warn" = -1L)
@@ -1076,13 +1221,15 @@ descriptiveStatsDF <- function(x, stats = "default", columns = "all", digits = 2
         }
         if (any(plotData %in% c("all", "continuous"))) {
             for (i in seq_len(NCOL(x.continuous))) {
-                getBoxHist(x = x.continuous[, i], na.rm = na.rm, dataObjectName = colnames(x.continuous)[i], digits = digits, plotDensityCurve = plotDensityCurve, plotVerticalLines = plotVerticalLines, plotStatsValues = plotStatsValues, pars = list(line.statsValues.top = line.statsValues.top, line.statsValues.bottom = line.statsValues.bottom), ...)
+#                 getBoxHist(x = x.continuous[, i], na.rm = na.rm, dataObjectName = colnames(x.continuous)[i], digits = digits, plotDensityCurve = plotDensityCurve, plotVerticalLines = plotVerticalLines, plotStatsValues = plotStatsValues, pars = list(line.statsValues.top = line.statsValues.top, line.statsValues.bottom = line.statsValues.bottom), ...)
+                getBoxHist(x = x.continuous[, i], na.rm = na.rm, dataObjectName = colnames(x.continuous)[i], digits = digits, plotDensityCurve = plotDensityCurve, plotVerticalLines = plotVerticalLines, plotStatsValues = plotStatsValues, pars = list(), ...)
             }
         }
         if (any(plotData %in% c("all", "byfactors", "bylevels")) && length(results[["ByFactors"]]) > 0L) {
             for (j in seq_along(x.byFactors)) {
                 for (i in seq_len(NCOL(x.byFactors[[j]]))) {
-                    getBoxHist(x = x.byFactors[[j]][, i], na.rm = na.rm, dataObjectName = colnames(x.byFactors[[j]])[i], byFactorsLevels = names(x.byFactors)[j], digits = digits, plotDensityCurve = plotDensityCurve, plotVerticalLines = plotVerticalLines, plotStatsValues = plotStatsValues, pars = list(line.statsValues.top = line.statsValues.top, line.statsValues.bottom = line.statsValues.bottom), ...)
+#                     getBoxHist(x = x.byFactors[[j]][, i], na.rm = na.rm, dataObjectName = colnames(x.byFactors[[j]])[i], byFactorsLevels = names(x.byFactors)[j], digits = digits, plotDensityCurve = plotDensityCurve, plotVerticalLines = plotVerticalLines, plotStatsValues = plotStatsValues, pars = list(line.statsValues.top = line.statsValues.top, line.statsValues.bottom = line.statsValues.bottom), ...)
+                    getBoxHist(x = x.byFactors[[j]][, i], na.rm = na.rm, dataObjectName = colnames(x.byFactors[[j]])[i], byFactorsLevels = names(x.byFactors)[j], digits = digits, plotDensityCurve = plotDensityCurve, plotVerticalLines = plotVerticalLines, plotStatsValues = plotStatsValues, pars = list(), ...)
                 }
             }
         }
